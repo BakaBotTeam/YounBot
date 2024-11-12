@@ -21,10 +21,9 @@ class Program
 
         if (!File.Exists("appsettings.json"))
         {
-            Console.WriteLine("No exist config file, create it now...");
 
             var assm = Assembly.GetExecutingAssembly();
-            using var istr = assm.GetManifestResourceStream("Lagrange.OneBot.Resources.appsettings.json")!;
+            using var istr = assm.GetManifestResourceStream("YounBot.Resources.appsettings.json")!;
             using var temp = File.Create("appsettings.json");
             istr.CopyTo(temp);
 
