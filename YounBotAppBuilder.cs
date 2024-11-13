@@ -1,5 +1,8 @@
+using System.Text.Json.Serialization;
+using Lagrange.Core;
 using Lagrange.Core.Common;
 using Lagrange.Core.Common.Interface;
+using Lagrange.Core.Common.Interface.Api;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -7,40 +10,36 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace YounBot;
 
-public sealed class YounBotAppBuilder
+public sealed class YounBotAppBuilder(IConfiguration configuration)
 {
-    private IServiceCollection Services;
-
-    private IConfiguration Configuration;
-
-    public YounBotAppBuilder(IServiceCollection services, IConfiguration configuration)
-    {
-        Services = services;
-        Configuration = configuration;
-    }
+    private BotDeviceInfo _deviceInfo;
+    private BotKeystore _keystore;
+    private BotConfig _botConfig;
     
-    public IServiceCollection GetServices() => Services;
-    public IConfiguration GetConfiguration() => Configuration;
-
-    public YounBotAppBuilder ConfigureBots()
+    public IConfiguration GetConfiguration() => configuration;
+    public BotDeviceInfo GetDeviceInfo() => _deviceInfo;
+    public BotKeystore GetKeystore() => _keystore;
+    public BotConfig GetConfig() => _botConfig;
+    
+    public void ConfigureBots()
     {
-        string keystorePath = Configuration["ConfigPath:Keystore"] ?? "keystore.json";
-        string deviceInfoPath = Configuration["ConfigPath:DeviceInfo"] ?? "device.json";
+        string keystorePath = configuration["ConfigPath:Keystore"] ?? "keystore.json";
+        string deviceInfoPath = configuration["ConfigPath:DeviceInfo"] ?? "device.json";
 
-        bool isSuccess = Enum.TryParse<Protocols>(Configuration["Account:Protocol"], out var protocol);
-        var config = new BotConfig
+        bool isSuccess = Enum.TryParse<Protocols>(configuration["Account:Protocol"], out var protocol);
+        
+        _botConfig = new BotConfig
         {
             Protocol = isSuccess ? protocol : Protocols.Linux,
-            AutoReconnect = bool.Parse(Configuration["Account:AutoReconnect"] ?? "true"),
-            UseIPv6Network = bool.Parse(Configuration["Account:UseIPv6Network"] ?? "false"),
-            GetOptimumServer = bool.Parse(Configuration["Account:GetOptimumServer"] ?? "true"),
-            AutoReLogin = bool.Parse(Configuration["Account:AutoReLogin"] ?? "true"),
+            AutoReconnect = bool.Parse(configuration["Account:AutoReconnect"] ?? "true"),
+            UseIPv6Network = bool.Parse(configuration["Account:UseIPv6Network"] ?? "false"),
+            GetOptimumServer = bool.Parse(configuration["Account:GetOptimumServer"] ?? "true"),
+            AutoReLogin = bool.Parse(configuration["Account:AutoReLogin"] ?? "true"),
         };
-
-        BotKeystore keystore;
+        
         if (!File.Exists(keystorePath))
         {
-            keystore = new BotKeystore();
+            _keystore = new BotKeystore();
             string? directoryPath = Path.GetDirectoryName(keystorePath);
             if (!string.IsNullOrEmpty(directoryPath))
             {
@@ -49,14 +48,13 @@ public sealed class YounBotAppBuilder
         }
         else
         {
-            keystore = JsonSerializer.Deserialize<BotKeystore>(File.ReadAllText(keystorePath)) ?? new BotKeystore();
+            _keystore = JsonSerializer.Deserialize<BotKeystore>(File.ReadAllText(keystorePath)) ?? new BotKeystore();
         }
 
-        BotDeviceInfo deviceInfo;
         if (!File.Exists(deviceInfoPath))
         {
-            deviceInfo = BotDeviceInfo.GenerateInfo();
-            string json = JsonSerializer.Serialize(deviceInfo);
+            _deviceInfo = BotDeviceInfo.GenerateInfo();
+            string json = JsonSerializer.Serialize(_deviceInfo);
             string? directoryPath = Path.GetDirectoryName(deviceInfoPath);
             if (!string.IsNullOrEmpty(directoryPath))
             {
@@ -66,18 +64,8 @@ public sealed class YounBotAppBuilder
         }
         else
         {
-            deviceInfo = JsonSerializer.Deserialize<BotDeviceInfo>(File.ReadAllText(deviceInfoPath)) ?? BotDeviceInfo.GenerateInfo();
+            _deviceInfo = JsonSerializer.Deserialize<BotDeviceInfo>(File.ReadAllText(deviceInfoPath)) ?? BotDeviceInfo.GenerateInfo();
         }
-
-        Services.AddSingleton(BotFactory.Create(config, deviceInfo, keystore));
-
-        return this;
-    }
-
-    public YounBotAppBuilder ConfigureLogging(Action<ILoggingBuilder> configureLogging)
-    {
-        Services.AddLogging(configureLogging);
-        return this;
     }
 
     public YounBotApp Build() => new(this);
