@@ -18,4 +18,9 @@
       <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0-rc.2.24473.5" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="Resources\appsettings.json" />
+      <EmbeddedResource Include="Resources\appsettings.json" />
+    </ItemGroup>
+
 </Project>
