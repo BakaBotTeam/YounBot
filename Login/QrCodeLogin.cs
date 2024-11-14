@@ -16,17 +16,6 @@ public static class QrCodeLogin
         app.Client = BotFactory.Create(config, deviceInfo, keystore);
         var client = app.Client;
         
-        client.Invoker.OnBotLogEvent += (_, @event) => {
-            Console.WriteLine(@event.ToString());
-        };
-        
-        client.Invoker.OnBotOnlineEvent += (_, @event) =>
-        {
-            Console.WriteLine(@event.ToString());
-            client.UpdateKeystore();
-            File.WriteAllText(app.Configuration["ConfigPath:Keystore"] ?? "keystore.json", JsonSerializer.Serialize(keystore));
-        };
-
         if (!await app.Client.LoginByPassword())
         {
             var qrCode = await client.FetchQrCode();

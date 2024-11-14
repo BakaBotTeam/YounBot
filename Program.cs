@@ -48,6 +48,7 @@ class Program
 
         //登录
         await QrCodeLogin.Login(app, appBuilder.GetConfig(), appBuilder.GetDeviceInfo(), appBuilder.GetKeystore());
-
+        await app.Init();
+        await app.Run();
     }
 }
