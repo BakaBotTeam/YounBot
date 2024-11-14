@@ -28,7 +28,7 @@ public class CommandManager
         Commands.Add(new HelpCommand());
     }
 
-    public void ExecuteCommand(BotContext context, MessageChain chain, string message)
+    public async Task ExecuteCommand(BotContext context, MessageChain chain, string message)
     {
         if (message.Length > 1)
         {
@@ -36,7 +36,7 @@ public class CommandManager
             var command = GetCommand(args[0]);
             if (command != null)
             {
-                command.Execute(context, chain, args.Skip(1).ToArray());
+                await command.Execute(context, chain, args.Skip(1).ToArray());
             }
         }
     }

@@ -8,17 +8,17 @@ public abstract class Command(string name, string description)
 {
     public readonly string Name = name;
     public readonly string Description = description;
-    public abstract void Execute(BotContext context, MessageChain chain, string[] args);
+    public abstract Task Execute(BotContext context, MessageChain chain, string[] args);
 
-    protected void SendMessage(BotContext context, MessageChain chain, string message, bool mention = false)
+    protected async Task SendMessage(BotContext context, MessageChain chain, string message, bool mention = false)
     {
         if (mention)
         {
-            context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value).Mention(chain.FriendUin).Text($" {message}").Build());
+            await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value).Mention(chain.FriendUin).Text($" {message}").Build());
         }
         else
         {
-            context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value).Text(message).Build());
+            await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value).Text(message).Build());
         }
     }
 }

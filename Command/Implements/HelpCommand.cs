@@ -7,9 +7,9 @@ public class HelpCommand : Command
 {
     public HelpCommand() : base("help", "List all the commands") {}
 
-    public override void Execute(BotContext context, MessageChain chain, string[] args)
+    public override async Task Execute(BotContext context, MessageChain chain, string[] args)
     {
-        SendMessage(context, chain, 
+        await SendMessage(context, chain, 
             $"Available commands:\n{CommandManager.Instance.Commands.Select(command => $"/{command.Name}: {command.Description}")
             .Aggregate((current, next) => current + "\n" + next)}");
     }
