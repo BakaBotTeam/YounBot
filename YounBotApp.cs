@@ -41,6 +41,11 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
                 CommandManager.Instance.ExecuteCommand(context, @event.Chain, text);
             }
         };
+        
+        Client!.Invoker.OnGroupMemberIncreaseEvent += (context, @event) =>
+        {
+            context.SendMessage(MessageBuilder.Group(@event.GroupUin).Text($"A new member '{@event.MemberUin}' joined in the group!").Build());
+        };
 
         return Task.CompletedTask;
     }
