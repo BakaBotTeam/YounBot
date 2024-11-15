@@ -45,26 +45,6 @@ public class CommandManager
         }
     }
     
-    private object ParseString(string input)
-    {
-        if (string.IsNullOrWhiteSpace(input))
-            throw new ArgumentException("Input string cannot be null or whitespace.");
-
-        if (bool.TryParse(input, out bool boolResult))
-            return boolResult;
-
-        if (int.TryParse(input, NumberStyles.Integer, CultureInfo.InvariantCulture, out int intResult))
-            return intResult;
-
-        if (long.TryParse(input, NumberStyles.Integer, CultureInfo.InvariantCulture, out long longResult))
-            return longResult;
-
-        if (double.TryParse(input, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out double doubleResult))
-            return doubleResult;
-
-        return input;
-    }
-    
     public Task ExecuteCommand(BotContext context, MessageChain chain, string input)
     {
         var args = input.Substring(1).Split(" ");
@@ -126,8 +106,73 @@ public class CommandManager
                         }
                         else if (argType == typeof(BotGroupMember))
                         {
-                            objectArray = objectArray.Append(GetGroupMember(context, chain, stringArray[index]))
+                            string str = input;
+                            if (str.StartsWith("@"))
+                            {
+                                str = str.Substring(1);
+                            }
+
+                            if (str == "") throw new ArgumentException("群成员解析: 无法格式化群成员");
+                            string[] array = str.Split(".");
+                            BotGroupMember member;
+                            if (array.Length == 1)
+                            {
+                                if (chain.GroupUin == null) throw new ArgumentException("群成员解析: 无法格式化群成员");
+
+                                if (array[0] == "$")
+                                {
+                                    var members = context.FetchMembers(chain.GroupUin!.Value).Result;
+                                    objectArray = objectArray.Append(members[new Random().Next(members.Count)])
+                                        .ToArray();
+                                    break;
+                                }
+            
+                                try
+                                {
+                                    int.Parse(array[0]);
+                                } catch (FormatException)
+                                {
+                                    throw new ArgumentException("群成员解析: 无法格式化群成员");
+                                }
+                                member = context.FetchMembers(chain.GroupUin!.Value).Result
+                                    .Find((BotGroupMember member) => member.Uin == long.Parse(array[0]));
+                                if (member == null) throw new ArgumentException("群成员解析: 无法格式化群成员");
+
+                                objectArray = objectArray.Append(member)
+                                    .ToArray();
+                                break;
+                            } else if (array.Length >= 3) throw new ArgumentException("群成员解析: 给予了太多参数");
+        
+                            try
+                            {
+                                int.Parse(array[0]);
+                            } catch (FormatException)
+                            {
+                                throw new ArgumentException("群成员解析: 无法格式化群成员");
+                            }
+        
+                            if (array[1] == "$")
+                            {
+                                var members = context.FetchMembers(chain.GroupUin!.Value).Result;
+                                objectArray = objectArray.Append(members[new Random().Next(members.Count)])
+                                    .ToArray();
+                                break;
+                            }
+            
+                            try
+                            {
+                                int.Parse(array[1]);
+                            } catch (FormatException)
+                            {
+                                throw new ArgumentException("群成员解析: 无法格式化群成员");
+                            }
+        
+                            member = context.FetchMembers(uint.Parse(array[0])).Result
+                                .Find((BotGroupMember member) => member.Uin == long.Parse(array[1]));
+                            if (member == null) throw new ArgumentException("群成员解析: 无法格式化群成员");
+                            objectArray = objectArray.Append(member)
                                 .ToArray();
+                            break;
                         }
                         else throw new ArgumentException($"无法解析的参数类型 {argType.Name}");
 
@@ -160,70 +205,6 @@ public class CommandManager
         }
         
         return Task.CompletedTask;
-    }
-    
-    public BotGroupMember GetGroupMember(BotContext context, MessageChain chain, string input)
-    {
-        string str = input;
-        if (str.StartsWith("@"))
-        {
-            str = str.Substring(1);
-        }
-
-        if (str == "") throw new ArgumentException("无法格式化群成员");
-        string[] array = str.Split(".");
-        BotGroupMember member;
-        if (array.Length == 1)
-        {
-            if (chain.GroupUin == null) throw new ArgumentException("无法格式化群成员");
-
-            if (array[0] == "$")
-            {
-                var members = context.FetchMembers(chain.GroupUin!.Value).Result;
-                return members[new Random().Next(members.Count)];
-            }
-            
-            try
-            {
-                int.Parse(array[0]);
-            } catch (FormatException)
-            {
-                throw new ArgumentException("无法格式化群成员");
-            }
-            member = context.FetchMembers(chain.GroupUin!.Value).Result
-                .Find((BotGroupMember member) => member.Uin == long.Parse(array[0]));
-            if (member == null) throw new ArgumentException("无法格式化群成员");
-
-            return member;
-        } else if (array.Length >= 3) throw new ArgumentException("给予了太多参数");
-        
-        try
-        {
-            int.Parse(array[0]);
-        } catch (FormatException)
-        {
-            throw new ArgumentException("无法格式化群成员");
-        }
-        
-        if (array[1] == "$")
-        {
-            var members = context.FetchMembers(chain.GroupUin!.Value).Result;
-            return members[new Random().Next(members.Count)];
-        }
-            
-        try
-        {
-            int.Parse(array[1]);
-        } catch (FormatException)
-        {
-            throw new ArgumentException("无法格式化群成员");
-        }
-        
-        member = context.FetchMembers(uint.Parse(array[0])).Result
-            .Find((BotGroupMember member) => member.Uin == long.Parse(array[1]));
-        if (member == null) throw new ArgumentException("无法格式化群成员");
-
-        return member;
     }
 
     // public async Task ExecuteCommand(BotContext context, MessageChain chain, string message)
