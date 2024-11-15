@@ -5,6 +5,7 @@ using Lagrange.Core.Message;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using YounBot.Command;
+using YounBot.Utils;
 
 namespace YounBot;
 
@@ -35,17 +36,17 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
     {
         Client!.Invoker.OnGroupMessageReceived += async (context, @event) =>
         {
-            var text = @event.Chain.ToPreviewText();
+            var text = MessageUtils.GetPlainText(@event.Chain);
             if (text.StartsWith("/"))
             {
                 await CommandManager.Instance.ExecuteCommand(context, @event.Chain, text);
             }
         };
         
-        Client!.Invoker.OnGroupMemberIncreaseEvent += async (context, @event) =>
-        {
-            await context.SendMessage(MessageBuilder.Group(@event.GroupUin).Text($"A new member '{@event.MemberUin}' joined in the group!").Build());
-        };
+        // Client!.Invoker.OnGroupMemberIncreaseEvent += async (context, @event) =>
+        // {
+        //     await context.SendMessage(MessageBuilder.Group(@event.GroupUin).Text($"A new member '{@event.MemberUin}' joined in the group!").Build());
+        // };
 
         return Task.CompletedTask;
     }

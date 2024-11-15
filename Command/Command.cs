@@ -10,15 +10,17 @@ public abstract class Command(string name, string description)
     public readonly string Description = description;
     public abstract Task Execute(BotContext context, MessageChain chain, string[] args);
 
-    protected async Task SendMessage(BotContext context, MessageChain chain, string message, bool mention = false)
+    protected async Task SendMessage(BotContext context, MessageChain chain, string message, bool mention = false, bool reply = false)
     {
+        var messageBuilder = MessageBuilder.Group(chain.GroupUin!.Value);
+        if (reply)
+        {
+            messageBuilder.Forward(chain);
+        }
         if (mention)
         {
-            await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value).Mention(chain.FriendUin).Text($" {message}").Build());
+            messageBuilder.Mention(chain.FriendUin!);
         }
-        else
-        {
-            await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value).Text(message).Build());
-        }
+        await context.SendMessage(messageBuilder.Text($" {message}").Build());
     }
 }
