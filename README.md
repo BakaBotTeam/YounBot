@@ -1,0 +1,35 @@
+﻿# YounBot
+
+YounBot is a bot developed based on Lagrange.Core, designed to manage group chats and provide practical functions.
+
+## Conbrtibuting
+
+### Prerequisites
+
+- .NET 8.0 or later
+
+### Configuration
+
+1. Clone the repository:
+    ```sh
+    git clone https://github.com/BakaBotTeam/YounBot.git
+    ```
+2. Navigate to the project directory:
+    ```sh
+    cd YounBot
+    ```
+3. Restore the dependencies:
+    ```sh
+    dotnet restore
+    ```
+
+### Build&Run
+
+1. Build the project:
+    ```sh
+    dotnet build
+    ```
+2. Run the project:
+    ```sh
+    dotnet run
+    ```
