@@ -5,6 +5,7 @@ using Lagrange.Core.Message;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using YounBot.Command;
+using YounBot.Config;
 using YounBot.Utils;
 
 namespace YounBot;
@@ -13,6 +14,7 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
 {
     public readonly IConfiguration Configuration = appBuilder.GetConfiguration();
     public BotContext? Client;
+    public static YounBotConfig? Config;
     
     public Task Init()
     {
@@ -28,6 +30,7 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
         };
         
         CommandManager.Instance.InitializeCommands();
+        Config = appBuilder.GetYounBotConfig();
 
         return Task.CompletedTask;
     }
@@ -42,11 +45,6 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
                 await CommandManager.Instance.ExecuteCommand(context, @event.Chain, text);
             }
         };
-        
-        // Client!.Invoker.OnGroupMemberIncreaseEvent += async (context, @event) =>
-        // {
-        //     await context.SendMessage(MessageBuilder.Group(@event.GroupUin).Text($"A new member '{@event.MemberUin}' joined in the group!").Build());
-        // };
 
         return Task.CompletedTask;
     }

@@ -6,6 +6,7 @@ using Lagrange.Core.Common.Interface.Api;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using YounBot.Config;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace YounBot;
@@ -15,16 +16,20 @@ public sealed class YounBotAppBuilder(IConfiguration configuration)
     private BotDeviceInfo _deviceInfo;
     private BotKeystore _keystore;
     private BotConfig _botConfig;
+    private YounBotConfig _younBotConfig;
     
     public IConfiguration GetConfiguration() => configuration;
     public BotDeviceInfo GetDeviceInfo() => _deviceInfo;
     public BotKeystore GetKeystore() => _keystore;
     public BotConfig GetConfig() => _botConfig;
+    public YounBotConfig GetYounBotConfig() => _younBotConfig;
     
     public void ConfigureBots()
     {
-        string keystorePath = configuration["ConfigPath:Keystore"] ?? "keystore.json";
-        string deviceInfoPath = configuration["ConfigPath:DeviceInfo"] ?? "device.json";
+        var keystorePath = configuration["ConfigPath:Keystore"] ?? "keystore.json";
+        var deviceInfoPath = configuration["ConfigPath:DeviceInfo"] ?? "device.json";
+        var configPath = "younbot-config.json";
+            
 
         bool isSuccess = Enum.TryParse<Protocols>(configuration["Account:Protocol"], out var protocol);
         
@@ -65,6 +70,23 @@ public sealed class YounBotAppBuilder(IConfiguration configuration)
         else
         {
             _deviceInfo = JsonSerializer.Deserialize<BotDeviceInfo>(File.ReadAllText(deviceInfoPath)) ?? BotDeviceInfo.GenerateInfo();
+        }
+        
+        if (!File.Exists("younbot-config.json"))
+        {
+            _younBotConfig = YounBotConfig.NewConfig();
+            var directoryPath = Path.GetDirectoryName("younbot-config.json");
+            if (!string.IsNullOrEmpty(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
+            var json = JsonSerializer.Serialize(_younBotConfig);
+            
+            File.WriteAllText("younbot-config.json", json);
+        }
+        else
+        {
+            _younBotConfig = JsonSerializer.Deserialize<YounBotConfig>(File.ReadAllText(configPath)) ?? YounBotConfig.NewConfig();
         }
     }
 

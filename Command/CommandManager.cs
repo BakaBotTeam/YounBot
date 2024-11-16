@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+﻿﻿using System.Reflection;
 using Lagrange.Core;
 using Lagrange.Core.Common.Entity;
 using Lagrange.Core.Common.Interface.Api;
@@ -25,6 +25,7 @@ public class CommandManager
     
     private readonly Dictionary<string, (object Instance, MethodInfo Method)> _commands = new();
     public readonly Dictionary<string, string> Descriptions = new();
+    
     public void InitializeCommands()
     {
         RegisterCommand(new RepeatCommand());
@@ -115,7 +116,7 @@ public class CommandManager
                         else if (argType == typeof(BotGroupMember))
                         {
                             var str = stringArray[index];
-                            if (str.StartsWith("@"))
+                            if (str.StartsWith('@'))
                             {
                                 str = str.Substring(1);
                             }

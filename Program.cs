@@ -1,13 +1,10 @@
 ﻿using System.Reflection;
 using System.Runtime;
 using System.Text;
-using Lagrange.Core.Common;
-using Lagrange.Core.Common.Interface;
+using System.Text.Json;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using YounBot.Config;
 using YounBot.Login;
-
 namespace YounBot;
 
 class Program
@@ -21,19 +18,17 @@ class Program
 
         if (!File.Exists("appsettings.json"))
         {
+            var assem = Assembly.GetExecutingAssembly();
+            await using var resourceStream = assem.GetManifestResourceStream("YounBot.Resources.appsettings.json")!;
+            await using var temp = File.Create("appsettings.json");
+            await resourceStream.CopyToAsync(temp);
 
-            var assm = Assembly.GetExecutingAssembly();
-            using var istr = assm.GetManifestResourceStream("YounBot.Resources.appsettings.json")!;
-            using var temp = File.Create("appsettings.json");
-            istr.CopyTo(temp);
-
-            istr.Close();
+            resourceStream.Close();
             temp.Close();
 
             Console.WriteLine("Please Edit the appsettings.json to set configs and press any key to continue");
             Console.ReadLine();
         }
-        
 
         // 创建IConfiguration实例
         var configurationBuilder = new ConfigurationBuilder()
