@@ -6,7 +6,7 @@ namespace YounBot.Command.Implements;
 
 public class HomoIntCommand
 {
-    [Command("homoint", "homohomo")]
+    [Command("homoint", "随处可见的Homo（恼")]
     public async void HomoInt(BotContext context, MessageChain chain, long number)
     {
         await SendMessage(context, chain, getInt(number));

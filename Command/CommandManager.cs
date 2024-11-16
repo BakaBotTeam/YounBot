@@ -1,5 +1,4 @@
-﻿﻿using System.Globalization;
-using System.Reflection;
+﻿using System.Reflection;
 using Lagrange.Core;
 using Lagrange.Core.Common.Entity;
 using Lagrange.Core.Common.Interface.Api;
@@ -25,13 +24,15 @@ public class CommandManager
     }
     
     private readonly Dictionary<string, (object Instance, MethodInfo Method)> _commands = new();
-    
+    public readonly Dictionary<string, string> Descriptions = new();
     public void InitializeCommands()
     {
         RegisterCommand(new RepeatCommand());
         RegisterCommand(new HomoIntCommand());
         RegisterCommand(new AcgCommand());
         RegisterCommand(new HttpCatCommand());
+        RegisterCommand(new YounkooCommand());
+        RegisterCommand(new HelpCommand());
     }
     
     
@@ -43,6 +44,7 @@ public class CommandManager
             var attribute = method.GetCustomAttribute<CommandAttribute>();
             if (attribute != null)
             {
+                Descriptions[attribute.PrimaryName.ToLower()] = attribute.Description;
                 _commands[attribute.PrimaryName.ToLower()] = (commandClassInstance, method);
             }
         }
@@ -91,6 +93,10 @@ public class CommandManager
                         {
                             objectArray = objectArray.Append(int.Parse(stringArray[index])).ToArray();
                         }
+                        else if (argType == typeof(uint))
+                        {
+                            objectArray = objectArray.Append(uint.Parse(stringArray[index])).ToArray();
+                        }
                         else if (argType == typeof(long))
                         {
                             objectArray = objectArray.Append(long.Parse(stringArray[index])).ToArray();
@@ -109,46 +115,53 @@ public class CommandManager
                         }
                         else if (argType == typeof(BotGroupMember))
                         {
-                            string str = input;
+                            string str = stringArray[index];
+                            Console.WriteLine(str);
                             if (str.StartsWith("@"))
                             {
                                 str = str.Substring(1);
                             }
 
-                            if (str == "") throw new ArgumentException("群成员解析: 无法格式化群成员");
+                            if (str == "") 
+                                throw new ArgumentException("群成员解析: 无法格式化群成员");
                             string[] array = str.Split(".");
                             BotGroupMember member;
                             if (array.Length == 1)
                             {
-                                if (chain.GroupUin == null) throw new ArgumentException("群成员解析: 无法格式化群成员");
+                                if (chain.GroupUin == null) 
+                                    throw new ArgumentException("群成员解析: 无法格式化群成员");
 
                                 if (array[0] == "$")
                                 {
                                     var members = context.FetchMembers(chain.GroupUin!.Value).Result;
                                     objectArray = objectArray.Append(members[new Random().Next(members.Count)])
                                         .ToArray();
-                                    break;
+                                    ++index;
+                                    continue;
                                 }
             
                                 try
                                 {
-                                    int.Parse(array[0]);
+                                    uint.Parse(array[0]);
                                 } catch (FormatException)
                                 {
                                     throw new ArgumentException("群成员解析: 无法格式化群成员");
                                 }
                                 member = context.FetchMembers(chain.GroupUin!.Value).Result
                                     .Find(groupMember => groupMember.Uin == long.Parse(array[0]));
-                                if (member == null) throw new ArgumentException("群成员解析: 无法格式化群成员");
+                                if (member == null) 
+                                    throw new ArgumentException("群成员解析: 无法格式化群成员");
 
                                 objectArray = objectArray.Append(member)
                                     .ToArray();
-                                break;
-                            } else if (array.Length >= 3) throw new ArgumentException("群成员解析: 给予了太多参数");
+                                ++index;
+                                continue;
+                            } else if (array.Length >= 3) 
+                                throw new ArgumentException("群成员解析: 给予了太多参数");
         
                             try
                             {
-                                int.Parse(array[0]);
+                                uint.Parse(array[0]);
                             } catch (FormatException)
                             {
                                 throw new ArgumentException("群成员解析: 无法格式化群成员");
@@ -159,25 +172,29 @@ public class CommandManager
                                 var members = context.FetchMembers(chain.GroupUin!.Value).Result;
                                 objectArray = objectArray.Append(members[new Random().Next(members.Count)])
                                     .ToArray();
-                                break;
+                                ++index;
+                                continue;
                             }
             
                             try
                             {
-                                int.Parse(array[1]);
+                                uint.Parse(array[1]);
                             } catch (FormatException)
                             {
                                 throw new ArgumentException("群成员解析: 无法格式化群成员");
                             }
         
                             member = context.FetchMembers(uint.Parse(array[0])).Result
-                                .Find((BotGroupMember member) => member.Uin == long.Parse(array[1]));
-                            if (member == null) throw new ArgumentException("群成员解析: 无法格式化群成员");
+                                .Find(member => member.Uin == long.Parse(array[1]));
+                            if (member == null) 
+                                throw new ArgumentException("群成员解析: 无法格式化群成员");
                             objectArray = objectArray.Append(member)
                                 .ToArray();
-                            break;
+                            ++index;
+                            continue;
                         }
-                        else throw new ArgumentException($"无法解析的参数类型 {argType.Name}");
+                        else 
+                            throw new ArgumentException($"无法解析的参数类型 {argType.Name}");
 
                         index++;
                     }
@@ -188,13 +205,14 @@ public class CommandManager
                 }
                 catch (ArgumentException e)
                 {
-                    throw new ArgumentException($"位置 {index + 2} 的参数错误: {e.Message}");
+                    throw new ArgumentException($"位置 {index + 2} 的参数错误: {e.StackTrace.ToString()}");
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-                    throw new ArgumentException($"位置 {index + 2} 的参数错误");
+                    throw new ArgumentException($"位置 {index + 2} 的参数错误: ${e.StackTrace}");
                 }
 
+                Console.WriteLine($"{objectArray[2]} | {method.GetParameters().Length}");
                 method.Invoke(instance, objectArray);
             }
             catch (Exception e)

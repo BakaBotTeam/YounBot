@@ -6,7 +6,7 @@ namespace YounBot.Command.Implements;
 
 public class HttpCatCommand {
     private readonly CooldownUtils _cooldown = new(10000L);
-    [Command("httpcat", "Send cute http cat pictures")]
+    [Command("httpcat", "发送HttpCat图片")]
     public async void AcgPicture(BotContext context, MessageChain chain, int code)
     {
         var user = chain.FriendUin;
