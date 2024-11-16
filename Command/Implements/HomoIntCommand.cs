@@ -11,5 +11,4 @@ public class HomoIntCommand
     {
         await SendMessage(context, chain, getInt(number));
     }
-    
 }

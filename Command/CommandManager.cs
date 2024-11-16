@@ -57,28 +57,27 @@ public class CommandManager
         if (_commands.TryGetValue(commandName, out var command))
         {
             var (instance, method) = command;
-            string[] stringArray = args.Skip(1).ToArray();
-            object[] objectArray = new object[] { context, chain }.ToArray();
-            ParameterInfo[] argTypes = method.GetParameters().Skip(2).ToArray();
-            objectArray = new object[] { context, chain }.ToArray();
-            int index = 0;
+            var stringArray = args.Skip(1).ToArray();
+            var objectArray = new object[] { context, chain }.ToArray();
+            var argTypes = method.GetParameters().Skip(2).ToArray();
+            var index = 0;
             try
             {
                 try
                 {
-                    foreach (var _argType in argTypes)
+                    foreach (var type in argTypes)
                     {
-                        var argType = _argType.ParameterType;
+                        var argType = type.ParameterType;
                         if (argType == typeof(string))
                         {
                             var str = stringArray[index];
-                            if (str.StartsWith("\"") && str.EndsWith("\""))
+                            if (str.StartsWith('\"') && str.EndsWith('\"'))
                             {
                                 str = str.Substring(1, str.Length - 2);
                             }
-                            else if (str.StartsWith("\""))
+                            else if (str.StartsWith('\"'))
                             {
-                                while (!str.EndsWith("\""))
+                                while (!str.EndsWith('\"'))
                                 {
                                     index++;
                                     str += " " + stringArray[index];
@@ -115,8 +114,7 @@ public class CommandManager
                         }
                         else if (argType == typeof(BotGroupMember))
                         {
-                            string str = stringArray[index];
-                            Console.WriteLine(str);
+                            var str = stringArray[index];
                             if (str.StartsWith("@"))
                             {
                                 str = str.Substring(1);
@@ -124,8 +122,11 @@ public class CommandManager
 
                             if (str == "") 
                                 throw new ArgumentException("群成员解析: 无法格式化群成员");
-                            string[] array = str.Split(".");
-                            BotGroupMember member;
+                            var array = str.Split(".");
+                            BotGroupMember? member;
+                            uint memberUin;
+                            uint groupUin;
+                            
                             if (array.Length == 1)
                             {
                                 if (chain.GroupUin == null) 
@@ -142,13 +143,14 @@ public class CommandManager
             
                                 try
                                 {
-                                    uint.Parse(array[0]);
+                                    memberUin = uint.Parse(array[0]);
                                 } catch (FormatException)
                                 {
                                     throw new ArgumentException("群成员解析: 无法格式化群成员");
                                 }
+                                
                                 member = context.FetchMembers(chain.GroupUin!.Value).Result
-                                    .Find(groupMember => groupMember.Uin == long.Parse(array[0]));
+                                    .Find(groupMember => groupMember.Uin == memberUin);
                                 if (member == null) 
                                     throw new ArgumentException("群成员解析: 无法格式化群成员");
 
@@ -158,13 +160,13 @@ public class CommandManager
                                 continue;
                             } else if (array.Length >= 3) 
                                 throw new ArgumentException("群成员解析: 给予了太多参数");
-        
+                            
                             try
                             {
-                                uint.Parse(array[0]);
+                                groupUin = uint.Parse(array[0]);
                             } catch (FormatException)
                             {
-                                throw new ArgumentException("群成员解析: 无法格式化群成员");
+                                throw new ArgumentException("群解析: 无法格式化群");
                             }
         
                             if (array[1] == "$")
@@ -178,14 +180,14 @@ public class CommandManager
             
                             try
                             {
-                                uint.Parse(array[1]);
+                                memberUin = uint.Parse(array[1]);
                             } catch (FormatException)
                             {
                                 throw new ArgumentException("群成员解析: 无法格式化群成员");
                             }
         
-                            member = context.FetchMembers(uint.Parse(array[0])).Result
-                                .Find(member => member.Uin == long.Parse(array[1]));
+                            member = context.FetchMembers(groupUin).Result
+                                .Find(botMember => botMember.Uin == memberUin);
                             if (member == null) 
                                 throw new ArgumentException("群成员解析: 无法格式化群成员");
                             objectArray = objectArray.Append(member)
@@ -205,14 +207,13 @@ public class CommandManager
                 }
                 catch (ArgumentException e)
                 {
-                    throw new ArgumentException($"位置 {index + 2} 的参数错误: {e.StackTrace.ToString()}");
+                    throw new ArgumentException($"位置 {index + 2} 的参数错误: {e.Message}");
                 }
                 catch (Exception e)
                 {
-                    throw new ArgumentException($"位置 {index + 2} 的参数错误: ${e.StackTrace}");
+                    throw new ArgumentException($"位置 {index + 2} 的参数错误: ${e.Message}");
                 }
-
-                Console.WriteLine($"{objectArray[2]} | {method.GetParameters().Length}");
+                
                 method.Invoke(instance, objectArray);
             }
             catch (Exception e)
