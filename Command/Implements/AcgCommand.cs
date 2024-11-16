@@ -1,4 +1,5 @@
-﻿using Lagrange.Core;
+﻿using System.Threading.Tasks;
+using Lagrange.Core;
 using Lagrange.Core.Message;
 using static YounBot.Utils.MessageUtils;
 using YounBot.Utils;
@@ -9,7 +10,7 @@ public class AcgCommand
     private readonly CooldownUtils _cooldown = new(10000L);
     
     [Command("acg", "二次元图片")]
-    public async void AcgPicture(BotContext context, MessageChain chain)
+    public async Task AcgPicture(BotContext context, MessageChain chain)
     {
         var user = chain.FriendUin;
         if (!_cooldown.IsTimePassed(user))

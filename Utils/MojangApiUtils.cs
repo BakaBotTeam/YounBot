@@ -1,4 +1,6 @@
-﻿namespace YounBot.Utils;
+﻿using System.Threading.Tasks;
+
+namespace YounBot.Utils;
 
 public static class MojangApiUtils
 {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Lagrange.Core;
 using Lagrange.Core.Common.Entity;
 using Lagrange.Core.Common.Interface.Api;
@@ -10,13 +11,13 @@ using static MessageUtils;
 public class YounkooCommand
 {
     [Command("ping", "检查机器人是否在线吧")]
-    public async void Ping(BotContext context, MessageChain chain)
+    public async Task Ping(BotContext context, MessageChain chain)
     {
         await SendMessage(context, chain, "Pong!");
     }
     
     [Command("mute", "把某人的嘴巴用胶布粘上")]
-    public async void Mute(BotContext context, MessageChain chain, BotGroupMember member, string duration, string reason)
+    public async Task Mute(BotContext context, MessageChain chain, BotGroupMember member, string duration, string reason)
     {
         var time = TimeUtils.ParseDuration(duration).Seconds;
         await context.MuteGroupMember(chain.GroupUin!.Value, member.Uin,  (uint)time);
@@ -28,7 +29,7 @@ public class YounkooCommand
     }
     
     [Command("unmute", "把胶布从某人的嘴巴上撕下来")]
-    public async void UnMute(BotContext context, MessageChain chain, BotGroupMember member)
+    public async Task UnMute(BotContext context, MessageChain chain, BotGroupMember member)
     {
         await context.MuteGroupMember(chain.GroupUin!.Value, member.Uin,  0);
         await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)

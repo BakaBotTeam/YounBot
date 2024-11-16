@@ -1,4 +1,5 @@
-﻿using Lagrange.Core;
+﻿using System.Threading.Tasks;
+using Lagrange.Core;
 using Lagrange.Core.Message;
 using YounBot.Utils;
 using static YounBot.Utils.MessageUtils;
@@ -8,7 +9,7 @@ public class HttpCatCommand {
     private readonly CooldownUtils _cooldown = new(10000L);
     
     [Command("httpcat", "发送HttpCat图片")]
-    public async void AcgPicture(BotContext context, MessageChain chain, int code)
+    public async Task AcgPicture(BotContext context, MessageChain chain, int code)
     {
         var user = chain.FriendUin;
         if (!_cooldown.IsTimePassed(user))

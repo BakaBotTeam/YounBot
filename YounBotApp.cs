@@ -40,6 +40,12 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
     
     public Task Run()
     {
+        MessageFilter.MessageFilter.Init();
+        
+        // Client!.Invoker.OnGroupMessageReceived += async (context, @event) =>
+        // {
+        // };
+        
         Client!.Invoker.OnGroupMessageReceived += async (context, @event) =>
         {
             var text = MessageUtils.GetPlainText(@event.Chain);

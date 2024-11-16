@@ -32,7 +32,6 @@ public class CommandManager
     
     public void InitializeCommands()
     {
-        RegisterCommand(new RepeatCommand());
         RegisterCommand(new HomoIntCommand());
         RegisterCommand(new AcgCommand());
         RegisterCommand(new HttpCatCommand());
@@ -228,7 +227,7 @@ public class CommandManager
                     throw new ArgumentException($"位置 {index + 2} 的参数错误: ${e.Message}");
                 }
                 
-                method.Invoke(instance, objectArray);
+                Task.Run(async () => await (Task)(method.Invoke(instance, objectArray) ?? Task.CompletedTask)).GetAwaiter().GetResult();
             }
             catch (Exception e)
             {
