@@ -1,9 +1,11 @@
-﻿using Lagrange.Core.Message;
+﻿using Lagrange.Core;
+using Lagrange.Core.Common.Interface.Api;
+using Lagrange.Core.Message;
 using Lagrange.Core.Message.Entity;
 
 namespace YounBot.Utils;
 
-public class MessageUtils
+public static class MessageUtils
 {
     public static string GetPlainText(MessageChain chain)
     {
@@ -21,5 +23,17 @@ public class MessageUtils
         }
 
         return plainText;
+    }
+    
+    public static async Task SendMessage(BotContext context, MessageChain chain, string message, bool mention = false)
+    {
+        if (mention)
+        {
+            await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value).Mention(chain.FriendUin).Text($" {message}").Build());
+        }
+        else
+        {
+            await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value).Text(message).Build());
+        }
     }
 }

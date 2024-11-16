@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+﻿﻿using System.Globalization;
 using System.Reflection;
 using Lagrange.Core;
 using Lagrange.Core.Common.Entity;
@@ -29,6 +29,7 @@ public class CommandManager
     public void InitializeCommands()
     {
         RegisterCommand(new RepeatCommand());
+        RegisterCommand(new HomoIntCommand());
     }
     
     
@@ -135,7 +136,7 @@ public class CommandManager
                                     throw new ArgumentException("群成员解析: 无法格式化群成员");
                                 }
                                 member = context.FetchMembers(chain.GroupUin!.Value).Result
-                                    .Find((BotGroupMember member) => member.Uin == long.Parse(array[0]));
+                                    .Find(groupMember => groupMember.Uin == long.Parse(array[0]));
                                 if (member == null) throw new ArgumentException("群成员解析: 无法格式化群成员");
 
                                 objectArray = objectArray.Append(member)
@@ -199,27 +200,7 @@ public class CommandManager
                 context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value).Text($"指令运行错误: \n{e}").Build());
             }
         }
-        else
-        {
-            Console.WriteLine("Command not found.");
-        }
         
         return Task.CompletedTask;
     }
-
-    // public async Task ExecuteCommand(BotContext context, MessageChain chain, string message)
-    // {
-    //     if (message.Length > 1)
-    //     {
-    //         var args = message.Substring(1).Split(" ");
-    //         var command = GetCommand(args[0]);
-    //         if (command != null)
-    //         {
-    //             await command.Execute(context, chain, args.Skip(1).ToArray());
-    //         }
-    //     }
-    // }
-
-    // public Command? GetCommand(string prefix) => Commands.Find(command => command.Name.Equals(prefix));
-    
 }
