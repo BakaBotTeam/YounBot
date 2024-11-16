@@ -1,15 +1,16 @@
 ﻿using System;
 using System.IO;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Lagrange.Core;
 using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Message;
+using LiteDB;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using YounBot.Command;
 using YounBot.Config;
 using YounBot.Utils;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace YounBot;
 
@@ -18,6 +19,7 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
     public readonly IConfiguration Configuration = appBuilder.GetConfiguration();
     public BotContext? Client;
     public static YounBotConfig? Config;
+    public static LiteDatabase? DB;
     
     public Task Init()
     {
@@ -34,17 +36,18 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
         
         CommandManager.Instance.InitializeCommands();
         Config = appBuilder.GetYounBotConfig();
-
+        MessageFilter.MessageFilter.Init();
+        DB = new LiteDatabase("YounBot-MessageFilter.db");
+        
         return Task.CompletedTask;
     }
     
     public Task Run()
     {
-        MessageFilter.MessageFilter.Init();
-        
-        // Client!.Invoker.OnGroupMessageReceived += async (context, @event) =>
-        // {
-        // };
+        Client!.Invoker.OnGroupMessageReceived += async (context, @event) =>
+        {
+            await MessageFilter.MessageFilter.OnGroupMessage(context, @event);
+        };
         
         Client!.Invoker.OnGroupMessageReceived += async (context, @event) =>
         {

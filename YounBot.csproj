@@ -20,7 +20,9 @@
 
     <ItemGroup>
       <None Remove="Resources\appsettings.json" />
+      <None Remove="Resources\checker.txt" />
       <EmbeddedResource Include="Resources\appsettings.json" />
+      <EmbeddedResource Include="Resources\checker.txt" />
     </ItemGroup>
 
 </Project>

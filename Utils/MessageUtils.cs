@@ -26,6 +26,26 @@ public static class MessageUtils
         return plainText;
     }
     
+    public static string GetPlainTextForCheck(MessageChain chain)
+    {
+        var plainText = "";
+        foreach (var messageEntity in chain)
+        {
+            if (messageEntity is TextEntity)
+            {
+                plainText += messageEntity.ToPreviewText();
+            } else if (messageEntity is MultiMsgEntity)
+            {
+                foreach (var messageChain in (messageEntity as MultiMsgEntity)!.Chains)
+                {
+                    plainText += "\n" + GetPlainTextForCheck(messageChain);
+                }
+            }
+        }
+
+        return plainText;
+    }
+    
     public static async Task SendMessage(BotContext context, MessageChain chain, string message, bool mention = false)
     {
         if (mention)
