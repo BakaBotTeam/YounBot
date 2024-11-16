@@ -1,4 +1,7 @@
-﻿namespace YounBot.Utils;
+﻿using System;
+using System.Collections.Generic;
+
+namespace YounBot.Utils;
 
 public class CooldownUtils(long cooldown)
 {

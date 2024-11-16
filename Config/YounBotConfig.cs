@@ -1,4 +1,6 @@
-﻿namespace YounBot.Config;
+﻿using System;
+
+namespace YounBot.Config;
 
 [Serializable]
 public class YounBotConfig

@@ -1,4 +1,7 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.IO;
+using System.Text.Json;
+using System.Threading.Tasks;
 using Lagrange.Core;
 using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Message;
@@ -40,9 +43,10 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
         Client!.Invoker.OnGroupMessageReceived += async (context, @event) =>
         {
             var text = MessageUtils.GetPlainText(@event.Chain);
-            if (text.StartsWith("/"))
+            var commandPrefix = Configuration["CommandPrefix"] ?? "/"; // put here for auto reload
+            if (text.StartsWith(commandPrefix))
             {
-                await CommandManager.Instance.ExecuteCommand(context, @event.Chain, text);
+                await CommandManager.Instance.ExecuteCommand(context, @event.Chain, text.Substring(commandPrefix.Length));
             }
         };
 

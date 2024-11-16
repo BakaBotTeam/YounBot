@@ -1,4 +1,6 @@
-﻿namespace YounBot.Utils.Hypixel;
+﻿using System;
+
+namespace YounBot.Utils.Hypixel;
 
 public static class ExpCalculator
 {

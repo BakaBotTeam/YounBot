@@ -1,4 +1,6 @@
-﻿namespace YounBot.Utils;
+﻿using System;
+
+namespace YounBot.Utils;
 
 public static class HomoIntUtils
 {

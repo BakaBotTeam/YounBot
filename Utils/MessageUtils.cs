@@ -1,4 +1,5 @@
-﻿using Lagrange.Core;
+﻿using System.Threading.Tasks;
+using Lagrange.Core;
 using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Message;
 using Lagrange.Core.Message.Entity;

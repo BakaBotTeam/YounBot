@@ -1,7 +1,7 @@
-﻿using Lagrange.Core;
+﻿using System.Linq;
+using Lagrange.Core;
 using Lagrange.Core.Message;
 using static YounBot.Utils.MessageUtils;
-using static YounBot.Utils.HomoIntUtils;
 namespace YounBot.Command.Implements;
 
 public class HelpCommand

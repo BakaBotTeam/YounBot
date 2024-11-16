@@ -1,10 +1,12 @@
-﻿using Lagrange.Core;
+﻿using System;
+using Lagrange.Core;
 using Lagrange.Core.Common.Entity;
 using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Message;
+using YounBot.Utils;
 
 namespace YounBot.Command.Implements;
-using static Utils.MessageUtils;
+using static MessageUtils;
 public class YounkooCommand
 {
     [Command("ping", "检查机器人是否在线吧")]
@@ -14,9 +16,10 @@ public class YounkooCommand
     }
     
     [Command("mute", "把某人的嘴巴用胶布粘上")]
-    public async void Mute(BotContext context, MessageChain chain, BotGroupMember member, uint time, string reason)
+    public async void Mute(BotContext context, MessageChain chain, BotGroupMember member, string duration, string reason)
     {
-        await context.MuteGroupMember(chain.GroupUin!.Value, member.Uin,  time);
+        var time = TimeUtils.ParseDuration(duration).Seconds;
+        await context.MuteGroupMember(chain.GroupUin!.Value, member.Uin,  (uint)time);
         await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
             .Text("[滥权小助手] ").Mention(member.Uin)
             .Text($" 获得了来自 ").Mention(chain.FriendUin).Text(" 的禁言\n")

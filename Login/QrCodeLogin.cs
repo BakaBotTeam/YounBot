@@ -1,11 +1,8 @@
-﻿using Lagrange.Core;
+﻿using System.IO;
+using System.Threading.Tasks;
 using Lagrange.Core.Common;
 using Lagrange.Core.Common.Interface;
 using Lagrange.Core.Common.Interface.Api;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Console = System.Console;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace YounBot.Login;
 

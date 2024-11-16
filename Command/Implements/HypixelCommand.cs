@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Nodes;
+﻿using System;
+using System.Text.Json.Nodes;
 using Lagrange.Core;
 using Lagrange.Core.Message;
 using Lagrange.Core.Message.Entity;
@@ -53,38 +54,9 @@ public class HypixelCommand
             level = 1.0;
         }
 
-        string firstLogin;
-
-        try
-        {
-            firstLogin = TimeUtils.ConvertDate(playerInfo["firstLogin"]!.GetValue<long>());
-        }
-        catch (Exception)
-        {
-            firstLogin = "无法获取";
-        }
-        
-        string lastLogin;
-
-        try
-        {
-            lastLogin = TimeUtils.ConvertDate(playerInfo["lastLogin"]!.GetValue<long>());
-        }
-        catch (Exception)
-        {
-            lastLogin = "无法获取";
-        }        
-        
-        string lastLogout;
-
-        try
-        {
-            lastLogout = TimeUtils.ConvertDate(playerInfo["lastLogout"]!.GetValue<long>());
-        }
-        catch (Exception)
-        {
-            lastLogout = "无法获取";
-        }
+        string firstLogin = ConvertDate(playerInfo, "firstLogin");
+        string lastLogin = ConvertDate(playerInfo, "lastLogin");
+        string lastLogout = ConvertDate(playerInfo, "lastLogout");
 
         var statusInfo = HypixelApiUtils.RequestAsync($"/status?uuid={uuid}").Result["session"]!.AsObject();
         string stringOnlineStatus;
@@ -94,17 +66,8 @@ public class HypixelCommand
         }
         else
         {
-            stringOnlineStatus = "在线 ->";
-            try
-            {
-                stringOnlineStatus += HypixelApiUtils.ResolveGameType(statusInfo["gameType"]!.GetValue<string>());
-            }
-            catch (Exception)
-            {
-                stringOnlineStatus += "Lobby?";
-            }
+            stringOnlineStatus = "在线 -> " + HypixelApiUtils.ResolveGameType(GetString(statusInfo, "gameType", "Lobby?"));
         }
-        
     }
     
     public static double CalculatorR(int num1, int num2)
@@ -132,6 +95,18 @@ public class HypixelCommand
             return 0;
         }
     }
+    
+    public static int GetInt(JsonObject jsonObject, string key, int defaultValue)
+    {
+        try
+        {
+            return jsonObject[key]!.GetValue<int>();
+        }
+        catch (Exception)
+        {
+            return defaultValue;
+        }
+    }
 
     public static string GetStringOrNull(JsonObject jsonObject, string key)
     {
@@ -142,6 +117,30 @@ public class HypixelCommand
         catch (Exception)
         {
             return "Null";
+        }
+    }
+    
+    public static string GetString(JsonObject jsonObject, string key, string defaultValue)
+    {
+        try
+        {
+            return jsonObject[key]!.GetValue<string>();
+        }
+        catch (Exception)
+        {
+            return defaultValue;
+        }
+    }
+    
+    public static string ConvertDate(JsonObject jsonObject, string key)
+    {
+        try
+        {
+            return TimeUtils.ConvertDate(jsonObject[key]!.GetValue<long>());
+        }
+        catch (Exception)
+        {
+            return "无法获取";
         }
     }
 }

@@ -1,5 +1,9 @@
-﻿﻿using System.Reflection;
-using Lagrange.Core;
+﻿﻿using System;
+ using System.Collections.Generic;
+ using System.Linq;
+ using System.Reflection;
+ using System.Threading.Tasks;
+ using Lagrange.Core;
 using Lagrange.Core.Common.Entity;
 using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Message;
@@ -53,7 +57,7 @@ public class CommandManager
     
     public Task ExecuteCommand(BotContext context, MessageChain chain, string input)
     {
-        var args = input.Substring(1).Split(" ");
+        var args = input.Split(" ");
         var commandName = args[0].ToLower();
         if (_commands.TryGetValue(commandName, out var command))
         {
@@ -196,8 +200,16 @@ public class CommandManager
                             ++index;
                             continue;
                         }
-                        else 
-                            throw new ArgumentException($"无法解析的参数类型 {argType.Name}");
+                        else
+                        {
+                            try
+                            {
+                                objectArray = objectArray.Append(argType.GetMethod("Parse").Invoke(null, new object[] {stringArray[index]})).ToArray();
+                            } catch (Exception)
+                            {
+                                throw new ArgumentException($"无法解析参数 {argType.Name}");
+                            }
+                        }
 
                         index++;
                     }
