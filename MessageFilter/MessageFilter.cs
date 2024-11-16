@@ -72,7 +72,7 @@ public static class MessageFilter
         foreach (var pattern in regexes)
         {
             var regex = new Regex(pattern);
-            if (regex.IsMatch(text))
+            if (regex.IsMatch(text.Replace("\n", "").Replace(" ", "")))
             {
                 matcheds = true;
             }
