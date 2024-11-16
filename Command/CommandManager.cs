@@ -38,6 +38,7 @@ public class CommandManager
         RegisterCommand(new HttpCatCommand());
         RegisterCommand(new YounkooCommand());
         RegisterCommand(new HelpCommand());
+        RegisterCommand(new HypixelCommand());
     }
     
     
