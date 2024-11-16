@@ -30,6 +30,8 @@ public class CommandManager
     {
         RegisterCommand(new RepeatCommand());
         RegisterCommand(new HomoIntCommand());
+        RegisterCommand(new AcgCommand());
+        RegisterCommand(new HttpCatCommand());
     }
     
     

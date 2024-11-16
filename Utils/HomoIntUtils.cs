@@ -1,6 +1,6 @@
 ﻿namespace YounBot.Utils;
 
-public class HomoIntUtils
+public static class HomoIntUtils
 {
     private static NRandom nRandom = new(DateTime.Now.Millisecond);
 

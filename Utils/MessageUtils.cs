@@ -36,4 +36,16 @@ public static class MessageUtils
             await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value).Text(message).Build());
         }
     }
+    
+    public static async Task SendImage(BotContext context, MessageChain chain, byte[] imageBytes, bool mention = false)
+    {
+        if (mention)
+        {
+            await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value).Mention(chain.FriendUin).Image(imageBytes).Build());
+        }
+        else
+        {
+            await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value).Image(imageBytes).Build());
+        }
+    }
 }
