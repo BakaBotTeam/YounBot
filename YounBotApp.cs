@@ -44,10 +44,10 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
     
     public Task Run()
     {
-        Client!.Invoker.OnGroupMessageReceived += async (context, @event) =>
-        {
-            await MessageFilter.MessageFilter.OnGroupMessage(context, @event);
-        };
+        // Client!.Invoker.OnGroupMessageReceived += async (context, @event) =>
+        // {
+        //     await MessageFilter.MessageFilter.OnGroupMessage(context, @event);
+        // };
         
         Client!.Invoker.OnGroupMessageReceived += async (context, @event) =>
         {

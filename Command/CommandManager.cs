@@ -47,11 +47,11 @@ public class CommandManager
         foreach (var method in methods)
         {
             var attribute = method.GetCustomAttribute<CommandAttribute>();
-            if (attribute != null)
-            {
-                Descriptions[attribute.PrimaryName.ToLower()] = attribute.Description;
-                _commands[attribute.PrimaryName.ToLower()] = (commandClassInstance, method);
-            }
+            if (attribute == null) continue;
+            
+            Descriptions[attribute.PrimaryName.ToLower()] = attribute.Description;
+            _commands[attribute.PrimaryName.ToLower()] = (commandClassInstance, method);
+            
         }
     }
     
