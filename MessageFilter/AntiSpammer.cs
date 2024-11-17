@@ -22,9 +22,9 @@ public class AntiSpammer
     {
         try
         {
-            var selfPermission = context.FetchMembers((uint)@event.Chain.GroupUin).Result
-                .FindLast((member => member.Uin == context.BotUin)).Permission;
-            var targetPermission = @event.Chain.GroupMemberInfo.Permission;
+            var members = await context.FetchMembers(@event.Chain.GroupUin!.Value);
+            var selfPermission = members.FindLast(member => member.Uin == context.BotUin)!.Permission;
+            var targetPermission = @event.Chain.GroupMemberInfo!.Permission;
             if (selfPermission <= targetPermission)
             {
                 return;

@@ -46,10 +46,8 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
     {
         Client!.Invoker.OnGroupMessageReceived += async (context, @event) =>
         {
-            if (@event.Chain.FriendUin == context.BotUin) return;
-            await MessageFilter.AntiSpammer.OnGroupMessage(context, @event);
             if (!Config!.WorkersAiUrl!.Equals("http://0.0.0.0/")) 
-                await MessageFilter.AntiAd.OnGroupMessage(context, @event);
+                await MessageFilter.AntiSpammer.OnGroupMessage(context, @event);
         };
         
         Client!.Invoker.OnGroupMessageReceived += async (context, @event) =>
