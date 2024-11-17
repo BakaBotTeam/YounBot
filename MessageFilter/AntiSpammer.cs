@@ -13,6 +13,7 @@ public class AntiSpammer
 {
     private static readonly Dictionary<long, List<long>> LastMessageTimes = new();
     private static readonly Dictionary<long, List<long>> LastEmptyMessageTimes = new();
+    private static readonly Dictionary<long, List<uint>> LastEmptyMessageSeqs = new();
     private static readonly Dictionary<long, List<string>> LastMessages = new();
     private static readonly Dictionary<long, List<uint>> LastMessageSeqs = new();
     private static readonly Dictionary<long, long> LastMuteTime = new();
@@ -56,6 +57,11 @@ public class AntiSpammer
                 {
                     LastEmptyMessageTimes.Add(userUin, new List<long>());
                 }
+                if (!LastEmptyMessageSeqs.ContainsKey(userUin))
+                {
+                    LastEmptyMessageSeqs.Add(userUin, new List<uint>());
+                }
+                LastEmptyMessageSeqs[userUin].Add(@event.Chain.Sequence);
                 LastEmptyMessageTimes[userUin].Add(currentTime);
                 if (LastEmptyMessageTimes[userUin].Count > 3)
                 {
@@ -85,7 +91,13 @@ public class AntiSpammer
                                 .Text(" Flagged Spamming(C)")
                                 .Build());
                         }
+                        // recall all messages
+                        for (var i = 0; i < LastEmptyMessageSeqs[userUin].Count; i++)
+                        {
+                            await context.RecallGroupMessage(@event.Chain.GroupUin!.Value, LastEmptyMessageSeqs[userUin][i]);
+                        }
                         // clear history
+                        LastEmptyMessageSeqs[userUin].Clear();
                         LastEmptyMessageTimes[userUin].Clear();
                         return;
                     }
