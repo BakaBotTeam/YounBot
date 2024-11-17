@@ -175,7 +175,7 @@ public class AntiSpammer
                             LastMuteTime[userUin] = currentTime;
                             await context.SendMessage(MessageBuilder.Group(@event.Chain.GroupUin!.Value)
                                 .Text("[消息过滤器] ").Mention(userUin)
-                                .Text($" Flagged Spamming(B) | sl: {eightyPrecentMessageSimilarity}")
+                                .Text($" Flagged Spamming(B) | similarity: {eightyPrecentMessageSimilarity}")
                                 .Build());
                         }
                         // recall all messages
