@@ -114,12 +114,11 @@ public static class AntiAd
             if (results[0] == "true")
             {
                 var message = MessageBuilder.Group(@event.Chain.GroupUin!.Value)
-                    .Text("[违规检测] ").Mention(@event.Chain.FriendUin)
-                    .Text($" 消息被检测到违规\n")
-                    .Text($"违规类型: {results[1]}\n");
+                    .Text("[消息过滤器] ").Mention(@event.Chain.FriendUin)
+                    .Text($" Flagged FalseMessage({results[1]})");
                 if (!results[1].Contains("敏感"))
                 {
-                    message.Text($"判断理由: {results[2]}\n");
+                    message.Text($" due to {results[2]}");
                 }
 
                 var messageResult = await context.SendMessage(message.Build());
