@@ -1,44 +1,44 @@
 ﻿using System;
 
-namespace YounBot.Utils;
-
 public class LevenshteinDistance
 {
-    public static int Compute(string s, string t)
+    private static int GetLevenshteinDistance(string X, string Y)
     {
-        if (string.IsNullOrEmpty(s))
+        int m = X.Length;
+        int n = Y.Length;
+        int[,] T = new int[m + 1, n + 1];
+
+        for (int i = 1; i <= m; i++)
         {
-            return string.IsNullOrEmpty(t) ? 0 : t.Length;
+            T[i, 0] = i;
         }
 
-        if (string.IsNullOrEmpty(t))
+        for (int j = 1; j <= n; j++)
         {
-            return s.Length;
+            T[0, j] = j;
         }
 
-        var n = s.Length;
-        var m = t.Length;
-        var d = new int[n + 1, m + 1];
-
-        for (var i = 0; i <= n; d[i, 0] = i++)
+        int cost;
+        for (int i = 1; i <= m; i++)
         {
-        }
-
-        for (var j = 0; j <= m; d[0, j] = j++)
-        {
-        }
-
-        for (var i = 1; i <= n; i++)
-        {
-            for (var j = 1; j <= m; j++)
+            for (int j = 1; j <= n; j++)
             {
-                var cost = t[j - 1] == s[i - 1] ? 0 : 1;
-                d[i, j] = Math.Min(
-                    Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1),
-                    d[i - 1, j - 1] + cost);
+                cost = (X[i - 1] == Y[j - 1]) ? 0 : 1;
+                T[i, j] = Math.Min(Math.Min(T[i - 1, j] + 1, T[i, j - 1] + 1), T[i - 1, j - 1] + cost);
             }
         }
 
-        return d[n, m];
+        return T[m, n];
+    }
+
+    public static double FindSimilarity(string x, string y)
+    {
+        if (x == null || y == null)
+        {
+            throw new ArgumentException("Strings should not be null");
+        }
+
+        int maxLength = Math.Max(x.Length, y.Length);
+        return maxLength > 0 ? (maxLength * 1.0 - GetLevenshteinDistance(x, y)) / maxLength * 1.0 : 1.0;
     }
 }

@@ -156,7 +156,7 @@ public class AntiSpammer
                     var messageSimilarities = new List<double>();
                     for (var i = 1; i < LastMessages[userUin].Count; i++)
                     {
-                        messageSimilarities.Add(LevenshteinDistance.Compute(LastMessages[userUin][i], LastMessages[userUin][i - 1]));
+                        messageSimilarities.Add(LevenshteinDistance.FindSimilarity(LastMessages[userUin][i], LastMessages[userUin][i - 1]));
                     }
                     messageSimilarities.Sort();
                     for (var i = 0; i < messageSimilarities.Count; i++)
@@ -167,7 +167,7 @@ public class AntiSpammer
                         }
                     }
                     eightyPrecentMessageSimilarity /= messageSimilarities.Count * 0.8;
-                    if (eightyPrecentMessageDelay > 0.82)
+                    if (eightyPrecentMessageSimilarity > 0.76)
                     {
                         await context.MuteGroupMember(@event.Chain.GroupUin!.Value, userUin, 60);
                         if (LastMuteTime.ContainsKey(userUin) && currentTime - LastMuteTime[userUin] > 10000)
@@ -175,7 +175,7 @@ public class AntiSpammer
                             LastMuteTime[userUin] = currentTime;
                             await context.SendMessage(MessageBuilder.Group(@event.Chain.GroupUin!.Value)
                                 .Text("[消息过滤器] ").Mention(userUin)
-                                .Text(" Flagged Spamming(B)")
+                                .Text($" Flagged Spamming(B) | sl: {eightyPrecentMessageSimilarity}")
                                 .Build());
                         }
                         // recall all messages
