@@ -12,6 +12,7 @@ namespace YounBot.MessageFilter;
 public class AntiSpammer
 {
     private static readonly Dictionary<long, List<long>> LastMessageTimes = new();
+    private static readonly Dictionary<long, List<long>> LastEmptyMessageTimes = new();
     private static readonly Dictionary<long, List<string>> LastMessages = new();
     private static readonly Dictionary<long, List<uint>> LastMessageSeqs = new();
     private static readonly Dictionary<long, long> LastMuteTime = new();
@@ -47,13 +48,52 @@ public class AntiSpammer
             }
 
             var message = MessageUtils.GetPlainTextForCheck(@event.Chain);
+            var currentTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             
             if (message.Replace("\n", "").Replace(" ", "").Length < 1)
             {
+                if (!LastEmptyMessageTimes.ContainsKey(userUin))
+                {
+                    LastEmptyMessageTimes.Add(userUin, new List<long>());
+                }
+                LastEmptyMessageTimes[userUin].Add(currentTime);
+                if (LastEmptyMessageTimes[userUin].Count > 3)
+                {
+                    var eightyPrecentEmptyMessageDelay = 0L;
+                    var emptyMessageDelays = new List<long>();
+                    for (var i = 1; i < LastEmptyMessageTimes[userUin].Count; i++)
+                    {
+                        emptyMessageDelays.Add(LastEmptyMessageTimes[userUin][i] - LastEmptyMessageTimes[userUin][i - 1]);
+                    }
+                    emptyMessageDelays.Sort();
+                    for (var i = 0; i < emptyMessageDelays.Count; i++)
+                    {
+                        if (i < emptyMessageDelays.Count * 0.8)
+                        {
+                            eightyPrecentEmptyMessageDelay += emptyMessageDelays[i];
+                        }
+                    }
+                    eightyPrecentEmptyMessageDelay /= (long)(emptyMessageDelays.Count * 0.8);
+                    if (eightyPrecentEmptyMessageDelay < 500)
+                    {
+                        await context.MuteGroupMember(@event.Chain.GroupUin!.Value, userUin, 60);
+                        if (LastMuteTime.ContainsKey(userUin) && currentTime - LastMuteTime[userUin] > 10000)
+                        {
+                            LastMuteTime[userUin] = currentTime;
+                            await context.SendMessage(MessageBuilder.Group(@event.Chain.GroupUin!.Value)
+                                .Text("[消息过滤器] ").Mention(userUin)
+                                .Text(" Flagged Spamming(C)")
+                                .Build());
+                        }
+                        // clear history
+                        LastEmptyMessageTimes[userUin].Clear();
+                        return;
+                    }
+                }
+                
                 return;
             }
             
-            var currentTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             LastMessageTimes[userUin].Add(currentTime);
             LastMessages[userUin].Add(message);
             LastMessageSeqs[userUin].Add(@event.Chain.Sequence);
