@@ -42,7 +42,7 @@ public class YounkooCommand
             SaveConfig("younbot-config.json", YounBotApp.Config, true);
             await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
                 .Text("[滥权小助手] ").Mention(member.Uin)
-                .Text(" 被提升为管理员！ ").Build());
+                .Text(" 被取消管理员！ ").Build());
         }
     }
     
