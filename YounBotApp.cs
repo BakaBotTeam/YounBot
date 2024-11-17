@@ -36,7 +36,7 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
         
         CommandManager.Instance.InitializeCommands();
         Config = appBuilder.GetYounBotConfig();
-        MessageFilter.MessageFilter.Init();
+        MessageFilter.AntiAd.Init();
         DB = new LiteDatabase("YounBot-MessageFilter.db");
         
         return Task.CompletedTask;
@@ -46,8 +46,10 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
     {
         Client!.Invoker.OnGroupMessageReceived += async (context, @event) =>
         {
+            if (@event.Chain.FriendUin == context.BotUin) return;
+            await MessageFilter.AntiSpammer.OnGroupMessage(context, @event);
             if (!Config!.WorkersAiUrl!.Equals("http://0.0.0.0/")) 
-                await MessageFilter.MessageFilter.OnGroupMessage(context, @event);
+                await MessageFilter.AntiAd.OnGroupMessage(context, @event);
         };
         
         Client!.Invoker.OnGroupMessageReceived += async (context, @event) =>

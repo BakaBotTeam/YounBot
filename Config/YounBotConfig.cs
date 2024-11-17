@@ -1,4 +1,7 @@
-﻿namespace YounBot.Config;
+﻿using System;
+using System.Collections.Generic;
+
+namespace YounBot.Config;
 
 [Serializable]
 public class YounBotConfig
@@ -7,6 +10,7 @@ public class YounBotConfig
     public uint BotOwner { get; set; }
     public string? WorkersAiUrl { get; set; }
     public string? WorkersAiBasicAuth { get; set; }
+    public int MaxMessageCache { get; set; }
     public List<uint>? BotAdmins { get; set; }
     
     public static YounBotConfig NewConfig() => new()
@@ -15,6 +19,7 @@ public class YounBotConfig
         BotOwner = 0,
         WorkersAiUrl = "http://0.0.0.0/",
         WorkersAiBasicAuth = "username:password",
+        MaxMessageCache = 12,
         BotAdmins = new()
     };
 }

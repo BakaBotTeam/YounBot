@@ -14,10 +14,9 @@ using YounBot.Utils;
 
 namespace YounBot.MessageFilter;
 
-public static class MessageFilter
+public static class AntiAd
 {
     private static String[] regexes { get; set; }
-    private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
     
     public class CheckResult
     {
@@ -83,7 +82,6 @@ public static class MessageFilter
             return;
         };
 
-        await _semaphore.WaitAsync();
         try
         {
             // create message sha256 as message id
@@ -110,6 +108,7 @@ public static class MessageFilter
                 }
             }
 
+            Console.WriteLine(result.Result);
             var results = result.Result.Split("|");
             // format true|违规类型|判断理由 or false|无
             if (results[0] == "true")
@@ -122,6 +121,7 @@ public static class MessageFilter
                 {
                     message.Text($"判断理由: {results[2]}\n");
                 }
+
                 var messageResult = await context.SendMessage(message.Build());
                 try
                 {
@@ -140,9 +140,9 @@ public static class MessageFilter
             // store result at db
             collection.Upsert(result);
         }
-        finally
+        catch (Exception e)
         {
-            _semaphore.Release();
+            Console.WriteLine(e);
         }
     }
 }
