@@ -95,6 +95,7 @@ public class AntiSpammer
                         for (var i = 0; i < LastEmptyMessageSeqs[userUin].Count; i++)
                         {
                             await context.RecallGroupMessage(@event.Chain.GroupUin!.Value, LastEmptyMessageSeqs[userUin][i]);
+                            Thread.Sleep(500);
                         }
                         // clear history
                         LastEmptyMessageSeqs[userUin].Clear();
@@ -142,6 +143,7 @@ public class AntiSpammer
                     for (var i = 0; i < LastMessageSeqs[userUin].Count; i++)
                     {
                         await context.RecallGroupMessage(@event.Chain.GroupUin!.Value, LastMessageSeqs[userUin][i]);
+                        Thread.Sleep(500);
                     }
                     // clear history
                     LastMessageTimes[userUin].Clear();
@@ -182,6 +184,7 @@ public class AntiSpammer
                         for (var i = 0; i < LastMessageSeqs[userUin].Count; i++)
                         {
                             await context.RecallGroupMessage(@event.Chain.GroupUin!.Value, LastMessageSeqs[userUin][i]);
+                            Thread.Sleep(500);
                         }
                         // clear history
                         LastMessageTimes[userUin].Clear();
