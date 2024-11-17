@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json.Nodes;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Nodes;
 using Lagrange.Core;
 using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Message;
@@ -43,7 +39,7 @@ public class HypixelCommand
             : "离线";
 
         var playerName = (rank != null ? $"[{rank}]" : "") + $"{name}\n";
-        var basicBuilder = new MessageChain[]
+        var basicBuilder = new []
         {
             MessageBuilder.Group(chain.GroupUin!.Value).Text(
                 "Hypixel 玩家数据:\n" +
@@ -61,7 +57,7 @@ public class HypixelCommand
 
         basicBuilder = AppendStats(basicBuilder, chain.GroupUin!.Value, playerInfo);
 
-        await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value).MultiMsg(chain.GroupUin!.Value, basicBuilder).Build());
+        await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value).MultiMsg(basicBuilder).Build());
     }
 
     private static string? GetRank(JsonObject playerInfo)
@@ -98,7 +94,7 @@ public class HypixelCommand
                 { "SkyWars", AppendSkywarsStats },
                 { "Duels", AppendDuelsStats },
                 { "Walls3", AppendMegaWallsStats },
-                { "UHC", AppendUHCStats },
+                { "UHC", AppendUhcStats },
                 { "Arcade", AppendArcadeStats },
                 { "Pit", AppendPitStats }
             };
@@ -225,12 +221,12 @@ public class HypixelCommand
             $"Final Kill/Death: {mwStats.GetIntOrNull("final_kills")}/{mwStats.GetIntOrNull("final_deaths")} FKDR: {CalculatorR(mwStats.GetIntOrNull("final_kills"), mwStats.GetIntOrNull("final_deaths"))}\n" +
             "\n共计:\n" +
             $"造成了 {mwStats.GetIntOrNull("damage_dealt")} 伤害, 共有 {
-                ((JsonArray?)mwStats["packages"])?.Count
+                mwStats["packages"]?.AsArray().Count
             } 个 Packages"
         ).Time(DateTime.Now).Build()).ToArray();
     }
 
-    private static MessageChain[] AppendUHCStats(MessageChain[] basicBuilder, uint groupUin, JsonObject uhcStats)
+    private static MessageChain[] AppendUhcStats(MessageChain[] basicBuilder, uint groupUin, JsonObject uhcStats)
     {
         return basicBuilder.Append(MessageBuilder.Group(groupUin).Text("UHC 信息:\n" +
             $"硬币: {uhcStats.GetIntOrNull("coins")}\n" +
@@ -277,7 +273,7 @@ public class HypixelCommand
     {
         foreach (var key in ((IDictionary<string, JsonNode?>)pitStats).Keys)
         {
-            var pitProfileStats = pitStats[key].AsObject();
+            var pitProfileStats = pitStats[key]!.AsObject();
             if (key != "profile")
             {
                 basicBuilder = basicBuilder.Append(MessageBuilder.Group(groupUin).Text(
