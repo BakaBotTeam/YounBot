@@ -37,8 +37,7 @@ public class YounkooCommand
         if (IsBotOwner(chain))
         {
             if (YounBotApp.Config!.BotAdmins!.Contains(member.Uin)) 
-                YounBotApp.Config!.BotAdmins!.Add(member.Uin);
-            YounBotApp.Config!.BotAdmins!.Remove(member.Uin);
+                YounBotApp.Config!.BotAdmins!.Remove(member.Uin);
             SaveConfig("younbot-config.json", YounBotApp.Config, true);
             await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
                 .Text("[滥权小助手] ").Mention(member.Uin)
