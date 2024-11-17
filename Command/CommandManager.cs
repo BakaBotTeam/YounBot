@@ -1,9 +1,5 @@
-﻿﻿using System;
- using System.Collections.Generic;
- using System.Linq;
- using System.Reflection;
- using System.Threading.Tasks;
- using Lagrange.Core;
+﻿using System.Reflection;
+using Lagrange.Core;
 using Lagrange.Core.Common.Entity;
 using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Message;
@@ -204,7 +200,8 @@ public class CommandManager
                         {
                             try
                             {
-                                objectArray = objectArray.Append(argType.GetMethod("Parse").Invoke(null, new object[] {stringArray[index]})).ToArray();
+                                objectArray = objectArray.Append(argType.GetMethod("Parse")!
+                                    .Invoke(null, new object[] {stringArray[index]})!).ToArray();
                             } catch (Exception)
                             {
                                 throw new ArgumentException($"无法解析参数 {argType.Name}");

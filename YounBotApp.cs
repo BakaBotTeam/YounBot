@@ -1,12 +1,7 @@
-﻿using System;
-using System.IO;
-using System.Threading.Tasks;
-using Lagrange.Core;
+﻿using Lagrange.Core;
 using Lagrange.Core.Common.Interface.Api;
-using Lagrange.Core.Message;
 using LiteDB;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using YounBot.Command;
 using YounBot.Config;
 using YounBot.Utils;
@@ -16,10 +11,10 @@ namespace YounBot;
 
 public class YounBotApp(YounBotAppBuilder appBuilder)
 {
-    public readonly IConfiguration Configuration = appBuilder.GetConfiguration();
+    private readonly IConfiguration _configuration = appBuilder.GetConfiguration();
     public BotContext? Client;
     public static YounBotConfig? Config;
-    public static LiteDatabase? DB;
+    public static LiteDatabase? Db;
     
     public Task Init()
     {
@@ -27,17 +22,17 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
             Console.WriteLine(@event.ToString());
         };
         
-        Client!.Invoker.OnBotOnlineEvent += (_, @event) =>
+        Client!.Invoker.OnBotOnlineEvent += (_, _) =>
         {
             Console.WriteLine("Logged in successfully!");
             Client.UpdateKeystore();
-            File.WriteAllText(Configuration["ConfigPath:Keystore"] ?? "keystore.json", JsonSerializer.Serialize(appBuilder.GetKeystore()));
+            File.WriteAllText(_configuration["ConfigPath:Keystore"] ?? "keystore.json", JsonSerializer.Serialize(appBuilder.GetKeystore()));
         };
         
         CommandManager.Instance.InitializeCommands();
         Config = appBuilder.GetYounBotConfig();
         MessageFilter.AntiAd.Init();
-        DB = new LiteDatabase("YounBot-MessageFilter.db");
+        Db = new LiteDatabase("YounBot-MessageFilter.db");
         
         return Task.CompletedTask;
     }
@@ -55,7 +50,7 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
         Client!.Invoker.OnGroupMessageReceived += async (context, @event) =>
         {
             var text = MessageUtils.GetPlainText(@event.Chain);
-            var commandPrefix = Configuration["CommandPrefix"] ?? "/"; // put here for auto reload
+            var commandPrefix = _configuration["CommandPrefix"] ?? "/"; // put here for auto reload
             if (text.StartsWith(commandPrefix))
             {
                 await CommandManager.Instance.ExecuteCommand(context, @event.Chain, text.Substring(commandPrefix.Length));

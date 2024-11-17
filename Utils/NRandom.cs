@@ -2,40 +2,35 @@
 
 namespace YounBot.Utils;
 
-public class NRandom
+public class NRandom(long seed)
 {
-    private long seed;
+    private long _seed = seed;
 
-    public NRandom(long seed)
+    public double NextDouble()
     {
-        this.seed = seed;
+        return (((long)Next(26) << 27) + Next(27)) * Math.Pow(2, -53);
     }
 
-    public double nextDouble()
+    public double NextDouble(double min, double max)
     {
-        return (((long)next(26) << 27) + next(27)) * Math.Pow(2, -53);
+        return NextDouble() * (max - min) + min;
     }
 
-    public double nextDouble(double min, double max)
+    public double NextGaussian()
     {
-        return nextDouble() * (max - min) + min;
-    }
-
-    public double nextGaussian()
-    {
-        var u = nextDouble();
-        var v = nextDouble();
+        var u = NextDouble();
+        var v = NextDouble();
         return Math.Sqrt(-2 * Math.Log(u)) * Math.Cos(2 * Math.PI * v);
     }
 
-    public double nextGaussian(double mean, double std)
+    public double NextGaussian(double mean, double std)
     {
-        return nextGaussian() * std + mean;
+        return NextGaussian() * std + mean;
     }
 
-    private int next(int bits)
+    private int Next(int bits)
     {
-        seed = (seed * 0x5DEECE66DL + 0xBL) & ((1L << 48) - 1);
-        return (int)(seed >>> (48 - bits));
+        _seed = (_seed * 0x5DEECE66DL + 0xBL) & ((1L << 48) - 1);
+        return (int)(_seed >>> (48 - bits));
     }
 }

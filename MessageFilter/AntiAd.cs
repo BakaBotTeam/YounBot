@@ -18,7 +18,7 @@ public static class AntiAd
 {
     private static String[] regexes { get; set; }
     
-    public class CheckResult
+    private class CheckResult
     {
         public string Id { get; set; }
         public string Result { get; set; }
@@ -37,47 +37,46 @@ public static class AntiAd
         }
     }
     
-    public static string ComputeSha256Hash(string rawData)
+    private static string ComputeSha256Hash(string rawData)
     {
         // Create a SHA256 instance
-        using (SHA256 sha256Hash = SHA256.Create())
-        {
-            // Compute the hash as a byte array
-            byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(rawData));
+        using var sha256Hash = SHA256.Create();
+        
+        // Compute the hash as a byte array
+        var bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(rawData));
 
-            // Convert the byte array to a string
-            StringBuilder builder = new StringBuilder();
-            for (int i = 0; i < bytes.Length; i++)
-            {
-                builder.Append(bytes[i].ToString("x2"));
-            }
-            return builder.ToString();
+        // Convert the byte array to a string
+        var builder = new StringBuilder();
+        foreach (byte b in bytes)
+        { 
+            builder.Append(b.ToString("x2"));
         }
+        return builder.ToString();
     }
     
     public static async Task OnGroupMessage(BotContext context, GroupMessageEvent @event) 
     {
         // check permission
-        var selfPermission = context.FetchMembers((uint)@event.Chain.GroupUin).Result
-            .FindLast((member => member.Uin == context.BotUin)).Permission;
-        var targetPermission = @event.Chain.GroupMemberInfo.Permission;
+        var members = await context.FetchMembers(@event.Chain.GroupUin!.Value);
+        var selfPermission = members.FindLast(member => member.Uin == context.BotUin)!.Permission;
+        var targetPermission = @event.Chain.GroupMemberInfo!.Permission;
         if (selfPermission <= targetPermission)
         {
             return;
         }
         // check message
         var text = MessageUtils.GetPlainTextForCheck(@event.Chain);
-        var matcheds = false;
+        var matched = false;
         foreach (var pattern in regexes)
         {
             var regex = new Regex(pattern);
             if (regex.IsMatch(text.Replace("\n", "").Replace(" ", "")))
             {
-                matcheds = true;
+                matched = true;
             }
         }
 
-        if (!matcheds)
+        if (!matched)
         {
             return;
         };
@@ -88,7 +87,7 @@ public static class AntiAd
             var id = ComputeSha256Hash(text);
 
             // find db for id
-            var collection = YounBotApp.DB!.GetCollection<CheckResult>("check_result");
+            var collection = YounBotApp.Db!.GetCollection<CheckResult>("check_result");
             var result = collection.FindOne(x => x.Id == id);
 
             // if not found in db

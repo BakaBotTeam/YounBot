@@ -24,7 +24,7 @@ public class HttpUtils
         response.EnsureSuccessStatusCode();
 
         string raw = await response.Content.ReadAsStringAsync();
-        return (JsonObject) JsonObject.Parse(raw);
+        return JsonObject.Parse(raw).AsObject();
     }
     
     public static async Task<JsonArray> GetJsonArray(string url, string? auth = null)
@@ -41,6 +41,6 @@ public class HttpUtils
         response.EnsureSuccessStatusCode();
 
         string raw = await response.Content.ReadAsStringAsync();
-        return (JsonArray) JsonArray.Parse(raw);
+        return JsonArray.Parse(raw).AsArray();
     }
 }

@@ -1084,7 +1084,7 @@ public static class HomoIntUtils
             sum = "(" + getInt((long) temp1) + ")+(" + getInt(num - temp1) + ")";
         } else if (num < 229028) //10001~229028
         {
-            temp = (long) nRandom.nextDouble(Math.Sqrt(num) - 100, Math.Sqrt(num));
+            temp = (long) nRandom.NextDouble(Math.Sqrt(num) - 100, Math.Sqrt(num));
             div = num / temp;
             m = num % temp;
             sum = (div != 1) ? "(" + getInt(div) + ")*(" + getInt(temp) + ")" //乘数为1
