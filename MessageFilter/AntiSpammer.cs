@@ -45,10 +45,17 @@ public class AntiSpammer
             {
                 LastMuteTime.Add(userUin, 0);
             }
+
+            var message = MessageUtils.GetPlainTextForCheck(@event.Chain);
+            
+            if (message.Replace("\n", "").Replace(" ", "").Length < 1)
+            {
+                return;
+            }
             
             var currentTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             LastMessageTimes[userUin].Add(currentTime);
-            LastMessages[userUin].Add(MessageUtils.GetPlainTextForCheck(@event.Chain));
+            LastMessages[userUin].Add(message);
             LastMessageSeqs[userUin].Add(@event.Chain.Sequence);
             if (LastMessageTimes[userUin].Count > 1)
             {
