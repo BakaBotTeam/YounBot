@@ -88,7 +88,7 @@ public class AntiSpammer
                             LastMuteTime[userUin] = currentTime;
                             await context.SendMessage(MessageBuilder.Group(@event.Chain.GroupUin!.Value)
                                 .Text("[消息过滤器] ").Mention(userUin)
-                                .Text(" Flagged Spamming(C)")
+                                .Text($" Flagged Spamming(C) | delay: {eightyPrecentEmptyMessageDelay}")
                                 .Build());
                         }
                         // recall all messages
@@ -135,7 +135,7 @@ public class AntiSpammer
                         LastMuteTime[userUin] = currentTime;
                         await context.SendMessage(MessageBuilder.Group(@event.Chain.GroupUin!.Value)
                             .Text("[消息过滤器] ").Mention(userUin)
-                            .Text(" Flagged Spamming(A)")
+                            .Text($" Flagged Spamming(A) | delay: {eightyPrecentMessageDelay}")
                             .Build());
                     }
                     // recall all messages
