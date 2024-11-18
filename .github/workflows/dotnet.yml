@@ -21,6 +21,8 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
+    - name: GitTools
+      uses: GitTools/actions@v3.0.1
     - name: Restore dependencies
       run: dotnet restore
     - name: Build, Tests, Cover, Pack and Publish (on push tag)
