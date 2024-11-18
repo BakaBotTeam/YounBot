@@ -1,0 +1,8 @@
+# configuration file for dotnet-releaser
+[msbuild]
+project = "YounBot.sln"
+[github]
+user = "BakaBotTeam"
+repo = "YounBot"
+[nuget]
+publish = false
