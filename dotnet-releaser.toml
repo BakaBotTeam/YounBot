@@ -6,3 +6,9 @@ user = "BakaBotTeam"
 repo = "YounBot"
 [nuget]
 publish = false
+[[pack]]
+rid = ["win-x64"]
+kinds = ["zip"]
+[[pack]]
+rid = ["linux-x64"]
+kinds = ["tar"]
