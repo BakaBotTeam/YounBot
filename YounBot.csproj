@@ -19,9 +19,6 @@
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0-rc.2.24473.5" />
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0-rc.2.24473.5" />
       <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0-rc.2.24473.5" />
-      <PackageReference Include="GitVersion.MsBuild" Version="6.0.5">
-          <PrivateAssets>All</PrivateAssets>
-      </PackageReference>
     </ItemGroup>
 
     <ItemGroup>
