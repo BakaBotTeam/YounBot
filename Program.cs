@@ -2,7 +2,9 @@
 using System.Runtime;
 using System.Text;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using YounBot.Login;
+using YounBot.Utils;
 
 namespace YounBot;
 
@@ -28,6 +30,12 @@ class Program
             Console.WriteLine("Please Edit the appsettings.json to set configs and press any key to continue");
             Console.ReadLine();
         }
+        
+        // 输出GitVersionInformation
+        var assembly = Assembly.GetExecutingAssembly();
+        var assemblyName = assembly.GetName().Name;
+        var gitVersionInformationType = assembly.GetType("GitVersionInformation");
+        var fields = gitVersionInformationType.GetFields();
 
         // 创建IConfiguration实例
         var configurationBuilder = new ConfigurationBuilder()
@@ -42,6 +50,7 @@ class Program
 
         //登录
         await app.Init(appBuilder.GetConfig(), appBuilder.GetDeviceInfo(), appBuilder.GetKeystore());
+        LoggingUtils.CreateLogger().LogInformation("Running on YounBot " + assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion);
         await QrCodeLogin.Login(app);
         await app.Run();
     }
