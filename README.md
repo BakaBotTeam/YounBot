@@ -38,7 +38,7 @@ export default {
 
 ### Prerequisites
 
-- .NET 6.0
+- .NET 8.0
 
 ### Configuration
 
