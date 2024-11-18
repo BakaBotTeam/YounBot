@@ -3,6 +3,7 @@ using System.Runtime;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using YounBot.Login;
+
 namespace YounBot;
 
 class Program
@@ -40,8 +41,8 @@ class Program
         appBuilder.ConfigureBots();
 
         //登录
-        await QrCodeLogin.Login(app, appBuilder.GetConfig(), appBuilder.GetDeviceInfo(), appBuilder.GetKeystore());
-        await app.Init();
+        await app.Init(appBuilder.GetConfig(), appBuilder.GetDeviceInfo(), appBuilder.GetKeystore());
+        await QrCodeLogin.Login(app);
         await app.Run();
     }
 }

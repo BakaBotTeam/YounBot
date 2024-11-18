@@ -1,15 +1,12 @@
-﻿using System;
-using System.IO;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using Lagrange.Core;
 using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Event.EventArg;
 using Lagrange.Core.Message;
+using Microsoft.Extensions.Logging;
 using YounBot.Utils;
 
 namespace YounBot.MessageFilter;
@@ -91,23 +88,25 @@ public static class AntiAd
             var result = collection.FindOne(x => x.Id == id);
 
             // if not found in db
-            if (result == null)
-            {
-                Console.WriteLine("Start new check");
-                var invokeResult = await CloudFlareApiInvoker.InvokeAiTask(text);
-                result = new CheckResult();
-                result.Id = id;
-                result.Result = invokeResult;
-            }
-            else
-            {
-                if (result.Result.StartsWith("true"))
-                {
-                    Console.WriteLine("Cache hit");
-                }
-            }
+            // if (result == null)
+            // {
+            LoggingUtils.CreateLogger().LogInformation("Start new check");
+            var msg = MessageCache.GetCheckMessage(@event.Chain.GroupUin ?? 0, @event.Chain.FriendUin);
+            LoggingUtils.CreateLogger().LogInformation($"Check message: {msg}");
+            var invokeResult = await CloudFlareApiInvoker.InvokeAiTask(msg);
+            result = new CheckResult();
+            result.Id = id;
+            result.Result = invokeResult;
+            // }
+            // else
+            // {
+            //     if (result.Result.StartsWith("true"))
+            //     {
+            //         LoggingUtils.CreateLogger().LogInformation("Cache hit");
+            //     }
+            // }
 
-            Console.WriteLine(result.Result);
+            LoggingUtils.CreateLogger().LogInformation(result.Result);
             var results = result.Result.Split("|");
             // format true|违规类型|判断理由 or false|无
             if (results[0] == "true")
@@ -140,7 +139,7 @@ public static class AntiAd
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingUtils.CreateLogger().LogWarning(e.ToString());
         }
     }
 }

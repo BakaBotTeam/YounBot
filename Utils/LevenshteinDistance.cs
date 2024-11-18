@@ -1,4 +1,4 @@
-﻿using System;
+﻿namespace YounBot.Utils;
 
 public class LevenshteinDistance
 {

@@ -2,6 +2,7 @@
 using Lagrange.Core;
 using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Message;
+using Microsoft.Extensions.Logging;
 using YounBot.Utils;
 using YounBot.Utils.Hypixel;
 
@@ -52,7 +53,7 @@ public class HypixelCommand
                 $"上次登出: {lastLogout}\n" +
                 $"最近常玩: {HypixelApiUtils.ResolveGameType(playerInfo.GetStringOrNull("mostRecentGameType"))}\n" +
                 $"当前状态: {stringOnlineStatus}"
-            ).Time(DateTime.Now).Build()
+            ).Time(DateTime.MaxValue).Build()
         };
 
         basicBuilder = AppendStats(basicBuilder, chain.GroupUin!.Value, playerInfo);
@@ -108,7 +109,7 @@ public class HypixelCommand
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    LoggingUtils.CreateLogger().LogWarning(e.ToString());
                 }
             }
         }
@@ -133,7 +134,7 @@ public class HypixelCommand
                     bwStats.GetIntOrNull("deaths_bedwars")
                 )
             }\n" +
-            $"最终击杀/死亡数: {bwStats.GetIntOrNull("final_kills_bedwars")}/{bwStats.GetIntOrNull("final_deaths_bedwars")} FKDR: {CalculatorR(bwStats.GetIntOrNull("final_kills_bedwars"), bwStats.GetIntOrNull("final_deaths_bedwars"))}").Time(DateTime.Now).Build()).ToArray();
+            $"最终击杀/死亡数: {bwStats.GetIntOrNull("final_kills_bedwars")}/{bwStats.GetIntOrNull("final_deaths_bedwars")} FKDR: {CalculatorR(bwStats.GetIntOrNull("final_kills_bedwars"), bwStats.GetIntOrNull("final_deaths_bedwars"))}").Time(DateTime.MaxValue).Build()).ToArray();
     }
 
     private static MessageChain[] AppendSkywarsStats(MessageChain[] basicBuilder, uint groupUin, JsonObject swStats)
@@ -153,7 +154,7 @@ public class HypixelCommand
                     "chests_opened"
                 )
             } 个箱子"
-        ).Time(DateTime.Now).Build()).ToArray();
+        ).Time(DateTime.MaxValue).Build()).ToArray();
     }
 
     private static MessageChain[] AppendDuelsStats(MessageChain[] basicBuilder, uint groupUin, JsonObject duelStats)
@@ -193,7 +194,7 @@ public class HypixelCommand
                     "health_regenerated"
                 )
             } 血量"
-        ).Time(DateTime.Now).Build()).ToArray();
+        ).Time(DateTime.MaxValue).Build()).ToArray();
     }
 
     private static MessageChain[] AppendMegaWallsStats(MessageChain[] basicBuilder, uint groupUin, JsonObject mwStats)
@@ -223,7 +224,7 @@ public class HypixelCommand
             $"造成了 {mwStats.GetIntOrNull("damage_dealt")} 伤害, 共有 {
                 mwStats["packages"]?.AsArray().Count
             } 个 Packages"
-        ).Time(DateTime.Now).Build()).ToArray();
+        ).Time(DateTime.MaxValue).Build()).ToArray();
     }
 
     private static MessageChain[] AppendUhcStats(MessageChain[] basicBuilder, uint groupUin, JsonObject uhcStats)
@@ -236,7 +237,7 @@ public class HypixelCommand
             $"击杀/死亡: {uhcStats.GetIntOrNull("kills")}/{uhcStats.GetIntOrNull("deaths")} " +
             $"KDR: {CalculatorR(uhcStats.GetIntOrNull("kills"), uhcStats.GetIntOrNull("deaths"))}\n" +
             "\n共计:\n" +
-            $"共有 {((JsonArray?)uhcStats["packages"])?.Count} 个合成配方").Time(DateTime.Now).Build()).ToArray();
+            $"共有 {((JsonArray?)uhcStats["packages"])?.Count} 个合成配方").Time(DateTime.MaxValue).Build()).ToArray();
     }
 
     private static MessageChain[] AppendArcadeStats(MessageChain[] basicBuilder, uint groupUin, JsonObject arcadeStats)

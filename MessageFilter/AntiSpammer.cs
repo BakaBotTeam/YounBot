@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Lagrange.Core;
+﻿using Lagrange.Core;
 using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Event.EventArg;
 using Lagrange.Core.Message;
+using Microsoft.Extensions.Logging;
 using YounBot.Utils;
 
 namespace YounBot.MessageFilter;
@@ -197,7 +195,7 @@ public class AntiSpammer
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggingUtils.CreateLogger().LogWarning(e.ToString());
         }
     }
 }

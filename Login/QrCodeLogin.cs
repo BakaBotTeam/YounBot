@@ -1,21 +1,14 @@
-﻿using System.IO;
-using System.Threading.Tasks;
-using Lagrange.Core.Common;
-using Lagrange.Core.Common.Interface;
-using Lagrange.Core.Common.Interface.Api;
+﻿using Lagrange.Core.Common.Interface.Api;
 
 namespace YounBot.Login;
 
 public static class QrCodeLogin
 {
-    public static async Task Login(YounBotApp app, BotConfig config, BotDeviceInfo deviceInfo, BotKeystore keystore)
+    public static async Task Login(YounBotApp app)
     {
-        app.Client = BotFactory.Create(config, deviceInfo, keystore);
-        var client = app.Client;
-        
         if (!await app.Client.LoginByPassword())
         {
-            var qrCode = await client.FetchQrCode();
+            var qrCode = await app.Client.FetchQrCode();
 
             if (qrCode != null)
             {

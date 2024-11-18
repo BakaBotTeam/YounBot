@@ -1,37 +1,69 @@
 ﻿using Lagrange.Core;
+using Lagrange.Core.Common;
+using Lagrange.Core.Common.Interface;
 using Lagrange.Core.Common.Interface.Api;
 using LiteDB;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using YounBot.Command;
 using YounBot.Config;
+using YounBot.MessageFilter;
 using YounBot.Utils;
 using JsonSerializer = System.Text.Json.JsonSerializer;
+using LogLevel = Lagrange.Core.Event.EventArg.LogLevel;
 
 namespace YounBot;
 
 public class YounBotApp(YounBotAppBuilder appBuilder)
 {
-    private readonly IConfiguration _configuration = appBuilder.GetConfiguration();
+    public static IConfiguration Configuration;
     public BotContext? Client;
     public static YounBotConfig? Config;
     public static LiteDatabase? Db;
     
-    public Task Init()
+    public Task Init(BotConfig config, BotDeviceInfo deviceInfo, BotKeystore keystore)
     {
-        Client!.Invoker.OnBotLogEvent += (_, @event) => {
-            Console.WriteLine(@event.ToString());
+        Configuration = appBuilder.GetConfiguration();
+        Client = BotFactory.Create(config, deviceInfo, keystore);
+        Config = appBuilder.GetYounBotConfig();
+        
+        Client!.Invoker.OnBotLogEvent += (_, @event) =>
+        {
+            var logger = LoggingUtils.CreateLogger(@event.Tag);
+            switch (@event.Level)
+            {
+                case LogLevel.Debug:
+                    logger.LogDebug(@event.EventMessage);
+                    break;
+                case LogLevel.Verbose:
+                case LogLevel.Information:
+                    logger.LogInformation(@event.EventMessage);
+                    break;
+                case LogLevel.Warning:
+                    logger.LogWarning(@event.EventMessage);
+                    break;
+                case LogLevel.Exception:
+                    logger.LogError(@event.EventMessage);
+                    break;
+                case LogLevel.Fatal:
+                    logger.LogCritical(@event.EventMessage);
+                    break;
+            }
         };
         
         Client!.Invoker.OnBotOnlineEvent += (_, _) =>
         {
-            Console.WriteLine("Logged in successfully!");
             Client.UpdateKeystore();
-            File.WriteAllText(_configuration["ConfigPath:Keystore"] ?? "keystore.json", JsonSerializer.Serialize(appBuilder.GetKeystore()));
+            File.WriteAllText(Configuration["ConfigPath:Keystore"] ?? "keystore.json", JsonSerializer.Serialize(appBuilder.GetKeystore()));
         };
-        
+
+        Client!.Invoker.OnBotOfflineEvent += (_, @event) =>
+        {
+            LoggingUtils.CreateLogger().LogWarning($"机器人已下线 -> {@event.Message}");
+        };
+
         CommandManager.Instance.InitializeCommands();
-        Config = appBuilder.GetYounBotConfig();
-        MessageFilter.AntiAd.Init();
+        AntiAd.Init();
         Db = new LiteDatabase("YounBot-MessageFilter.db");
         
         return Task.CompletedTask;
@@ -42,15 +74,17 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
         Client!.Invoker.OnGroupMessageReceived += async (context, @event) =>
         {
             if (@event.Chain.FriendUin == context.BotUin) return;
-            await MessageFilter.AntiSpammer.OnGroupMessage(context, @event);
+            MessageCache.AddGroupMessage(@event.Chain.GroupUin??0,
+                $"{@event.Chain.GroupMemberInfo.MemberName}({@event.Chain.FriendUin}) -> {MessageUtils.GetPlainTextForCheck(@event.Chain)}");
+            await AntiSpammer.OnGroupMessage(context, @event);
             if (!Config!.WorkersAiUrl!.Equals("http://0.0.0.0/")) 
-                await MessageFilter.AntiAd.OnGroupMessage(context, @event);
+                await AntiAd.OnGroupMessage(context, @event);
         };
         
         Client!.Invoker.OnGroupMessageReceived += async (context, @event) =>
         {
             var text = MessageUtils.GetPlainText(@event.Chain);
-            var commandPrefix = _configuration["CommandPrefix"] ?? "/"; // put here for auto reload
+            var commandPrefix = Configuration["CommandPrefix"] ?? "/"; // put here for auto reload
             if (text.StartsWith(commandPrefix))
             {
                 await CommandManager.Instance.ExecuteCommand(context, @event.Chain, text.Substring(commandPrefix.Length));
