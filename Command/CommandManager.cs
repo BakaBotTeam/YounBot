@@ -34,6 +34,7 @@ public class CommandManager
         RegisterCommand(new YounkooCommand());
         RegisterCommand(new HelpCommand());
         RegisterCommand(new HypixelCommand());
+        RegisterCommand(new WynnCommand());
     }
     
     
