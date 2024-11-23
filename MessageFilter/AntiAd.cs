@@ -90,10 +90,8 @@ public static class AntiAd
             // if not found in db
             // if (result == null)
             // {
-            LoggingUtils.CreateLogger().LogInformation("Start new check");
-            var msg = MessageCache.GetCheckMessage(@event.Chain.GroupUin ?? 0, @event.Chain.FriendUin);
-            LoggingUtils.CreateLogger().LogInformation($"Check message: {msg}");
-            var invokeResult = await CloudFlareApiInvoker.InvokeAiTask(msg);
+            Console.WriteLine("Start new check");
+            var invokeResult = await CloudFlareApiInvoker.InvokeAiTask(text);
             result = new CheckResult();
             result.Id = id;
             result.Result = invokeResult;
@@ -102,7 +100,7 @@ public static class AntiAd
             // {
             //     if (result.Result.StartsWith("true"))
             //     {
-            //         LoggingUtils.CreateLogger().LogInformation("Cache hit");
+            //         Console.WriteLine("Cache hit");
             //     }
             // }
 
