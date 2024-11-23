@@ -18,7 +18,7 @@ public class PlayerCharacter
         public int blocksWalked { get; set; }
         public int? itemsIdentified { get; set; }
         public int logins { get; set; }
-        public int deaths { get; set; }
+        public int? deaths { get; set; }
         public int discoveries { get; set; }
         public PlayerPvP pvp { get; set; }
         public string[] gamemode { get; set; }
