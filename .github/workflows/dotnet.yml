@@ -68,7 +68,10 @@ jobs:
       shell: bash
       run: |
         dotnet tool install --global dotnet-releaser
-        dotnet-releaser changelog 
+        RELEASE_NOTES=$(dotnet-releaser changelog dotnet-releaser.toml)
+        echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
+        echo "$RELEASE_NOTES" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
     - name: List all binary files
       run: mkdir artifacts
     - name: Download all binary files
@@ -86,7 +89,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         tag_name: ${{ github.ref }}
         release_name: ${{ github.ref }}
-        body: ${{ steps.Generate release notes.output }}
+        body: ${{ env.RELEASE_NOTES }}
         draft: false
         prerelease: false
     - name: Create pre-release
@@ -98,6 +101,6 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         tag_name: latest
         release_name: Development Build
-        body: ${{ steps.Generate release notes.output }}
+        body: ${{ env.RELEASE_NOTES }}
         draft: false
         prerelease: true
