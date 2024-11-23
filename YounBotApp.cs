@@ -1,4 +1,4 @@
-﻿﻿using Lagrange.Core;
+﻿using Lagrange.Core;
 using Lagrange.Core.Common;
 using Lagrange.Core.Common.Interface;
 using Lagrange.Core.Common.Interface.Api;
@@ -74,8 +74,6 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
         Client!.Invoker.OnGroupMessageReceived += async (context, @event) =>
         {
             if (@event.Chain.FriendUin == context.BotUin) return;
-            MessageCache.AddGroupMessage(@event.Chain.GroupUin??0,
-                $"{@event.Chain.GroupMemberInfo.MemberName}({@event.Chain.FriendUin}) -> {MessageUtils.GetPlainTextForCheck(@event.Chain)}");
             await AntiSpammer.OnGroupMessage(context, @event);
             if (!Config!.WorkersAiUrl!.Equals("http://0.0.0.0/")) 
                 await AntiAd.OnGroupMessage(context, @event);
