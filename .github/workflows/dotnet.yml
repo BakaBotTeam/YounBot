@@ -68,11 +68,11 @@ jobs:
       shell: bash
       run: |
         dotnet tool install --global dotnet-releaser
-        RELEASE_NOTES=$(dotnet-releaser changelog dotnet-releaser.toml)
+        RELEASE_NOTES=$(dotnet-releaser changelog --github-token ${{ secrets.GITHUB_TOKEN }} dotnet-releaser.toml)
         echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
         echo "$RELEASE_NOTES" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
-    - name: List all binary files
+    - name: Make artifacts directory
       run: mkdir artifacts
     - name: Download all binary files
       uses: actions/download-artifact@v4
