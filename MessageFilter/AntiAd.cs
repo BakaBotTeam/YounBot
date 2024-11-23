@@ -14,6 +14,7 @@ namespace YounBot.MessageFilter;
 public static class AntiAd
 {
     private static String[] regexes { get; set; }
+    private static String[] bannableregexes { get; set; }
     
     private class CheckResult
     {
@@ -24,13 +25,21 @@ public static class AntiAd
     public static void Init()
     {
         var assem = Assembly.GetExecutingAssembly();
-        using var resourceStream = assem.GetManifestResourceStream("YounBot.Resources.checker.txt")!;
+        var resourceStream = assem.GetManifestResourceStream("YounBot.Resources.checker.txt")!;
         var reader = new StreamReader(resourceStream);
         var lines = reader.ReadToEnd().Split("\n");
         regexes = new String[lines.Length];
         for (var i = 0; i < lines.Length; i++)
         {
             regexes[i] = lines[i].Replace("\n", "").Replace("\r", "");
+        }
+        resourceStream = assem.GetManifestResourceStream("YounBot.Resources.bannable.txt")!;
+        reader = new StreamReader(resourceStream);
+        lines = reader.ReadToEnd().Split("\n");
+        bannableregexes = new String[lines.Length];
+        for (var i = 0; i < lines.Length; i++)
+        {
+            bannableregexes[i] = lines[i].Replace("\n", "").Replace("\r", "");
         }
     }
     
@@ -63,6 +72,18 @@ public static class AntiAd
         }
         // check message
         var text = MessageUtils.GetPlainTextForCheck(@event.Chain);
+        foreach (var keyword in bannableregexes)
+        {
+            if (text.Contains(keyword))
+            {
+                await context.RecallGroupMessage(@event.Chain.GroupUin!.Value, @event.Chain.Sequence);
+                var message = MessageBuilder.Group(@event.Chain.GroupUin!.Value)
+                    .Text("[消息过滤器] ").Mention(@event.Chain.FriendUin)
+                    .Text($" Flagged FalseMessage | 你在聊啥??!?!?!???!??!");
+                await context.MuteGroupMember(@event.Chain.GroupUin!.Value, @event.Chain.FriendUin, 3600);
+                return;
+            }
+        }
         var matched = false;
         foreach (var pattern in regexes)
         {

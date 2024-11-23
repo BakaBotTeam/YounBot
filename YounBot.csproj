@@ -27,8 +27,10 @@
     <ItemGroup>
       <None Remove="Resources\appsettings.json" />
       <None Remove="Resources\checker.txt" />
+      <None Remove="Resources\bannable.txt" />
       <EmbeddedResource Include="Resources\appsettings.json" />
       <EmbeddedResource Include="Resources\checker.txt" />
+      <EmbeddedResource Include="Resources\bannable.txt" />
     </ItemGroup>
 
 </Project>
