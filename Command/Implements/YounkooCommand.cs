@@ -86,4 +86,22 @@ public class YounkooCommand
                 .Text($" 获得了来自 ").Mention(chain.FriendUin).Text(" 的解除禁言\n").Build());
         }
     }
+    
+    [Command("status", "机器人状态")]
+    public async Task Status(BotContext context, MessageChain chain)
+    {
+        if (!HasPermission(chain))
+        {
+            await SendMessage(context, chain, "Bot is running.");
+            return;
+        }
+        await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+            .Text($"Uptime: {DateTimeOffset.Now.ToUnixTimeSeconds() - YounBotApp.UpTime!.Value}s\n")
+            .Text($"Bot Version: {YounBotApp.VERSION}\n")
+            .Text($"Receive pre min (1m/5m/10m): {MessageCounter.GetReceivedMessageLastMinutes()}/{MessageCounter.GetReceivedMessageLastMinutes(5)/5d}/{MessageCounter.GetReceivedMessageLastMinutes(10)/10d}\n")
+            .Text($"Sent pre min (1m/5m/10m): {MessageCounter.GetSentMessageLastMinutes()}/{MessageCounter.GetSentMessageLastMinutes(5)/5d}/{MessageCounter.GetSentMessageLastMinutes(10)/10d}\n")
+            .Text($"All receive/send: {MessageCounter.AllMessageReceived}/{MessageCounter.AllMessageSent}")
+            .Build()
+        );
+    }
 }

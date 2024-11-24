@@ -21,6 +21,7 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
     public static YounBotConfig? Config;
     public static LiteDatabase? Db;
     public static string VERSION;
+    public static long? UpTime;
     
     public Task Init(BotConfig config, BotDeviceInfo deviceInfo, BotKeystore keystore, string version)
     {
@@ -59,11 +60,12 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
         {
             Client.UpdateKeystore();
             File.WriteAllText(Configuration["ConfigPath:Keystore"] ?? "keystore.json", JsonSerializer.Serialize(appBuilder.GetKeystore()));
+            LoggingUtils.CreateLogger().LogInformation("Bot online");
         };
 
         Client!.Invoker.OnBotOfflineEvent += (_, @event) =>
         {
-            LoggingUtils.CreateLogger().LogWarning($"机器人已下线 -> {@event.Message}");
+            LoggingUtils.CreateLogger().LogWarning($"Bot offline -> {@event.Message}");
         };
 
         CommandManager.Instance.InitializeCommands();
@@ -75,6 +77,8 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
     
     public Task Run()
     {
+        MessageCounter.Init();
+        
         Client!.Invoker.OnGroupMessageReceived += async (context, @event) =>
         {
             if (@event.Chain.FriendUin == context.BotUin) return;
@@ -104,6 +108,8 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
                 LoggingUtils.CreateLogger().LogWarning(e.ToString());
             }
         };
+        
+        UpTime = DateTimeOffset.Now.ToUnixTimeSeconds();
 
         return Task.CompletedTask;
     }
