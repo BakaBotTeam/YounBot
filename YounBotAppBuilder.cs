@@ -48,6 +48,10 @@ public sealed class YounBotAppBuilder(IConfiguration configuration)
         SaveConfig(configPath, _younBotConfig);
         _younBotConfig = JsonSerializer.Deserialize<YounBotConfig>(File.ReadAllText(configPath)) ?? YounBotConfig.NewConfig();
         
+        if (_younBotConfig.BotAdmins == null) {
+            _younBotConfig.BotAdmins = new();
+        }
+        
     }
 
     public YounBotApp Build() => new(this);

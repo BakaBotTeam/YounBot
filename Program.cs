@@ -2,9 +2,7 @@
 using System.Runtime;
 using System.Text;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using YounBot.Login;
-using YounBot.Utils;
 
 namespace YounBot;
 
@@ -49,8 +47,7 @@ class Program
         appBuilder.ConfigureBots();
 
         //登录
-        await app.Init(appBuilder.GetConfig(), appBuilder.GetDeviceInfo(), appBuilder.GetKeystore());
-        LoggingUtils.CreateLogger().LogInformation("Running on YounBot " + assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion);
+        await app.Init(appBuilder.GetConfig(), appBuilder.GetDeviceInfo(), appBuilder.GetKeystore(), assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "Unknown");
         await QrCodeLogin.Login(app);
         await app.Run();
     }

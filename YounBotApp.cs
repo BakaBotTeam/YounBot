@@ -17,15 +17,19 @@ namespace YounBot;
 public class YounBotApp(YounBotAppBuilder appBuilder)
 {
     public static IConfiguration Configuration;
-    public BotContext? Client;
+    public static BotContext? Client;
     public static YounBotConfig? Config;
     public static LiteDatabase? Db;
+    public static string VERSION;
     
-    public Task Init(BotConfig config, BotDeviceInfo deviceInfo, BotKeystore keystore)
+    public Task Init(BotConfig config, BotDeviceInfo deviceInfo, BotKeystore keystore, string version)
     {
+        VERSION = version;
         Configuration = appBuilder.GetConfiguration();
         Client = BotFactory.Create(config, deviceInfo, keystore);
         Config = appBuilder.GetYounBotConfig();
+        
+        LoggingUtils.CreateLogger().LogInformation("Running on YounBot " + version);
         
         Client!.Invoker.OnBotLogEvent += (_, @event) =>
         {

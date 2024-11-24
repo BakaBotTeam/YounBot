@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Lagrange.Core;
+﻿using Lagrange.Core;
 using Lagrange.Core.Common.Entity;
 using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Message;
@@ -59,6 +57,21 @@ public class YounkooCommand
                 .Text($" 获得了来自 ").Mention(chain.FriendUin).Text(" 的禁言\n")
                 .Text($"时长: {Math.Round(time / 60.0 * 100.0) / 100.0} 分钟\n")
                 .Text($"理由: {reason}").Build());
+        }
+    }
+    
+    [Command("stop", "停止机器人")]
+    public async Task Stop(BotContext context, MessageChain chain)
+    {
+        if (IsBotOwner(chain))
+        {
+            await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+                .Text("Stopping YounBot " + YounBotApp.VERSION).Build());
+            SaveConfig("younbot-config.json", YounBotApp.Config!, true);
+            SaveConfig(YounBotApp.Configuration["ConfigPath:Keystore"] ?? "keystore.json", YounBotApp.Client!.UpdateKeystore());
+            SaveConfig(YounBotApp.Configuration["ConfigPath:DeviceInfo"] ?? "device.json", YounBotApp.Client!.UpdateDeviceInfo());
+            YounBotApp.Db!.Dispose();
+            YounBotApp.Client!.Dispose();
         }
     }
 
