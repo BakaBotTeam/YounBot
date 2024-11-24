@@ -19,7 +19,7 @@ public class AltCommand
         
         try
         {
-            var friend = (await context.FetchFriends()).FindLast(f => f.Uin == user);
+            var friend = (await context.FetchFriends()).FindLast(f => f.Uin == user) ?? (await context.FetchFriends(true)).FindLast(f => f.Uin == user);
             
             if (friend == null)
             {
