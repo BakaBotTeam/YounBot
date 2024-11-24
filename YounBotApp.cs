@@ -88,6 +88,18 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
                 await CommandManager.Instance.ExecuteCommand(context, @event.Chain, text.Substring(commandPrefix.Length));
             }
         };
+        
+        Client!.Invoker.OnFriendRequestEvent += async (context, @event) =>
+        {
+            try
+            {
+                await context.SetFriendRequest(@event);
+            }
+            catch (Exception e)
+            {
+                LoggingUtils.CreateLogger().LogWarning(e.ToString());
+            }
+        };
 
         return Task.CompletedTask;
     }
