@@ -229,7 +229,12 @@ public class CommandManager
             }
             catch (Exception e)
             {
-                context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value).Text($"指令运行错误: \n{e}").Build());
+                context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value).Text($"指令运行错误: \n{e.Message}").Build());
+                context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value).MultiMsg(new []
+                {
+                    MessageBuilder.Friend(context.BotUin).Text("堆载信息: ").Time(DateTime.MaxValue).Build(),
+                    MessageBuilder.Friend(context.BotUin).Text(e.ToString()).Time(DateTime.MaxValue).Build()
+                }).Build());
             }
         }
         
