@@ -1,4 +1,5 @@
-﻿using Lagrange.Core;
+﻿using System.Diagnostics;
+using Lagrange.Core;
 using Lagrange.Core.Common;
 using Lagrange.Core.Common.Interface;
 using Lagrange.Core.Common.Interface.Api;
@@ -77,24 +78,25 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
     
     public Task Run()
     {
-        MessageCounter.Init();
+        Hookers.Init();
         
         Client!.Invoker.OnGroupMessageReceived += async (context, @event) =>
         {
+            var stopwatch = Stopwatch.StartNew();
+            MessageCounter.AddMessageReceived(DateTimeOffset.Now.ToUnixTimeSeconds());
             if (@event.Chain.FriendUin == context.BotUin) return;
             await AntiSpammer.OnGroupMessage(context, @event);
             if (!Config!.WorkersAiUrl!.Equals("http://0.0.0.0/")) 
                 await AntiAd.OnGroupMessage(context, @event);
-        };
-        
-        Client!.Invoker.OnGroupMessageReceived += async (context, @event) =>
-        {
+            
             var text = MessageUtils.GetPlainText(@event.Chain);
             var commandPrefix = Configuration["CommandPrefix"] ?? "/"; // put here for auto reload
             if (text.StartsWith(commandPrefix))
             {
                 await CommandManager.Instance.ExecuteCommand(context, @event.Chain, text.Substring(commandPrefix.Length));
             }
+            stopwatch.Stop();
+            InformationCollector.MessageInvokeCount[DateTimeOffset.Now.ToUnixTimeMilliseconds()] = stopwatch.ElapsedMilliseconds;
         };
         
         Client!.Invoker.OnFriendRequestEvent += async (context, @event) =>
