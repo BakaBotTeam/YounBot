@@ -8,6 +8,7 @@ namespace YounBot.Utils
     {
         // logger cache dictonary with tag name
         private static readonly ConcurrentDictionary<string, ILogger> Loggers = new();
+        public static ILogger Logger = CreateLogger();
 
         public static ILogger CreateLogger()
         {

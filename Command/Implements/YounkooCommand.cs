@@ -98,10 +98,10 @@ public class YounkooCommand
         await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
             .Text($"Uptime: {DateTimeOffset.Now.ToUnixTimeSeconds() - YounBotApp.UpTime!.Value}s\n")
             .Text($"Bot Version: {YounBotApp.VERSION}\n")
-            .Text($"Receive pre min (1m/5m/10m): {MessageCounter.GetReceivedMessageLastMinutes()}/{MessageCounter.GetReceivedMessageLastMinutes(5)/5d}/{MessageCounter.GetReceivedMessageLastMinutes(10)/10d}\n")
+            .Text($"Receive pre min (1m/5m/10m): {MessageCounter.GetReceivedMessageLastMinutes()}/{Math.Round(MessageCounter.GetReceivedMessageLastMinutes(5)/5d, 2)}/{Math.Round(MessageCounter.GetReceivedMessageLastMinutes(10) / 10d, 2)}\n")
             .Text($"Sent pre min (1m/5m/10m): {MessageCounter.GetSentMessageLastMinutes()}/{MessageCounter.GetSentMessageLastMinutes(5)/5d}/{MessageCounter.GetSentMessageLastMinutes(10)/10d}\n")
             .Text($"All receive/send: {MessageCounter.AllMessageReceived}/{MessageCounter.AllMessageSent}\n")
-            .Text($"Avg invoke time (ms) (1m/5m/10m): {InformationCollector.GetAvgMessageInvokeCountMinutes()}/{InformationCollector.GetAvgMessageInvokeCountMinutes(5)}/{InformationCollector.GetAvgMessageInvokeCountMinutes(10)}\n")
+            .Text($"Avg invoke time (ms) (10m): {InformationCollector.GetAvgMessageInvokeCountMinutes(10)}")
             .Build()
         );
     }

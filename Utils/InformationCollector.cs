@@ -9,6 +9,6 @@ public class InformationCollector
         var now = DateTimeOffset.Now.ToUnixTimeSeconds();
         var count = MessageInvokeCount.Count(time => time.Key >= now - (60 * minutes));
         var sum = MessageInvokeCount.Where(time => time.Key >= now - (60 * minutes)).Sum(time => time.Value);
-        return (double)sum / count;
+        return Math.Round((double)sum / count, 2);
     }
 }

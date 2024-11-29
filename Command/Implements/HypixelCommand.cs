@@ -109,7 +109,7 @@ public class HypixelCommand
                 }
                 catch (Exception e)
                 {
-                    LoggingUtils.CreateLogger().LogWarning(e.ToString());
+                    LoggingUtils.Logger.LogWarning(e.ToString());
                 }
             }
         }

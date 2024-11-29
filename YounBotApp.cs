@@ -31,7 +31,7 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
         Client = BotFactory.Create(config, deviceInfo, keystore);
         Config = appBuilder.GetYounBotConfig();
         
-        LoggingUtils.CreateLogger().LogInformation("Running on YounBot " + version);
+        LoggingUtils.Logger.LogInformation("Running on YounBot " + version);
         
         Client!.Invoker.OnBotLogEvent += (_, @event) =>
         {
@@ -61,16 +61,32 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
         {
             Client.UpdateKeystore();
             File.WriteAllText(Configuration["ConfigPath:Keystore"] ?? "keystore.json", JsonSerializer.Serialize(appBuilder.GetKeystore()));
-            LoggingUtils.CreateLogger().LogInformation("Bot online");
+            LoggingUtils.Logger.LogInformation("Bot online");
         };
 
         Client!.Invoker.OnBotOfflineEvent += (_, @event) =>
         {
-            LoggingUtils.CreateLogger().LogWarning($"Bot offline -> {@event.Message}");
+            LoggingUtils.Logger.LogWarning($"Bot offline -> {@event.Message}");
+        };
+        
+        Client.Invoker.OnBotCaptchaEvent += async (_, args) =>
+        {
+            LoggingUtils.Logger.LogWarning($"Captcha: {args.Url}");
+
+            await Task.Run(() =>
+            {
+                LoggingUtils.Logger.LogWarning("Please input ticket:");
+                var ticket = Console.ReadLine();
+                LoggingUtils.Logger.LogWarning("Please input randomString:");
+                var randomString = Console.ReadLine();
+
+                if (ticket != null && randomString != null) Client.SubmitCaptcha(ticket, randomString);
+            });
         };
 
         CommandManager.Instance.InitializeCommands();
         AntiAd.Init();
+        AntiBannableMessage.Init();
         Db = new LiteDatabase("YounBot-MessageFilter.db");
         
         return Task.CompletedTask;
@@ -86,6 +102,7 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
             MessageCounter.AddMessageReceived(DateTimeOffset.Now.ToUnixTimeSeconds());
             if (@event.Chain.FriendUin == context.BotUin) return;
             await AntiSpammer.OnGroupMessage(context, @event);
+            await AntiBannableMessage.OnGroupMessage(context, @event);
             if (!Config!.WorkersAiUrl!.Equals("http://0.0.0.0/")) 
                 await AntiAd.OnGroupMessage(context, @event);
             
@@ -107,7 +124,22 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
             }
             catch (Exception e)
             {
-                LoggingUtils.CreateLogger().LogWarning(e.ToString());
+                LoggingUtils.Logger.LogWarning(e.ToString());
+            }
+        };
+
+        Client!.Invoker.OnGroupInvitationReceived += async (context, @event) =>
+        {
+            if (@event.InvitorUin != Config!.BotOwner) return;
+            try
+            {
+                LoggingUtils.Logger.LogInformation($"Received group invitation: {@event}");
+                var invitation = (await context.FetchGroupRequests())!.FindLast(x => x.GroupUin == @event.GroupUin && x.InvitorMemberUin == @event.InvitorUin)!;
+                await context.SetGroupRequest(invitation, true);
+            } 
+            catch (Exception e)
+            {
+                LoggingUtils.Logger.LogWarning(e.ToString());
             }
         };
         
