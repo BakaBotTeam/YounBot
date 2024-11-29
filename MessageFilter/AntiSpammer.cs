@@ -46,6 +46,14 @@ public class AntiSpammer
             {
                 LastMuteTime.Add(userUin, 0);
             }
+            
+            // if stored 8 messages, remove the oldest one
+            if (LastMessages[userUin].Count > 8)
+            {
+                LastMessages[userUin].RemoveAt(0);
+                LastMessageTimes[userUin].RemoveAt(0);
+                LastMessageSeqs[userUin].RemoveAt(0);
+            }
 
             var message = MessageUtils.GetPlainTextForCheck(@event.Chain);
             var currentTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
@@ -59,6 +67,12 @@ public class AntiSpammer
                 if (!LastEmptyMessageSeqs.ContainsKey(userUin))
                 {
                     LastEmptyMessageSeqs.Add(userUin, new List<uint>());
+                }
+                // if stored 8 messages, remove the oldest one
+                if (LastEmptyMessageTimes[userUin].Count > 8)
+                {
+                    LastEmptyMessageTimes[userUin].RemoveAt(0);
+                    LastEmptyMessageSeqs[userUin].RemoveAt(0);
                 }
                 LastEmptyMessageSeqs[userUin].Add(@event.Chain.Sequence);
                 LastEmptyMessageTimes[userUin].Add(currentTime);
