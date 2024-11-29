@@ -17,6 +17,7 @@ public class AntiSpammer
     private static readonly Dictionary<long, long> LastMuteTime = new();
     private static readonly long AllowDelay = 1000;
     private static readonly int MaxMessageStore = 16;
+    private static readonly int MaxTextMessageStore = 16;
     
     public static async Task OnGroupMessage(BotContext context, GroupMessageEvent @event)
     {
@@ -48,7 +49,7 @@ public class AntiSpammer
                 LastMuteTime.Add(userUin, 0);
             }
             
-            if (LastMessages[userUin].Count > MaxMessageStore)
+            if (LastMessages[userUin].Count > MaxTextMessageStore)
             {
                 LastMessages[userUin].RemoveAt(0);
             }
@@ -82,8 +83,6 @@ public class AntiSpammer
                 }
                 LastEmptyMessageSeqs[userUin].Add(@event.Chain.Sequence);
                 LastEmptyMessageTimes[userUin].Add(currentTime);
-                LastMessageTimes[userUin].Add(currentTime);
-                LastMessageSeqs[userUin].Add(@event.Chain.Sequence);
                 if (LastEmptyMessageTimes[userUin].Count > 3)
                 {
                     var eightyPrecentEmptyMessageDelay = 0L;
