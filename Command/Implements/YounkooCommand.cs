@@ -2,6 +2,7 @@
 using Lagrange.Core.Common.Entity;
 using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Message;
+using LiteDB;
 using YounBot.Permissions;
 using YounBot.Utils;
 
@@ -115,6 +116,29 @@ public class YounkooCommand
         {
             uint _group = (group != 0) ? group : chain.GroupUin!.Value;
             await context.KickGroupMember(_group, member.Uin, false, reason);
+        }
+    }
+    
+    [Command("blacklist", "黑名单")]
+    public async Task Blacklist(BotContext context, MessageChain chain, BotGroupMember member, uint group = 0, string reason = "No reason")
+    {
+        if (HasPermission(chain))
+        {
+            ILiteCollection<BsonValue>? collection = YounBotApp.Db!.GetCollection<BsonValue>("blacklist");
+            // find if the user is in the blacklist
+            if (collection.Exists(x => x == new BsonValue(member.Uin)))
+            {
+                collection.Delete(new BsonValue(member.Uin));
+                await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+                    .Text("已移除 ").Build());
+            }
+            else
+            {
+                collection.Insert(new BsonValue(member.Uin));
+                await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+                    .Text("[滥权小助手] ").Mention(member.Uin)
+                    .Text("已添加").Build());
+            }
         }
     }
 }

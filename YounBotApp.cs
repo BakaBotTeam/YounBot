@@ -88,7 +88,7 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
         CommandManager.Instance.InitializeCommands();
         AntiAd.Init();
         AntiBannableMessage.Init();
-        Db = new LiteDatabase("YounBot-MessageFilter.db");
+        Db = new LiteDatabase("YounBot.db");
         
         return Task.CompletedTask;
     }
@@ -107,6 +107,8 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
             if (!Config!.WorkersAiUrl!.Equals("http://0.0.0.0/")) 
                 await AntiAd.OnGroupMessage(context, @event);
             
+            ILiteCollection<BsonValue>? collection = Db!.GetCollection<BsonValue>("blacklist");
+            if (collection.Exists(x => x == new BsonValue(@event.Chain.FriendUin))) return;
             string text = MessageUtils.GetPlainText(@event.Chain);
             string commandPrefix = Configuration["CommandPrefix"] ?? "/"; // put here for auto reload
             if (text.StartsWith(commandPrefix))
