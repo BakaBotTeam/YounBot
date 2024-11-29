@@ -107,8 +107,8 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
             if (!Config!.WorkersAiUrl!.Equals("http://0.0.0.0/")) 
                 await AntiAd.OnGroupMessage(context, @event);
             
-            ILiteCollection<BsonValue>? collection = Db!.GetCollection<BsonValue>("blacklist");
-            if (collection.Exists(x => x == new BsonValue(@event.Chain.FriendUin))) return;
+            // ILiteCollection<BsonValue>? collection = Db!.GetCollection<BsonValue>("blacklist");
+            // if (collection.Exists(x => x == new BsonValue(@event.Chain.FriendUin.ToString()))) return;
             string text = MessageUtils.GetPlainText(@event.Chain);
             string commandPrefix = Configuration["CommandPrefix"] ?? "/"; // put here for auto reload
             if (text.StartsWith(commandPrefix))
