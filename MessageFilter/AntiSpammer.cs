@@ -15,7 +15,8 @@ public class AntiSpammer
     private static readonly Dictionary<long, List<string>> LastMessages = new();
     private static readonly Dictionary<long, List<uint>> LastMessageSeqs = new();
     private static readonly Dictionary<long, long> LastMuteTime = new();
-    private static readonly long allowDelay = 1000;
+    private static readonly long AllowDelay = 1000;
+    private static readonly int MaxMessageStore = 16;
     
     public static async Task OnGroupMessage(BotContext context, GroupMessageEvent @event)
     {
@@ -47,16 +48,15 @@ public class AntiSpammer
                 LastMuteTime.Add(userUin, 0);
             }
             
-            // if stored 8 messages, remove the oldest one
-            if (LastMessages[userUin].Count > 8)
+            if (LastMessages[userUin].Count > MaxMessageStore)
             {
                 LastMessages[userUin].RemoveAt(0);
             }
-            if (LastMessageTimes[userUin].Count > 8)
+            if (LastMessageTimes[userUin].Count > MaxMessageStore)
             {
                 LastMessageTimes[userUin].RemoveAt(0);
             }
-            if (LastMessageSeqs[userUin].Count > 8)
+            if (LastMessageSeqs[userUin].Count > MaxMessageStore)
             {
                 LastMessageSeqs[userUin].RemoveAt(0);
             }
@@ -75,7 +75,7 @@ public class AntiSpammer
                     LastEmptyMessageSeqs.Add(userUin, new List<uint>());
                 }
                 // if stored 8 messages, remove the oldest one
-                if (LastEmptyMessageTimes[userUin].Count > 8)
+                if (LastEmptyMessageTimes[userUin].Count > MaxMessageStore)
                 {
                     LastEmptyMessageTimes[userUin].RemoveAt(0);
                     LastEmptyMessageSeqs[userUin].RemoveAt(0);
@@ -101,7 +101,7 @@ public class AntiSpammer
                         }
                     }
                     eightyPrecentEmptyMessageDelay /= (long)(emptyMessageDelays.Count * 0.8);
-                    if (eightyPrecentEmptyMessageDelay < allowDelay)
+                    if (eightyPrecentEmptyMessageDelay < AllowDelay)
                     {
                         await context.MuteGroupMember(@event.Chain.GroupUin!.Value, userUin, 60);
                         if (LastMuteTime.ContainsKey(userUin) && currentTime - LastMuteTime[userUin] > 10000)
@@ -151,7 +151,7 @@ public class AntiSpammer
                 }
                 eightyPrecentMessageDelay /= (long)(messageDelays.Count * 0.8);
 
-                if (eightyPrecentMessageDelay < allowDelay)
+                if (eightyPrecentMessageDelay < AllowDelay)
                 {
                     await context.MuteGroupMember(@event.Chain.GroupUin!.Value, userUin, 60);
                     if (LastMuteTime.ContainsKey(userUin) && currentTime - LastMuteTime[userUin] > 10000)
@@ -182,7 +182,12 @@ public class AntiSpammer
                     var messageSimilarities = new List<double>();
                     for (var i = 1; i < LastMessages[userUin].Count; i++)
                     {
-                        messageSimilarities.Add(LevenshteinDistance.FindSimilarity(LastMessages[userUin][i], LastMessages[userUin][i - 1]));
+                        // find most similar message from all messages
+                        var maxSimilarity = 0.0;
+                        foreach (var _msg in LastMessages[userUin])
+                        {
+                            maxSimilarity = Math.Max(maxSimilarity, LevenshteinDistance.FindSimilarity(LastMessages[userUin][i], _msg));
+                        }
                     }
                     messageSimilarities.Sort();
                     for (var i = 0; i < messageSimilarities.Count; i++)
