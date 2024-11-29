@@ -15,6 +15,7 @@ public class AntiSpammer
     private static readonly Dictionary<long, List<string>> LastMessages = new();
     private static readonly Dictionary<long, List<uint>> LastMessageSeqs = new();
     private static readonly Dictionary<long, long> LastMuteTime = new();
+    private static readonly long allowDelay = 1000;
     
     public static async Task OnGroupMessage(BotContext context, GroupMessageEvent @event)
     {
@@ -78,7 +79,7 @@ public class AntiSpammer
                         }
                     }
                     eightyPrecentEmptyMessageDelay /= (long)(emptyMessageDelays.Count * 0.8);
-                    if (eightyPrecentEmptyMessageDelay < 500)
+                    if (eightyPrecentEmptyMessageDelay < allowDelay)
                     {
                         await context.MuteGroupMember(@event.Chain.GroupUin!.Value, userUin, 60);
                         if (LastMuteTime.ContainsKey(userUin) && currentTime - LastMuteTime[userUin] > 10000)
@@ -89,15 +90,16 @@ public class AntiSpammer
                                 .Text($" Flagged Spamming(C) | delay: {eightyPrecentEmptyMessageDelay}")
                                 .Build());
                         }
-                        // recall all messages
-                        for (var i = 0; i < LastEmptyMessageSeqs[userUin].Count; i++)
-                        {
-                            await context.RecallGroupMessage(@event.Chain.GroupUin!.Value, LastEmptyMessageSeqs[userUin][i]);
-                            Thread.Sleep(500);
-                        }
+                        // recall all messages, copy list to avoid concurrent modification
+                        var emptyMessageSeqs = LastEmptyMessageSeqs[userUin].ToList();
                         // clear history
                         LastEmptyMessageSeqs[userUin].Clear();
                         LastEmptyMessageTimes[userUin].Clear();
+                        for (var i = 0; i < emptyMessageSeqs.Count; i++)
+                        {
+                            await context.RecallGroupMessage(@event.Chain.GroupUin!.Value, emptyMessageSeqs[i]);
+                            Thread.Sleep(500);
+                        }
                         return;
                     }
                 }
@@ -126,7 +128,7 @@ public class AntiSpammer
                 }
                 eightyPrecentMessageDelay /= (long)(messageDelays.Count * 0.8);
 
-                if (eightyPrecentMessageDelay < 500)
+                if (eightyPrecentMessageDelay < allowDelay)
                 {
                     await context.MuteGroupMember(@event.Chain.GroupUin!.Value, userUin, 60);
                     if (LastMuteTime.ContainsKey(userUin) && currentTime - LastMuteTime[userUin] > 10000)
@@ -137,16 +139,17 @@ public class AntiSpammer
                             .Text($" Flagged Spamming(A) | delay: {eightyPrecentMessageDelay}")
                             .Build());
                     }
-                    // recall all messages
-                    for (var i = 0; i < LastMessageSeqs[userUin].Count; i++)
-                    {
-                        await context.RecallGroupMessage(@event.Chain.GroupUin!.Value, LastMessageSeqs[userUin][i]);
-                        Thread.Sleep(500);
-                    }
+                    // recall all messages, copy list to avoid concurrent modification
+                    var messageSeqs = LastMessageSeqs[userUin].ToList();
                     // clear history
                     LastMessageTimes[userUin].Clear();
                     LastMessages[userUin].Clear();
                     LastMessageSeqs[userUin].Clear();
+                    for (var i = 0; i < messageSeqs.Count; i++)
+                    {
+                        await context.RecallGroupMessage(@event.Chain.GroupUin!.Value, messageSeqs[i]);
+                        Thread.Sleep(500);
+                    }
                     return;
                 }
                 
@@ -178,16 +181,17 @@ public class AntiSpammer
                                 .Text($" Flagged Spamming(B) | similarity: {eightyPrecentMessageSimilarity}")
                                 .Build());
                         }
-                        // recall all messages
-                        for (var i = 0; i < LastMessageSeqs[userUin].Count; i++)
-                        {
-                            await context.RecallGroupMessage(@event.Chain.GroupUin!.Value, LastMessageSeqs[userUin][i]);
-                            Thread.Sleep(500);
-                        }
+                        // recall all messages, copy list to avoid concurrent modification
+                        var messageSeqs = LastMessageSeqs[userUin].ToList();
                         // clear history
                         LastMessageTimes[userUin].Clear();
                         LastMessages[userUin].Clear();
                         LastMessageSeqs[userUin].Clear();
+                        for (var i = 0; i < messageSeqs.Count; i++)
+                        {
+                            await context.RecallGroupMessage(@event.Chain.GroupUin!.Value, messageSeqs[i]);
+                            Thread.Sleep(500);
+                        }
                         return;
                     }
                 }
