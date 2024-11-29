@@ -37,6 +37,16 @@ public class CommandManager
         RegisterCommand(new WynnCommand());
         RegisterCommand(new AltCommand());
     }
+
+    public string GetCommandArgs(string commandName)
+    {
+        if (!_commands.TryGetValue(commandName, out var command)) return "";
+        var (instance, method) = command;
+        var args = method.GetParameters().Skip(2);
+        return string.Join(" ", args.Select(arg =>
+            arg.IsOptional ? $"[{arg.Name}]" : $"<{arg.Name}>"
+        ));
+    }
     
     
     private void RegisterCommand(object commandClassInstance)
