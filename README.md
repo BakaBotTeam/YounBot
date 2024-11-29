@@ -26,7 +26,7 @@ export default {
         { role: 'user', content: content || "Hello!~" }
       ]
     };
-    let response = await env.AI.run('@cf/qwen/qwen1.5-7b-chat-awq', chat);
+    let response = await env.AI.run('@cf/meta/llama-3.2-11b-vision-instruct', chat);
     tasks.push({ inputs: chat, response });
 
     return Response.json(tasks);
