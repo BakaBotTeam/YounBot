@@ -51,7 +51,13 @@ public class AntiSpammer
             if (LastMessages[userUin].Count > 8)
             {
                 LastMessages[userUin].RemoveAt(0);
+            }
+            if (LastMessageTimes[userUin].Count > 8)
+            {
                 LastMessageTimes[userUin].RemoveAt(0);
+            }
+            if (LastMessageSeqs[userUin].Count > 8)
+            {
                 LastMessageSeqs[userUin].RemoveAt(0);
             }
 
@@ -76,6 +82,8 @@ public class AntiSpammer
                 }
                 LastEmptyMessageSeqs[userUin].Add(@event.Chain.Sequence);
                 LastEmptyMessageTimes[userUin].Add(currentTime);
+                LastMessageTimes[userUin].Add(currentTime);
+                LastMessageSeqs[userUin].Add(@event.Chain.Sequence);
                 if (LastEmptyMessageTimes[userUin].Count > 3)
                 {
                     var eightyPrecentEmptyMessageDelay = 0L;
@@ -117,12 +125,13 @@ public class AntiSpammer
                         return;
                     }
                 }
-                
-                return;
+            }
+            else
+            {
+                LastMessages[userUin].Add(message);
             }
             
             LastMessageTimes[userUin].Add(currentTime);
-            LastMessages[userUin].Add(message);
             LastMessageSeqs[userUin].Add(@event.Chain.Sequence);
             if (LastMessageTimes[userUin].Count > 1)
             {
