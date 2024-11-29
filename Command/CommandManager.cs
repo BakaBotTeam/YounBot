@@ -82,6 +82,11 @@ public class CommandManager
                     {
                         try
                         {
+                            if (type.IsOptional && stringArray[index] == "-")
+                            {
+                                index++;
+                                continue;
+                            }
                             Type argType = type.ParameterType;
                             if (argType == typeof(string))
                             {
