@@ -20,12 +20,12 @@ public sealed class YounBotAppBuilder(IConfiguration configuration)
     
     public void ConfigureBots()
     {
-        var keystorePath = configuration["ConfigPath:Keystore"] ?? "keystore.json";
-        var deviceInfoPath = configuration["ConfigPath:DeviceInfo"] ?? "device.json";
-        var configPath = "younbot-config.json";
+        string keystorePath = configuration["ConfigPath:Keystore"] ?? "keystore.json";
+        string deviceInfoPath = configuration["ConfigPath:DeviceInfo"] ?? "device.json";
+        string configPath = "younbot-config.json";
             
 
-        bool isSuccess = Enum.TryParse<Protocols>(configuration["Account:Protocol"], out var protocol);
+        bool isSuccess = Enum.TryParse<Protocols>(configuration["Account:Protocol"], out Protocols protocol);
         
         _botConfig = new BotConfig
         {

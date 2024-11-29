@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace YounBot.Utils;
+﻿namespace YounBot.Utils;
 
 public class NRandom(long seed)
 {
@@ -18,8 +16,8 @@ public class NRandom(long seed)
 
     public double NextGaussian()
     {
-        var u = NextDouble();
-        var v = NextDouble();
+        double u = NextDouble();
+        double v = NextDouble();
         return Math.Sqrt(-2 * Math.Log(u)) * Math.Cos(2 * Math.PI * v);
     }
 

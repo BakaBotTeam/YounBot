@@ -40,9 +40,9 @@ public class CommandManager
 
     public string GetCommandArgs(string commandName)
     {
-        if (!_commands.TryGetValue(commandName, out var command)) return "";
-        var (instance, method) = command;
-        var args = method.GetParameters().Skip(2);
+        if (!_commands.TryGetValue(commandName, out (object Instance, MethodInfo Method) command)) return "";
+        (object instance, MethodInfo method) = command;
+        IEnumerable<ParameterInfo> args = method.GetParameters().Skip(2);
         return string.Join(" ", args.Select(arg =>
             arg.IsOptional ? $"[{arg.Name}]" : $"<{arg.Name}>"
         ));
@@ -51,10 +51,10 @@ public class CommandManager
     
     private void RegisterCommand(object commandClassInstance)
     {
-        var methods = commandClassInstance.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance);
-        foreach (var method in methods)
+        MethodInfo[] methods = commandClassInstance.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance);
+        foreach (MethodInfo method in methods)
         {
-            var attribute = method.GetCustomAttribute<CommandAttribute>();
+            CommandAttribute? attribute = method.GetCustomAttribute<CommandAttribute>();
             if (attribute == null) continue;
             
             Descriptions[attribute.PrimaryName.ToLower()] = attribute.Description;
@@ -65,27 +65,27 @@ public class CommandManager
     
     public Task ExecuteCommand(BotContext context, MessageChain chain, string input)
     {
-        var args = input.Split(" ");
-        var commandName = args[0].ToLower();
-        if (_commands.TryGetValue(commandName, out var command))
+        string[] args = input.Split(" ");
+        string commandName = args[0].ToLower();
+        if (_commands.TryGetValue(commandName, out (object Instance, MethodInfo Method) command))
         {
-            var (instance, method) = command;
-            var stringArray = args.Skip(1).ToArray();
-            var objectArray = new object[] { context, chain }.ToArray();
-            var argTypes = method.GetParameters().Skip(2).ToArray();
-            var index = 0;
+            (object instance, MethodInfo method) = command;
+            string[] stringArray = args.Skip(1).ToArray();
+            object[] objectArray = new object[] { context, chain }.ToArray();
+            ParameterInfo[] argTypes = method.GetParameters().Skip(2).ToArray();
+            int index = 0;
             try
             {
                 try
                 {
-                    foreach (var type in argTypes)
+                    foreach (ParameterInfo type in argTypes)
                     {
                         try
                         {
-                            var argType = type.ParameterType;
+                            Type argType = type.ParameterType;
                             if (argType == typeof(string))
                             {
-                                var str = stringArray[index];
+                                string str = stringArray[index];
                                 if (str.StartsWith('\"') && str.EndsWith('\"'))
                                 {
                                     str = str.Substring(1, str.Length - 2);
@@ -129,7 +129,7 @@ public class CommandManager
                             }
                             else if (argType == typeof(BotGroupMember))
                             {
-                                var str = stringArray[index];
+                                string str = stringArray[index];
                                 if (str.StartsWith('@'))
                                 {
                                     str = str.Substring(1);
@@ -137,7 +137,7 @@ public class CommandManager
 
                                 if (str == "") 
                                     throw new ArgumentException("群成员解析: 无法格式化群成员");
-                                var array = str.Split(".");
+                                string[] array = str.Split(".");
                                 BotGroupMember? member;
                                 uint memberUin;
                                 uint groupUin;
@@ -149,7 +149,7 @@ public class CommandManager
 
                                     if (array[0] == "$")
                                     {
-                                        var members = context.FetchMembers(chain.GroupUin!.Value).Result;
+                                        List<BotGroupMember> members = context.FetchMembers(chain.GroupUin!.Value).Result;
                                         objectArray = objectArray.Append(members[new Random().Next(members.Count)])
                                             .ToArray();
                                         ++index;
@@ -186,7 +186,7 @@ public class CommandManager
         
                                 if (array[1] == "$")
                                 {
-                                    var members = context.FetchMembers(chain.GroupUin!.Value).Result;
+                                    List<BotGroupMember> members = context.FetchMembers(chain.GroupUin!.Value).Result;
                                     objectArray = objectArray.Append(members[new Random().Next(members.Count)])
                                         .ToArray();
                                     ++index;

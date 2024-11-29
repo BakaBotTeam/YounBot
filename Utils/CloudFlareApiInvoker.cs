@@ -1,18 +1,12 @@
-﻿using System;
-using System.Buffers.Text;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace YounBot.Utils;
+﻿namespace YounBot.Utils;
 
 public static class CloudFlareApiInvoker
 {
     public static async Task<string> InvokeAiTask(string content, int maxRetries = 3, int delayMilliseconds = 1000)
     {
-        var basicAuth = YounBotApp.Config!.WorkersAiBasicAuth;
-        var url = YounBotApp.Config!.WorkersAiUrl;
-        var attempt = 0;
+        string? basicAuth = YounBotApp.Config!.WorkersAiBasicAuth;
+        string? url = YounBotApp.Config!.WorkersAiUrl;
+        int attempt = 0;
 
         while (attempt < maxRetries)
         {

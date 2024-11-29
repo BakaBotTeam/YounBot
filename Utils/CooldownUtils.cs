@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace YounBot.Utils;
+﻿namespace YounBot.Utils;
 
 public class CooldownUtils(long cooldown)
 {
@@ -20,7 +17,7 @@ public class CooldownUtils(long cooldown)
 
     public bool IsTimePassed(object target, long time)
     {
-        if (!_cooldownMap.TryGetValue(target, out var t)) return true;
+        if (!_cooldownMap.TryGetValue(target, out long t)) return true;
         if (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - t >= time) return true;
         return false;
     }
@@ -43,7 +40,7 @@ public class CooldownUtils(long cooldown)
 
     private long GetLeftTime(object target, long time)
     {
-        if (!_cooldownMap.TryGetValue(target, out var t)) return -1;
+        if (!_cooldownMap.TryGetValue(target, out long t)) return -1;
         return time - (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - t);
     }
 

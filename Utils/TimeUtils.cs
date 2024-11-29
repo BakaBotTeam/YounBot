@@ -1,5 +1,4 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace YounBot.Utils;
@@ -9,7 +8,7 @@ public static class TimeUtils
     {
         try
         {
-            var dateTime = DateTimeOffset.FromUnixTimeMilliseconds(dateInMilliseconds).ToOffset(TimeSpan.FromHours(8)).DateTime;
+            DateTime dateTime = DateTimeOffset.FromUnixTimeMilliseconds(dateInMilliseconds).ToOffset(TimeSpan.FromHours(8)).DateTime;
 
             return dateTime.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture);
         }
@@ -21,8 +20,8 @@ public static class TimeUtils
     
     public static TimeSpan ParseDuration(string input)
     {
-        var regex = new Regex(@"((?<weeks>\d+)w)?((?<days>\d+)d)?((?<hours>\d+)h)?((?<minutes>\d+)m)?((?<seconds>\d+)s)?");
-        var match = regex.Match(input);
+        Regex regex = new Regex(@"((?<weeks>\d+)w)?((?<days>\d+)d)?((?<hours>\d+)h)?((?<minutes>\d+)m)?((?<seconds>\d+)s)?");
+        Match match = regex.Match(input);
 
         if (!match.Success)
         {

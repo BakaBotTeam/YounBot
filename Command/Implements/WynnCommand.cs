@@ -3,6 +3,8 @@ using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Message;
 using YounBot.WynnCraftAPI4CSharp;
 using YounBot.WynnCraftAPI4CSharp.Model.Player;
+using YounBot.WynnCraftAPI4CSharp.Model.Player.Character;
+using YounBot.WynnCraftAPI4CSharp.Selection.Player;
 
 namespace YounBot.Command.Implements;
 
@@ -12,18 +14,18 @@ public class WynnCommand
     [Command("wynncraft", "WynnCraft玩家信息")]
     public async Task WynnCraft(BotContext context, MessageChain chain, string name)
     {
-        var playerSelection = (await _wynnCraftApi.Player.GetPlayer(name))!;
-        var player = playerSelection.player!;
+        PlayerSelection? playerSelection = (await _wynnCraftApi.Player.GetPlayer(name))!;
+        Player player = playerSelection.player!;
         
-        var rank = player.GetPlayerRank();
-        var online = player.online;
-        var firstJoin = player.firstJoin;
-        var lastJoin = player.lastJoin;
-        var playtime = player.playtime;
-        var server = player.server;
-        var rankName = (rank == PlayerRank.UNKNOWN) ? "" : $"[{PlayerRankExtension.FromString(rank.ToString())}]";
-        var characters = playerSelection?.GetPlayer()?.characters!;
-        var basicBuilder = new []
+        PlayerRank rank = player.GetPlayerRank();
+        bool online = player.online;
+        DateTime firstJoin = player.firstJoin;
+        DateTime lastJoin = player.lastJoin;
+        double playtime = player.playtime;
+        string server = player.server;
+        string rankName = (rank == PlayerRank.UNKNOWN) ? "" : $"[{PlayerRankExtension.FromString(rank.ToString())}]";
+        Dictionary<Guid,PlayerCharacter>? characters = playerSelection?.GetPlayer()?.characters!;
+        MessageChain[] basicBuilder = new []
         {
             MessageBuilder.Group(chain.GroupUin!.Value).Text(
                 "WynnCraft 玩家信息:\n" +
@@ -36,17 +38,17 @@ public class WynnCommand
             ).Time(DateTime.Now).Build()
         };
 
-        foreach (var pair in characters)
+        foreach (KeyValuePair<Guid, PlayerCharacter> pair in characters)
         {
-            var character = pair.Value;
-            var dungeonsInfo = "";
-            var questsInfo = "";
+            PlayerCharacter character = pair.Value;
+            string dungeonsInfo = "";
+            string questsInfo = "";
 
             if (character.dungeons.list != null)
             {
                 dungeonsInfo += $"地下城探索总数: {character.dungeons.total}\n";
                 Console.WriteLine(character.dungeons.list);
-                foreach (var dungeon in character.dungeons.list)
+                foreach (KeyValuePair<string, int> dungeon in character.dungeons.list)
                 {
                     if (dungeonsInfo.Length <= 5)
                     {
@@ -63,11 +65,11 @@ public class WynnCommand
             if (character.quests != null)
             {
                 questsInfo += $"已完成的任务 (总数: {character.quests.Length})\n";
-                foreach (var quest in character.quests)
+                foreach (string quest in character.quests)
                 {
                     if (questsInfo.Length <= 5)
                     {
-                        questsInfo += "  * $quest\n";
+                        questsInfo += $"  * {quest}\n";
                     }
                     else
                     {
@@ -77,7 +79,7 @@ public class WynnCommand
                 }
             }
 
-            var uuid = playerSelection?.GetPlayer()?.characters.ToList()
+            string? uuid = playerSelection?.GetPlayer()?.characters.ToList()
                 .Find(pair => playerSelection?.GetPlayer()?.characters[pair.Key] == character).Key.ToString();
 
             String text = "档案信息:\n" +

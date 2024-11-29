@@ -20,13 +20,13 @@ public class MessageCounter
 
     public static double GetReceivedMessageLastMinutes(int minutes = 1)
     {
-        var now = DateTimeOffset.Now.ToUnixTimeSeconds();
+        long now = DateTimeOffset.Now.ToUnixTimeSeconds();
         return MessageReceived.Count(time => time >= now - (60 * minutes));
     }
     
     public static double GetSentMessageLastMinutes(int minutes = 1)
     {
-        var now = DateTimeOffset.Now.ToUnixTimeSeconds();
+        long now = DateTimeOffset.Now.ToUnixTimeSeconds();
         return MessageSent.Count(time => time >= now - (60 * minutes));
     }
 }

@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace YounBot.Utils;
 
@@ -9,12 +8,12 @@ public static class FileUtils
     {
         if (!File.Exists(configName) || overwrite)
         {
-            var directoryPath = Path.GetDirectoryName(configName);
+            string? directoryPath = Path.GetDirectoryName(configName);
             if (!string.IsNullOrEmpty(directoryPath))
             {
                 Directory.CreateDirectory(directoryPath);
             }
-            var json = JsonSerializer.Serialize(config);
+            string json = JsonSerializer.Serialize(config);
             
             File.WriteAllText(configName, json);
         }

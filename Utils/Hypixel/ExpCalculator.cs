@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace YounBot.Utils.Hypixel;
+﻿namespace YounBot.Utils.Hypixel;
 
 public static class ExpCalculator
 {
@@ -27,15 +25,15 @@ public static class ExpCalculator
 
     private static double GetTotalExpToLevel(double level)
     {
-        var lv = Math.Floor(level);
-        var x0 = GetTotalExpToFullLevel(lv);
+        double lv = Math.Floor(level);
+        double x0 = GetTotalExpToFullLevel(lv);
         return level == lv ? x0 : (GetTotalExpToFullLevel(lv + 1) - x0) * (level % 1) + x0;
     }
 
     private static double GetPercentageToNextLevel(long exp)
     {
-        var lv = GetLevel(exp);
-        var x0 = GetTotalExpToLevel(lv);
+        double lv = GetLevel(exp);
+        double x0 = GetTotalExpToLevel(lv);
         return (exp - x0) / (GetTotalExpToLevel(lv + 1) - x0);
     }
 
@@ -48,7 +46,7 @@ public static class ExpCalculator
     public static double GetBedWarsLevel(int exp)
     {
         double experience = exp;
-        var level = 100 * (int)(experience / 487000);
+        int level = 100 * (int)(experience / 487000);
         experience %= 487000;
         if (experience < 500) return level + experience / 500;
         level++;
@@ -68,7 +66,7 @@ public static class ExpCalculator
         double experience = xp;
         if (experience >= 15000)
             return (experience - 15000) / 10000 + 12;
-        for (var i = 0; i < xps.Length; i++)
+        for (int i = 0; i < xps.Length; i++)
             if (experience < xps[i])
                 return i + (experience - xps[i - 1]) / (xps[i] - xps[i - 1]);
         return 1.0;

@@ -31,7 +31,7 @@ public class PlayerApi : API
 
         public async Task<PlayerSelection?> GetPlayer(string username, bool fullResult)
         {
-            var response = await GetResponse("player/" + username,
+            WynnCraftHttpResponse response = await GetResponse("player/" + username,
                 fullResult ? HttpQueryParams.Create().Add("fullResult") : null);
             // Console.WriteLine(response.Body);
             return PlayerSelection.FromResponse(response);
@@ -39,13 +39,13 @@ public class PlayerApi : API
 
         public async Task<IDictionary<Guid, CharacterEntry>?> GetPlayerCharacters(Guid playerId)
         {
-            var characters = await GetPlayerCharacters(playerId.ToString());
+            PlayerCharacterListSelection characters = await GetPlayerCharacters(playerId.ToString());
             return characters.GetCharacters();
         }
 
         public async Task<PlayerCharacterListSelection> GetPlayerCharacters(string username)
         {
-            var response = await GetResponse("player/" + username + "/characters", null);
+            WynnCraftHttpResponse response = await GetResponse("player/" + username + "/characters", null);
             return PlayerCharacterListSelection.FromResponse(
                 response
             );
@@ -65,13 +65,13 @@ public class PlayerApi : API
 
         public async Task<PlayerAbilities?> GetPlayerAbilities(Guid playerId, Guid characterId)
         {
-            var playerAbilities = await GetPlayerAbilities(playerId.ToString(), characterId);
+            PlayerAbilitiesSelection playerAbilities = await GetPlayerAbilities(playerId.ToString(), characterId);
             return playerAbilities.GetAbilities();
         }
 
         public async Task<PlayerAbilitiesSelection> GetPlayerAbilities(string username, Guid characterId)
         {
-            var response = await GetResponse("player/" + username + "/characters/" + characterId, null);
+            WynnCraftHttpResponse response = await GetResponse("player/" + username + "/characters/" + characterId, null);
             return PlayerAbilitiesSelection.FromResponse(
                 response
             );

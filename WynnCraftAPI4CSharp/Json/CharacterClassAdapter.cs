@@ -12,22 +12,22 @@ public class CharacterClassAdapter : JsonConverter<CharacterClass>
 
     public override CharacterClass Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        using var jsonDocument = JsonDocument.ParseValue(ref reader);
-        var obj = jsonDocument.RootElement;
+        using JsonDocument jsonDocument = JsonDocument.ParseValue(ref reader);
+        JsonElement obj = jsonDocument.RootElement;
             
-        var name = obj.GetProperty("name").GetString();
-        var matcher = Pattern.Match(name);
+        string? name = obj.GetProperty("name").GetString();
+        Match matcher = Pattern.Match(name);
 
         if (!matcher.Success)
             throw new JsonException($"Invalid format for CharacterClass: {name}");
 
-        var jsonObject = new JsonObject
+        JsonObject jsonObject = new JsonObject
         {
             { "type", ToEnum(matcher.Groups[1].Value) },
             { "donorType", ToEnum(matcher.Groups[2].Value) }
         };
 
-        var serialized = JsonSerializer.Serialize(jsonObject);
+        string serialized = JsonSerializer.Serialize(jsonObject);
         return JsonSerializer.Deserialize<CharacterClass>(serialized, options)!;
     }
 

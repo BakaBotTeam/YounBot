@@ -50,7 +50,7 @@ public class YounkooCommand
     {
         if (HasPermission(chain))
         {
-            var time = TimeUtils.ParseDuration(duration).Seconds;
+            int time = TimeUtils.ParseDuration(duration).Seconds;
             await context.MuteGroupMember(chain.GroupUin!.Value, member.Uin, (uint)time);
             await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
                 .Text("[滥权小助手] ").Mention(member.Uin)

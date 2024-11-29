@@ -7,7 +7,7 @@ public class GUidTypeAdapter : JsonConverter<Guid>
 {
     public override Guid Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        var uuidString = reader.GetString();
+        string? uuidString = reader.GetString();
         if (uuidString == null)
             throw new JsonException("GUid value cannot be null.");
             

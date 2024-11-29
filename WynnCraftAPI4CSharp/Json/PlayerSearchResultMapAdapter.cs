@@ -9,16 +9,16 @@ public class PlayerSearchResultMapAdapter : JsonConverter<Dictionary<Guid, Playe
 {
     public override Dictionary<Guid, PlayerSearchResult> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        var jsonDocument = JsonObject.Parse(ref reader);
-        var jsonObject = jsonDocument.AsObject();
-        var playerResultMap = new Dictionary<Guid, PlayerSearchResult>();
+        JsonNode? jsonDocument = JsonObject.Parse(ref reader);
+        JsonObject jsonObject = jsonDocument.AsObject();
+        Dictionary<Guid, PlayerSearchResult> playerResultMap = new Dictionary<Guid, PlayerSearchResult>();
 
-        foreach (var property in jsonObject)
+        foreach (KeyValuePair<string, JsonNode?> property in jsonObject)
         {
-            var playerResultObj = property.Value;
+            JsonNode? playerResultObj = property.Value;
             playerResultObj["uuid"] = property.Key;
 
-            var playerSearchResult = JsonSerializer.Deserialize<PlayerSearchResult>(playerResultObj.ToJsonString(), options);
+            PlayerSearchResult? playerSearchResult = JsonSerializer.Deserialize<PlayerSearchResult>(playerResultObj.ToJsonString(), options);
             if (playerSearchResult != null)
             {
                 playerResultMap[Guid.Parse(property.Key)] = playerSearchResult;

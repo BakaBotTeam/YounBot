@@ -17,9 +17,9 @@ class Program
 
         if (!File.Exists("appsettings.json"))
         {
-            var assem = Assembly.GetExecutingAssembly();
-            await using var resourceStream = assem.GetManifestResourceStream("YounBot.Resources.appsettings.json")!;
-            await using var temp = File.Create("appsettings.json");
+            Assembly assem = Assembly.GetExecutingAssembly();
+            await using Stream resourceStream = assem.GetManifestResourceStream("YounBot.Resources.appsettings.json")!;
+            await using FileStream temp = File.Create("appsettings.json");
             await resourceStream.CopyToAsync(temp);
 
             resourceStream.Close();
@@ -30,19 +30,19 @@ class Program
         }
         
         // 输出GitVersionInformation
-        var assembly = Assembly.GetExecutingAssembly();
-        var assemblyName = assembly.GetName().Name;
-        var gitVersionInformationType = assembly.GetType("GitVersionInformation");
-        var fields = gitVersionInformationType.GetFields();
+        Assembly assembly = Assembly.GetExecutingAssembly();
+        string? assemblyName = assembly.GetName().Name;
+        Type? gitVersionInformationType = assembly.GetType("GitVersionInformation");
+        FieldInfo[] fields = gitVersionInformationType.GetFields();
 
         // 创建IConfiguration实例
-        var configurationBuilder = new ConfigurationBuilder()
+        IConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", false, true)
             .AddEnvironmentVariables();
-        var configuration = configurationBuilder.Build();
+        IConfigurationRoot configuration = configurationBuilder.Build();
         // 创建YounBotAppBuilder实例
-        var appBuilder = new YounBotAppBuilder(configuration);
-        var app = appBuilder.Build();
+        YounBotAppBuilder appBuilder = new YounBotAppBuilder(configuration);
+        YounBotApp app = appBuilder.Build();
         // 配置应用程序
         appBuilder.ConfigureBots();
 

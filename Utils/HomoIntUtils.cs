@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace YounBot.Utils;
+﻿namespace YounBot.Utils;
 
 public static class HomoIntUtils
 {
@@ -529,8 +527,8 @@ public static class HomoIntUtils
         if (num == 0L) return "(1-1)*4514";
         if (num == -1L) return "11-4-5+1-4";
 
-        var sum = "";
-        var a = new int[] {
+        string sum = "";
+        int[] a = new int[] {
             229028,
             114514,
             58596,
@@ -1064,8 +1062,8 @@ public static class HomoIntUtils
 
         if (num < 10000L) //0~10000
         {
-            var flag = 0;
-            var temp1 = 0;
+            int flag = 0;
+            int temp1 = 0;
             for (int i = 1; i < num; ++i) {
                 for (int j = 0; j < a.Length; ++j) {
                     if (a[j] == num - i)
@@ -1092,8 +1090,8 @@ public static class HomoIntUtils
             if (m != 0) sum += "+(" + getInt(m) + ")"; //余数为0
         } else //大于229028
         {
-            var total = 0;
-            var temp2 = num;
+            int total = 0;
+            long temp2 = num;
             while (temp2 >= 229028)
             {
                 temp2 /= 229028;

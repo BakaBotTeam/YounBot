@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Net.Http.Headers;
+using System.Text;
 
 namespace YounBot.WynnCraftAPI4CSharp.Http.Implements;
 
@@ -16,14 +17,14 @@ public class DefaultHttpClient : IWynnHttpClient
 
     public async Task<WynnCraftHttpResponse> MakeGetRequest(string url)
     {
-        var request = new HttpRequestMessage(HttpMethod.Get, url);
+        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
         request.Headers.Add("User-Agent", IWynnHttpClient.DefaultUserAgent);
         return await GetResponseAsync(request);
     }
 
     public async Task<WynnCraftHttpResponse> MakePostRequest(string url, string payload)
     {
-        var request = new HttpRequestMessage(HttpMethod.Post, url)
+        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, url)
         {
             Content = new StringContent(payload, Encoding.UTF8, "application/json")
         };
@@ -35,9 +36,9 @@ public class DefaultHttpClient : IWynnHttpClient
     {
         try
         {
-            using var response = await _httpClient.SendAsync(request);
-            var responseBody = await response.Content.ReadAsStringAsync();
-            var rateLimit = CreateRateLimit(response);
+            using HttpResponseMessage response = await _httpClient.SendAsync(request);
+            string responseBody = await response.Content.ReadAsStringAsync();
+            RateLimit rateLimit = CreateRateLimit(response);
             return new WynnCraftHttpResponse((int)response.StatusCode, responseBody, rateLimit);
         }
         catch (Exception ex)
@@ -48,7 +49,7 @@ public class DefaultHttpClient : IWynnHttpClient
 
     private RateLimit CreateRateLimit(HttpResponseMessage response)
     {
-        var headers = response.Headers;
+        HttpResponseHeaders headers = response.Headers;
         return new RateLimit(
             int.Parse(headers.GetValues("RateLimit-Remaining").FirstOrDefault() ?? "0"),
             int.Parse(headers.GetValues("RateLimit-Reset").FirstOrDefault() ?? "0"),

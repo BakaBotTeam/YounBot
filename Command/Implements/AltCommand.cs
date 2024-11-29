@@ -1,6 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 using Lagrange.Core;
+using Lagrange.Core.Common.Entity;
 using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Message;
 using YounBot.Utils;
@@ -15,11 +16,11 @@ public class AltCommand
     [Command("4399", "获取4399小号")]
     public async Task Get4399(BotContext context, MessageChain chain)
     {
-        var user = chain.FriendUin;
+        uint user = chain.FriendUin;
         
         try
         {
-            var friend = (await context.FetchFriends()).FindLast(f => f.Uin == user) ?? (await context.FetchFriends(true)).FindLast(f => f.Uin == user);
+            BotFriend? friend = (await context.FetchFriends()).FindLast(f => f.Uin == user) ?? (await context.FetchFriends(true)).FindLast(f => f.Uin == user);
             
             if (friend == null)
             {
@@ -42,15 +43,15 @@ public class AltCommand
                 return;
             }
         
-            var ts = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            var signature = GenerateSignature(ts.ToString(), YounBotApp.Configuration["4399AltApiKey"]!);
-            var url = $"https://4399.cuteguimc.win/fetchapi.php?ts={ts}&signature={signature}";
-            using (var client = new HttpClient())
+            long ts = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            string signature = GenerateSignature(ts.ToString(), YounBotApp.Configuration["4399AltApiKey"]!);
+            string url = $"https://4399.cuteguimc.win/fetchapi.php?ts={ts}&signature={signature}";
+            using (HttpClient client = new())
             {
-                var response = await client.GetAsync(url);
+                HttpResponseMessage response = await client.GetAsync(url);
 
                 response.EnsureSuccessStatusCode();
-                var responseBody = await response.Content.ReadAsStringAsync();
+                string responseBody = await response.Content.ReadAsStringAsync();
                 await context.SendMessage(MessageBuilder.Friend(friend.Uin).Text("小号: ").Text(responseBody).Build());
                 await SendMessage(context, chain, "请检查私聊", true);
             }

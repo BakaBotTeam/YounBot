@@ -9,7 +9,7 @@ public class Hookers
 {
     public static void Init()
     {
-        var harmony = new Harmony("YounBotHookers");
+        Harmony harmony = new Harmony("YounBotHookers");
         harmony.PatchAll();
     }
     

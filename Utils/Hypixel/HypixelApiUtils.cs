@@ -1,6 +1,4 @@
-﻿using System.Net.Http;
-using System.Text.Json.Nodes;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Nodes;
 
 namespace YounBot.Utils.Hypixel;
 
@@ -10,21 +8,21 @@ public static class HypixelApiUtils
 
     public static async Task<JsonObject> RequestAsync(string url)
     {
-        var fullUrl = $"https://api.hypixel.net{url}";
-        var request = new HttpRequestMessage(HttpMethod.Get, fullUrl);
+        string fullUrl = $"https://api.hypixel.net{url}";
+        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, fullUrl);
 
-        var apiKey = YounBotApp.Config!.HypixelApiKey!;
+        string apiKey = YounBotApp.Config!.HypixelApiKey!;
         request.Headers.Add("API-Key", apiKey);
 
-        var response = await HttpClient.SendAsync(request);
+        HttpResponseMessage response = await HttpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
 
-        var raw = await response.Content.ReadAsStringAsync();
-        var jsonObject = JsonNode.Parse(raw)!.AsObject();
+        string raw = await response.Content.ReadAsStringAsync();
+        JsonObject jsonObject = JsonNode.Parse(raw)!.AsObject();
 
         if (!jsonObject["success"]!.GetValue<bool>())
         {
-            var cause = jsonObject["cause"]?.ToString() ?? "Unknown error";
+            string cause = jsonObject["cause"]?.ToString() ?? "Unknown error";
             throw new ApiFailedException($"Request failed with message \"{cause}\"");
         }
 

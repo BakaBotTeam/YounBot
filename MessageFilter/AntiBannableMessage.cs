@@ -13,12 +13,12 @@ public class AntiBannableMessage
     
     public static void Init()
     {
-        var assem = Assembly.GetExecutingAssembly();
-        var resourceStream = assem.GetManifestResourceStream("YounBot.Resources.bannable.txt")!;
-        var reader = new StreamReader(resourceStream);
-        var lines = reader.ReadToEnd().Split("\n");
+        Assembly assem = Assembly.GetExecutingAssembly();
+        Stream resourceStream = assem.GetManifestResourceStream("YounBot.Resources.bannable.txt")!;
+        StreamReader reader = new StreamReader(resourceStream);
+        string[] lines = reader.ReadToEnd().Split("\n");
         bannableregexes = new String[lines.Length];
-        for (var i = 0; i < lines.Length; i++)
+        for (int i = 0; i < lines.Length; i++)
         {
             bannableregexes[i] = lines[i].Replace("\n", "").Replace("\r", "");
         }
@@ -26,13 +26,13 @@ public class AntiBannableMessage
 
     public static async Task OnGroupMessage(BotContext context, GroupMessageEvent @event)
     {
-        var text = MessageUtils.GetPlainTextForCheck(@event.Chain);
-        foreach (var keyword in bannableregexes)
+        string text = MessageUtils.GetPlainTextForCheck(@event.Chain);
+        foreach (string keyword in bannableregexes)
         {
             if (text.Contains(keyword))
             {
                 await context.RecallGroupMessage(@event.Chain.GroupUin!.Value, @event.Chain.Sequence);
-                var message = MessageBuilder.Group(@event.Chain.GroupUin!.Value)
+                MessageBuilder message = MessageBuilder.Group(@event.Chain.GroupUin!.Value)
                     .Text("[消息过滤器] ").Mention(@event.Chain.FriendUin)
                     .Text($" Flagged FalseMessage | 你在聊啥?!");
                 await context.MuteGroupMember(@event.Chain.GroupUin!.Value, @event.Chain.FriendUin, 3600);

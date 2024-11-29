@@ -1,8 +1,5 @@
-﻿using System;
-using System.Net.Http;
-using System.Text;
+﻿using System.Text;
 using System.Text.Json.Nodes;
-using System.Threading.Tasks;
 
 namespace YounBot.Utils;
 
@@ -12,7 +9,7 @@ public class HttpUtils
 
     public static async Task<JsonObject> GetJsonObject(string url, string? auth = null)
     {
-        var request = new HttpRequestMessage(HttpMethod.Get, url);
+        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
 
         if (!string.IsNullOrEmpty(auth))
         {
@@ -29,7 +26,7 @@ public class HttpUtils
     
     public static async Task<JsonArray> GetJsonArray(string url, string? auth = null)
     {
-        var request = new HttpRequestMessage(HttpMethod.Get, url);
+        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
 
         if (!string.IsNullOrEmpty(auth))
         {

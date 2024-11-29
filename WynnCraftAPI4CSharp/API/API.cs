@@ -15,7 +15,7 @@ public class API
 
     public async Task<T> Post<T>(string request, string payload, HttpQueryParams? @params = null)
     {
-        var response = await GetResponse(request, payload, @params);
+        WynnCraftHttpResponse response = await GetResponse(request, payload, @params);
         return JsonSerializer.Deserialize<T>(response.Body);
     }
 
@@ -26,7 +26,7 @@ public class API
 
     public async Task<object> Post(string request, string payload, Type type, HttpQueryParams? @params = null)
     {
-        var response = await GetResponse(request, payload, @params);
+        WynnCraftHttpResponse response = await GetResponse(request, payload, @params);
         return JsonSerializer.Deserialize(response.Body, type);
     }
 
@@ -37,7 +37,7 @@ public class API
 
     public async Task<T> Get<T>(string request, HttpQueryParams? @params = null)
     {
-        var response = await GetResponse(request, @params);
+        WynnCraftHttpResponse response = await GetResponse(request, @params);
         return JsonSerializer.Deserialize<T>(response.Body);
     }
 
@@ -48,7 +48,7 @@ public class API
 
     public async Task<object> Get(string request, Type type, HttpQueryParams? @params = null)
     {
-        var response = await GetResponse(request, @params);
+        WynnCraftHttpResponse response = await GetResponse(request, @params);
         return JsonSerializer.Deserialize(response.Body, type);
     }
 
@@ -59,11 +59,11 @@ public class API
 
     public async Task<WynnCraftHttpResponse> GetResponse(string request, string payload, HttpQueryParams? @params)
     {
-        var url = WynnCraftApi.BaseUrl + request;
+        string url = WynnCraftApi.BaseUrl + request;
 
         if (@params != null) url = @params.GetAsQueryString(url);
 
-        var response = await _client.MakePostRequest(url, payload);
+        WynnCraftHttpResponse response = await _client.MakePostRequest(url, payload);
 
         ValidateResponse(response);
 
@@ -72,11 +72,11 @@ public class API
 
     public async Task<WynnCraftHttpResponse> GetResponse(string request, HttpQueryParams? @params)
     {
-        var url = WynnCraftApi.BaseUrl + request;
+        string url = WynnCraftApi.BaseUrl + request;
 
         if (@params != null) url = @params.GetAsQueryString(url);
 
-        var response = await _client.MakeGetRequest(url);
+        WynnCraftHttpResponse response = await _client.MakeGetRequest(url);
 
         ValidateResponse(response);
 
@@ -85,16 +85,16 @@ public class API
 
     private void ValidateResponse(WynnCraftHttpResponse response)
     {
-        var statusCode = response.StatusCode;
+        int statusCode = response.StatusCode;
 
         if (statusCode == (int)StatusCode.Ok || statusCode == (int)StatusCode.MultipleChoices) return;
 
-        var responseBody = response.Body;
+        string responseBody = response.Body;
 
         try
         {
-            var obj = JsonSerializer.Deserialize<JsonElement>(responseBody);
-            if (obj.TryGetProperty("Error", out var err)) throw new WynnCraftException(statusCode, err.GetString());
+            JsonElement obj = JsonSerializer.Deserialize<JsonElement>(responseBody);
+            if (obj.TryGetProperty("Error", out JsonElement err)) throw new WynnCraftException(statusCode, err.GetString());
         }
         catch (JsonException)
         {

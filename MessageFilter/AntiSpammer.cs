@@ -1,4 +1,5 @@
 ﻿using Lagrange.Core;
+using Lagrange.Core.Common.Entity;
 using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Event.EventArg;
 using Lagrange.Core.Message;
@@ -23,15 +24,15 @@ public class AntiSpammer
     {
         try
         {
-            var members = await context.FetchMembers(@event.Chain.GroupUin!.Value);
-            var selfPermission = members.FindLast(member => member.Uin == context.BotUin)!.Permission;
-            var targetPermission = @event.Chain.GroupMemberInfo!.Permission;
+            List<BotGroupMember> members = await context.FetchMembers(@event.Chain.GroupUin!.Value);
+            GroupMemberPermission selfPermission = members.FindLast(member => member.Uin == context.BotUin)!.Permission;
+            GroupMemberPermission targetPermission = @event.Chain.GroupMemberInfo!.Permission;
             if (selfPermission <= targetPermission)
             {
                 return;
             }
 
-            var userUin = @event.Chain.FriendUin!;
+            uint userUin = @event.Chain.FriendUin!;
             if (!LastMessages.ContainsKey(userUin))
             {
                 LastMessages.Add(userUin, new List<string>());
@@ -62,8 +63,8 @@ public class AntiSpammer
                 LastMessageSeqs[userUin].RemoveAt(0);
             }
 
-            var message = MessageUtils.GetPlainTextForCheck(@event.Chain);
-            var currentTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            string message = MessageUtils.GetPlainTextForCheck(@event.Chain);
+            long currentTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             
             if (message.Replace("\n", "").Replace(" ", "").Length < 1)
             {
@@ -85,14 +86,14 @@ public class AntiSpammer
                 LastEmptyMessageTimes[userUin].Add(currentTime);
                 if (LastEmptyMessageTimes[userUin].Count > 3)
                 {
-                    var eightyPrecentEmptyMessageDelay = 0L;
-                    var emptyMessageDelays = new List<long>();
-                    for (var i = 1; i < LastEmptyMessageTimes[userUin].Count; i++)
+                    long eightyPrecentEmptyMessageDelay = 0L;
+                    List<long> emptyMessageDelays = new();
+                    for (int i = 1; i < LastEmptyMessageTimes[userUin].Count; i++)
                     {
                         emptyMessageDelays.Add(LastEmptyMessageTimes[userUin][i] - LastEmptyMessageTimes[userUin][i - 1]);
                     }
                     emptyMessageDelays.Sort();
-                    for (var i = 0; i < emptyMessageDelays.Count; i++)
+                    for (int i = 0; i < emptyMessageDelays.Count; i++)
                     {
                         if (i < emptyMessageDelays.Count * 0.8)
                         {
@@ -112,11 +113,11 @@ public class AntiSpammer
                                 .Build());
                         }
                         // recall all messages, copy list to avoid concurrent modification
-                        var emptyMessageSeqs = LastEmptyMessageSeqs[userUin].ToList();
+                        List<uint> emptyMessageSeqs = LastEmptyMessageSeqs[userUin].ToList();
                         // clear history
                         LastEmptyMessageSeqs[userUin].Clear();
                         LastEmptyMessageTimes[userUin].Clear();
-                        for (var i = 0; i < emptyMessageSeqs.Count; i++)
+                        for (int i = 0; i < emptyMessageSeqs.Count; i++)
                         {
                             await context.RecallGroupMessage(@event.Chain.GroupUin!.Value, emptyMessageSeqs[i]);
                             Thread.Sleep(500);
@@ -134,14 +135,14 @@ public class AntiSpammer
             LastMessageSeqs[userUin].Add(@event.Chain.Sequence);
             if (LastMessageTimes[userUin].Count > 1)
             {
-                var eightyPrecentMessageDelay = 0L;
-                var messageDelays = new List<long>();
-                for (var i = 1; i < LastMessageTimes[userUin].Count; i++)
+                long eightyPrecentMessageDelay = 0L;
+                List<long> messageDelays = new();
+                for (int i = 1; i < LastMessageTimes[userUin].Count; i++)
                 {
                     messageDelays.Add(LastMessageTimes[userUin][i] - LastMessageTimes[userUin][i - 1]);
                 }
                 messageDelays.Sort();
-                for (var i = 0; i < messageDelays.Count; i++)
+                for (int i = 0; i < messageDelays.Count; i++)
                 {
                     if (i < messageDelays.Count * 0.8)
                     {
@@ -162,12 +163,12 @@ public class AntiSpammer
                             .Build());
                     }
                     // recall all messages, copy list to avoid concurrent modification
-                    var messageSeqs = LastMessageSeqs[userUin].ToList();
+                    List<uint> messageSeqs = LastMessageSeqs[userUin].ToList();
                     // clear history
                     LastMessageTimes[userUin].Clear();
                     LastMessages[userUin].Clear();
                     LastMessageSeqs[userUin].Clear();
-                    for (var i = 0; i < messageSeqs.Count; i++)
+                    for (int i = 0; i < messageSeqs.Count; i++)
                     {
                         await context.RecallGroupMessage(@event.Chain.GroupUin!.Value, messageSeqs[i]);
                         Thread.Sleep(500);
@@ -177,19 +178,19 @@ public class AntiSpammer
                 
                 if (LastMessages[userUin].Count > 3)
                 {
-                    var eightyPrecentMessageSimilarity = 0.0;
-                    var messageSimilarities = new List<double>();
-                    for (var i = 1; i < LastMessages[userUin].Count; i++)
+                    double eightyPrecentMessageSimilarity = 0.0;
+                    List<double> messageSimilarities = new();
+                    for (int i = 1; i < LastMessages[userUin].Count; i++)
                     {
                         // find most similar message from all messages
-                        var maxSimilarity = 0.0;
-                        foreach (var _msg in LastMessages[userUin])
+                        double maxSimilarity = 0.0;
+                        foreach (string _msg in LastMessages[userUin])
                         {
                             maxSimilarity = Math.Max(maxSimilarity, LevenshteinDistance.FindSimilarity(LastMessages[userUin][i], _msg));
                         }
                     }
                     messageSimilarities.Sort();
-                    for (var i = 0; i < messageSimilarities.Count; i++)
+                    for (int i = 0; i < messageSimilarities.Count; i++)
                     {
                         if (i < messageSimilarities.Count * 0.8)
                         {
@@ -209,12 +210,12 @@ public class AntiSpammer
                                 .Build());
                         }
                         // recall all messages, copy list to avoid concurrent modification
-                        var messageSeqs = LastMessageSeqs[userUin].ToList();
+                        List<uint> messageSeqs = LastMessageSeqs[userUin].ToList();
                         // clear history
                         LastMessageTimes[userUin].Clear();
                         LastMessages[userUin].Clear();
                         LastMessageSeqs[userUin].Clear();
-                        for (var i = 0; i < messageSeqs.Count; i++)
+                        for (int i = 0; i < messageSeqs.Count; i++)
                         {
                             await context.RecallGroupMessage(@event.Chain.GroupUin!.Value, messageSeqs[i]);
                             Thread.Sleep(500);

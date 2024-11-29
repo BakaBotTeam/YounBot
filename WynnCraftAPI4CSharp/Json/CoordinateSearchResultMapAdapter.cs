@@ -8,13 +8,13 @@ public class CoordinateSearchResultMapAdapter : JsonConverter<Dictionary<string,
 {
     public override Dictionary<string, CoordinateSearchResult> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        var jsonObject = JsonDocument.ParseValue(ref reader).RootElement;
-        var coordinateResultMap = new Dictionary<string, CoordinateSearchResult>();
+        JsonElement jsonObject = JsonDocument.ParseValue(ref reader).RootElement;
+        Dictionary<string, CoordinateSearchResult> coordinateResultMap = new Dictionary<string, CoordinateSearchResult>();
 
-        foreach (var property in jsonObject.EnumerateObject())
+        foreach (JsonProperty property in jsonObject.EnumerateObject())
         {
-            var coordinateResultObj = property.Value;
-            var coordinateResult = JsonSerializer.Deserialize<CoordinateSearchResult>(coordinateResultObj.GetRawText(), options);
+            JsonElement coordinateResultObj = property.Value;
+            CoordinateSearchResult? coordinateResult = JsonSerializer.Deserialize<CoordinateSearchResult>(coordinateResultObj.GetRawText(), options);
                 
             if (coordinateResult != null)
             {

@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using Lagrange.Core;
 using Lagrange.Core.Common;
+using Lagrange.Core.Common.Entity;
 using Lagrange.Core.Common.Interface;
 using Lagrange.Core.Common.Interface.Api;
 using LiteDB;
@@ -35,7 +36,7 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
         
         Client!.Invoker.OnBotLogEvent += (_, @event) =>
         {
-            var logger = LoggingUtils.CreateLogger(@event.Tag);
+            ILogger logger = LoggingUtils.CreateLogger(@event.Tag);
             switch (@event.Level)
             {
                 case LogLevel.Debug:
@@ -76,9 +77,9 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
             await Task.Run(() =>
             {
                 LoggingUtils.Logger.LogWarning("Please input ticket:");
-                var ticket = Console.ReadLine();
+                string? ticket = Console.ReadLine();
                 LoggingUtils.Logger.LogWarning("Please input randomString:");
-                var randomString = Console.ReadLine();
+                string? randomString = Console.ReadLine();
 
                 if (ticket != null && randomString != null) Client.SubmitCaptcha(ticket, randomString);
             });
@@ -98,7 +99,7 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
         
         Client!.Invoker.OnGroupMessageReceived += async (context, @event) =>
         {
-            var stopwatch = Stopwatch.StartNew();
+            Stopwatch stopwatch = Stopwatch.StartNew();
             MessageCounter.AddMessageReceived(DateTimeOffset.Now.ToUnixTimeSeconds());
             if (@event.Chain.FriendUin == context.BotUin) return;
             await AntiSpammer.OnGroupMessage(context, @event);
@@ -106,8 +107,8 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
             if (!Config!.WorkersAiUrl!.Equals("http://0.0.0.0/")) 
                 await AntiAd.OnGroupMessage(context, @event);
             
-            var text = MessageUtils.GetPlainText(@event.Chain);
-            var commandPrefix = Configuration["CommandPrefix"] ?? "/"; // put here for auto reload
+            string text = MessageUtils.GetPlainText(@event.Chain);
+            string commandPrefix = Configuration["CommandPrefix"] ?? "/"; // put here for auto reload
             if (text.StartsWith(commandPrefix))
             {
                 await CommandManager.Instance.ExecuteCommand(context, @event.Chain, text.Substring(commandPrefix.Length));
@@ -134,7 +135,7 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
             try
             {
                 LoggingUtils.Logger.LogInformation($"Received group invitation: {@event}");
-                var invitation = (await context.FetchGroupRequests())!.FindLast(x => x.GroupUin == @event.GroupUin && x.InvitorMemberUin == @event.InvitorUin)!;
+                BotGroupRequest invitation = (await context.FetchGroupRequests())!.FindLast(x => x.GroupUin == @event.GroupUin && x.InvitorMemberUin == @event.InvitorUin)!;
                 await context.SetGroupRequest(invitation, true);
             } 
             catch (Exception e)

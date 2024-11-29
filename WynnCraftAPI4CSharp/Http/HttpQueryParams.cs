@@ -23,10 +23,10 @@ public class HttpQueryParams
 
     public string GetAsQueryString(string @base)
     {
-        var url = new StringBuilder(@base);
-        var startedQuery = false;
+        StringBuilder url = new StringBuilder(@base);
+        bool startedQuery = false;
 
-        foreach (var entry in _params)
+        foreach (KeyValuePair<string, object> entry in _params)
         {
             if (!startedQuery)
             {

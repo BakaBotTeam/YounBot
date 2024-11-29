@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Lagrange.Core;
+﻿using Lagrange.Core;
 using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Message;
 using Lagrange.Core.Message.Entity;
@@ -10,8 +9,8 @@ public static class MessageUtils
 {
     public static string GetPlainText(MessageChain chain)
     {
-        var plainText = "";
-        foreach (var messageEntity in chain)
+        string plainText = "";
+        foreach (IMessageEntity messageEntity in chain)
         {
             if (messageEntity is MentionEntity)
             {
@@ -28,15 +27,15 @@ public static class MessageUtils
     
     public static string GetPlainTextForCheck(MessageChain chain)
     {
-        var plainText = "";
-        foreach (var messageEntity in chain)
+        string plainText = "";
+        foreach (IMessageEntity messageEntity in chain)
         {
             if (messageEntity is TextEntity)
             {
                 plainText += messageEntity.ToPreviewText();
             } else if (messageEntity is MultiMsgEntity)
             {
-                foreach (var messageChain in (messageEntity as MultiMsgEntity)!.Chains)
+                foreach (MessageChain messageChain in (messageEntity as MultiMsgEntity)!.Chains)
                 {
                     plainText += "\n" + GetPlainTextForCheck(messageChain);
                 }

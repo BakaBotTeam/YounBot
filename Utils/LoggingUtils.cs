@@ -19,7 +19,7 @@ namespace YounBot.Utils
         public static ILogger CreateLogger(string tag)
         {
             // read log level from Configuration
-            var minLogLevel = LogLevel.Information;
+            LogLevel minLogLevel = LogLevel.Information;
             switch (YounBotApp.Configuration[$"Logging:LogLevel:{tag}"] ??
                     YounBotApp.Configuration["Logging:LogLevel:Default"])
             {
@@ -49,7 +49,7 @@ namespace YounBot.Utils
         public static ILogger CreateLogger(string tag, LogLevel minLogLevel)
         {
             if (Loggers.ContainsKey(tag)) return Loggers[tag];
-            var logger = LoggerFactory.Create(builder =>
+            ILogger logger = LoggerFactory.Create(builder =>
             {
                 builder.AddSimpleConsole(options =>
                 {

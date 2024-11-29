@@ -15,7 +15,7 @@ public class HypixelCommand
     [Command("hypixel", "Hypixel玩家信息")]
     public async Task Hypixel(BotContext context, MessageChain chain, string name)
     {
-        var user = chain.FriendUin;
+        uint user = chain.FriendUin;
         if (!_cooldown.IsTimePassed(user!))
         {
             if (_cooldown.ShouldSendCooldownNotice(user))
@@ -23,24 +23,24 @@ public class HypixelCommand
             return;
         }
 
-        var uuid = (await MojangApiUtils.GetUuidByName(name)).Replace("\"", "");
+        string uuid = (await MojangApiUtils.GetUuidByName(name)).Replace("\"", "");
         _cooldown.Flag(user);
 
-        var playerInfo = (await HypixelApiUtils.RequestAsync($"/player?uuid={uuid}"))["player"]!.AsObject();
-        var rank = GetRank(playerInfo);
+        JsonObject playerInfo = (await HypixelApiUtils.RequestAsync($"/player?uuid={uuid}"))["player"]!.AsObject();
+        string? rank = GetRank(playerInfo);
 
-        var level = GetLevel(playerInfo);
-        var firstLogin = playerInfo.ConvertDate("firstLogin");
-        var lastLogin = playerInfo.ConvertDate("lastLogin");
-        var lastLogout = playerInfo.ConvertDate("lastLogout");
+        double level = GetLevel(playerInfo);
+        string firstLogin = playerInfo.ConvertDate("firstLogin");
+        string lastLogin = playerInfo.ConvertDate("lastLogin");
+        string lastLogout = playerInfo.ConvertDate("lastLogout");
 
-        var statusInfo = (await HypixelApiUtils.RequestAsync($"/status?uuid={uuid}"))["session"]!.AsObject();
-        var stringOnlineStatus = statusInfo["online"]!.GetValue<bool>() 
+        JsonObject statusInfo = (await HypixelApiUtils.RequestAsync($"/status?uuid={uuid}"))["session"]!.AsObject();
+        string stringOnlineStatus = statusInfo["online"]!.GetValue<bool>() 
             ? "在线 -> " + HypixelApiUtils.ResolveGameType(statusInfo.GetString("gameType", "Lobby?")) 
             : "离线";
 
-        var playerName = (rank != null ? $"[{rank}]" : "") + $"{name}\n";
-        var basicBuilder = new []
+        string playerName = (rank != null ? $"[{rank}]" : "") + $"{name}\n";
+        MessageChain[] basicBuilder = new []
         {
             MessageBuilder.Group(chain.GroupUin!.Value).Text(
                 "Hypixel 玩家数据:\n" +
@@ -88,8 +88,8 @@ public class HypixelCommand
     {
         if (playerInfo.ContainsKey("stats"))
         {
-            var playerStats = playerInfo.GetObject("stats");
-            var gameModes = new Dictionary<string, Func<MessageChain[], uint, JsonObject, MessageChain[]>>
+            JsonObject playerStats = playerInfo.GetObject("stats");
+            Dictionary<string, Func<MessageChain[], uint, JsonObject, MessageChain[]>> gameModes = new()
             {
                 { "Bedwars", AppendBedwarsStats },
                 { "SkyWars", AppendSkywarsStats },
@@ -100,7 +100,7 @@ public class HypixelCommand
                 { "Pit", AppendPitStats }
             };
 
-            foreach (var gameMode in gameModes)
+            foreach (KeyValuePair<string, Func<MessageChain[], uint, JsonObject, MessageChain[]>> gameMode in gameModes)
             {
                 try
                 {
@@ -272,9 +272,9 @@ public class HypixelCommand
 
     private static MessageChain[] AppendPitStats(MessageChain[] basicBuilder, uint groupUin, JsonObject pitStats)
     {
-        foreach (var key in ((IDictionary<string, JsonNode?>)pitStats).Keys)
+        foreach (string key in ((IDictionary<string, JsonNode?>)pitStats).Keys)
         {
-            var pitProfileStats = pitStats[key]!.AsObject();
+            JsonObject pitProfileStats = pitStats[key]!.AsObject();
             if (key != "profile")
             {
                 basicBuilder = basicBuilder.Append(MessageBuilder.Group(groupUin).Text(
