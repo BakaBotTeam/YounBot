@@ -10,6 +10,7 @@ public class YounBotConfig
     public int MaxMessageCache { get; set; }
     public int MaxGroupMessageCache { get; set; }
     public List<uint>? BotAdmins { get; set; }
+    public List<uint>? BlackLists { get; set; }
     
     public static YounBotConfig NewConfig() => new()
     {
@@ -19,6 +20,7 @@ public class YounBotConfig
         WorkersAiBasicAuth = "username:password",
         MaxMessageCache = 12,
         MaxGroupMessageCache = 25,
-        BotAdmins = new List<uint>()
+        BotAdmins = new List<uint>(),
+        BlackLists = new List<uint>()
     };
 }

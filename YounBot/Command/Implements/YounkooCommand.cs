@@ -26,6 +26,7 @@ public class YounkooCommand
                 YounBotApp.Config!.BotAdmins!.Add(member.Uin);
             SaveConfig("younbot-config.json", YounBotApp.Config, true);
             await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+                .Forward(chain)
                 .Text("[滥权小助手] ").Mention(member.Uin)
                 .Text(" 被提升为管理员！ ").Build());
         }
@@ -40,6 +41,7 @@ public class YounkooCommand
                 YounBotApp.Config!.BotAdmins!.Remove(member.Uin);
             SaveConfig("younbot-config.json", YounBotApp.Config, true);
             await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+                .Forward(chain)
                 .Text("[滥权小助手] ").Mention(member.Uin)
                 .Text(" 被取消管理员！ ").Build());
         }
@@ -66,6 +68,7 @@ public class YounkooCommand
         if (IsBotOwner(chain))
         {
             await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+                .Forward(chain)
                 .Text("Stopping YounBot " + YounBotApp.VERSION).Build());
             SaveConfig("younbot-config.json", YounBotApp.Config!, true);
             SaveConfig(YounBotApp.Configuration["ConfigPath:Keystore"] ?? "keystore.json", YounBotApp.Client!.UpdateKeystore(), true);
@@ -97,6 +100,7 @@ public class YounkooCommand
             return;
         }
         await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+            .Forward(chain)
             .Text($"Uptime: {DateTimeOffset.Now.ToUnixTimeSeconds() - YounBotApp.UpTime!.Value}s\n")
             .Text($"Bot Version: {YounBotApp.VERSION}\n")
             .Text($"Receive pre min (1m/5m/10m): {MessageCounter.GetReceivedMessageLastMinutes()}/{Math.Round(MessageCounter.GetReceivedMessageLastMinutes(5)/5d, 2)}/{Math.Round(MessageCounter.GetReceivedMessageLastMinutes(10) / 10d, 2)}\n")
@@ -117,26 +121,36 @@ public class YounkooCommand
         }
     }
     
-    // [Command("blacklist", "黑名单")]
-    // public async Task Blacklist(BotContext context, MessageChain chain, BotGroupMember member, uint group = 0, string reason = "No reason")
-    // {
-    //     if (HasPermission(chain))
-    //     {
-    //         ILiteCollection<BsonValue>? collection = YounBotApp.Db!.GetCollection<BsonValue>("blacklist");
-    //         // find if the user is in the blacklist
-    //         if (collection.Exists(x => x == new BsonValue(member.Uin.ToString())))
-    //         {
-    //             collection.Delete(new BsonValue(member.Uin.ToString()));
-    //             await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
-    //                 .Text("已移除 ").Build());
-    //         }
-    //         else
-    //         {
-    //             collection.Insert(new BsonValue(member.Uin.ToString()));
-    //             await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
-    //                 .Text("[滥权小助手] ").Mention(member.Uin)
-    //                 .Text("已添加").Build());
-    //         }
-    //     }
-    // }
+    [Command("blacklist", "黑名单")]
+    public async Task Blacklist(BotContext context, MessageChain chain, BotGroupMember member)
+    {
+        if (HasPermission(chain))
+        {
+            if (HasPermission(member))
+            {
+                await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+                    .Forward(chain)
+                    .Text("无法将机器人管理员添加到黑名单").Build());
+                return;
+            }
+
+            // find if the user is in the blacklist
+            if (YounBotApp.Config!.BlackLists!.Contains(member.Uin))
+            {
+                YounBotApp.Config!.BlackLists!.Remove(member.Uin);
+                await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+                    .Forward(chain)
+                    .Text("[滥权小助手] 已移除").Build());
+            }
+            else
+            {
+                YounBotApp.Config!.BlackLists!.Add(member.Uin);
+                await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+                    .Forward(chain)
+                    .Text("[滥权小助手] 已添加").Build());
+            }
+            
+            SaveConfig("younbot-config.json", YounBotApp.Config!, true);
+        }
+    }
 }
