@@ -8,13 +8,13 @@ namespace YounBot;
 public sealed class YounBotAppBuilder(IConfiguration configuration)
 {
     private BotDeviceInfo _deviceInfo;
-    private BotKeystore _keystore;
+    private BotKeystore? _keystore;
     private BotConfig _botConfig;
     private YounBotConfig _younBotConfig;
     
     public IConfiguration GetConfiguration() => configuration;
     public BotDeviceInfo GetDeviceInfo() => _deviceInfo;
-    public BotKeystore GetKeystore() => _keystore;
+    public BotKeystore? GetKeystore() => _keystore;
     public BotConfig GetConfig() => _botConfig;
     public YounBotConfig GetYounBotConfig() => _younBotConfig;
     
@@ -36,9 +36,15 @@ public sealed class YounBotAppBuilder(IConfiguration configuration)
             AutoReLogin = bool.Parse(configuration["Account:AutoReLogin"] ?? "true"),
         };
 
-        _keystore = new BotKeystore();
-        SaveConfig(keystorePath, _keystore);
-        _keystore = JsonSerializer.Deserialize<BotKeystore>(File.ReadAllText(keystorePath)) ?? new BotKeystore();
+        // check if keystore exists
+        if (File.Exists(keystorePath))
+        {
+            _keystore = JsonSerializer.Deserialize<BotKeystore>(File.ReadAllText(keystorePath));
+        }
+        else
+        {
+            _keystore = null;
+        }
 
         _deviceInfo = BotDeviceInfo.GenerateInfo();
         SaveConfig(deviceInfoPath, _deviceInfo);

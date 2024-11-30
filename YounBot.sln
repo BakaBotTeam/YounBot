@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YounBot", "YounBot.csproj", "{6461CA97-8774-4691-96C5-CE871367EE72}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YounBot", "YounBot/YounBot.csproj", "{6461CA97-8774-4691-96C5-CE871367EE72}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lagrange.Core", "Lagrange/Lagrange.Core/Lagrange.Core.csproj", "{909C99CC-0CB7-4A34-8C75-AD25E6AEA535}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

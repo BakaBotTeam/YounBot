@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using HarmonyLib;
 using Lagrange.Core;
 using Lagrange.Core.Common;
 using Lagrange.Core.Common.Entity;
@@ -7,6 +8,7 @@ using Lagrange.Core.Common.Interface.Api;
 using LiteDB;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using QRCoder;
 using YounBot.Command;
 using YounBot.Config;
 using YounBot.MessageFilter;
@@ -25,11 +27,11 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
     public static string VERSION;
     public static long? UpTime;
     
-    public Task Init(BotConfig config, BotDeviceInfo deviceInfo, BotKeystore keystore, string version)
+    public Task Init(BotConfig config, BotDeviceInfo deviceInfo, BotKeystore? keystore, string version)
     {
         VERSION = version;
         Configuration = appBuilder.GetConfiguration();
-        Client = BotFactory.Create(config, deviceInfo, keystore);
+        Client = keystore == null ? BotFactory.Create(config, uint.Parse(Configuration["Account:Uin"]??"0"), Configuration["Account:Password"]??"", out deviceInfo) : BotFactory.Create(config, deviceInfo, keystore);
         Config = appBuilder.GetYounBotConfig();
         
         LoggingUtils.Logger.LogInformation("Running on YounBot " + version);
@@ -83,6 +85,29 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
 
                 if (ticket != null && randomString != null) Client.SubmitCaptcha(ticket, randomString);
             });
+        };
+
+        Client.Invoker!.OnBotNewDeviceVerify += async (_, args) =>
+        {
+            using (QRCodeGenerator qrGenerator = new QRCodeGenerator())
+            using (QRCodeData qrCodeData = qrGenerator.CreateQrCode(args.Url, QRCodeGenerator.ECCLevel.Q))
+            using (PngByteQRCode qrCode = new PngByteQRCode(qrCodeData))
+            using (AsciiQRCode asciiQrCode = new AsciiQRCode(qrCodeData))
+            {
+                byte[] qrCodeImage = qrCode.GetGraphic(20);
+                await File.WriteAllBytesAsync("qrcode.png", qrCodeImage);
+                // Open the QR code image
+                try
+                {
+                    Process.Start("qrcode.png");
+                }
+                catch (Exception e)
+                {
+                    LoggingUtils.Logger.LogError("Failed to open QR code image, please open it manually: " + e.Message);
+                }
+
+                LoggingUtils.Logger.LogInformation("Please scan the QR code to login\n" + asciiQrCode.GetGraphic(1));
+            }
         };
 
         CommandManager.Instance.InitializeCommands();

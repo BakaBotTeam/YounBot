@@ -37,6 +37,7 @@ class Program
 
         // 创建IConfiguration实例
         IConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", false, true)
             .AddEnvironmentVariables();
         IConfigurationRoot configuration = configurationBuilder.Build();
