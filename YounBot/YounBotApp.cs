@@ -92,24 +92,27 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
 
         Client.Invoker!.OnBotNewDeviceVerify += async (_, args) =>
         {
-            using (QRCodeGenerator qrGenerator = new QRCodeGenerator())
+            using (QRCodeGenerator qrGenerator = new())
             using (QRCodeData qrCodeData = qrGenerator.CreateQrCode(args.Url, QRCodeGenerator.ECCLevel.Q))
-            using (PngByteQRCode qrCode = new PngByteQRCode(qrCodeData))
-            using (AsciiQRCode asciiQrCode = new AsciiQRCode(qrCodeData))
+            using (PngByteQRCode qrCode = new(qrCodeData))
+            using (AsciiQRCode asciiQrCode = new(qrCodeData))
             {
                 byte[] qrCodeImage = qrCode.GetGraphic(20);
                 await File.WriteAllBytesAsync("qrcode.png", qrCodeImage);
                 // Open the QR code image
-                try
-                {
-                    Process.Start("qrcode.png");
+                try {
+                    ProcessStartInfo startInfo = new("qrcode.png")
+                    {
+                        UseShellExecute = true
+                    };
+                    Process.Start(startInfo);
                 }
                 catch (Exception e)
                 {
                     LoggingUtils.Logger.LogError("Failed to open QR code image, please open it manually: " + e.Message);
                 }
 
-                LoggingUtils.Logger.LogInformation("Please scan the QR code to login\n" + asciiQrCode.GetGraphic(1));
+                LoggingUtils.Logger.LogInformation("Please scan the QR code to login\n" + asciiQrCode.GetGraphicSmall());
             }
         };
 

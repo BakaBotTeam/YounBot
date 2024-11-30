@@ -15,6 +15,11 @@ public static class QrCodeLogin
         {
             if (!(await YounBotApp.Client!.LoginByPassword()))
             {
+                try
+                {
+                    File.Delete(YounBotApp.Configuration!["ConfigPath:Keystore"] ?? "keystore.json");
+                }
+                catch {}
                 Environment.Exit(1);
             }
             return;
