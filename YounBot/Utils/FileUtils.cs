@@ -13,7 +13,7 @@ public static class FileUtils
             {
                 Directory.CreateDirectory(directoryPath);
             }
-            string json = JsonSerializer.Serialize(config);
+            string json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
             
             File.WriteAllText(configName, json);
         }

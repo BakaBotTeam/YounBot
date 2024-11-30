@@ -10,7 +10,8 @@ public static class QrCodeLogin
 {
     public static async Task Login(YounBotApp app)
     {
-        if (YounBotApp.Configuration!["Account:Password"] != null && YounBotApp.Configuration!["Account:Password"] != "")
+        if ((YounBotApp.Configuration!["Account:Password"] != null &&
+             YounBotApp.Configuration!["Account:Password"] != "") || YounBotApp.Keystore != null)
         {
             if (!(await YounBotApp.Client!.LoginByPassword()))
             {

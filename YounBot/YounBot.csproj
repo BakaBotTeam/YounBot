@@ -10,6 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Lagrange.Core" Version="0.3.1" />
         <PackageReference Include="Lib.Harmony" Version="2.3.3" />
         <PackageReference Include="LiteDB" Version="5.0.21" />
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0-rc.2.24473.5" />
@@ -23,7 +24,6 @@
         </PackageReference>
         <PackageReference Include="QRCoder" Version="1.6.0" />
         <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="9.0.0" />
-        <ProjectReference Include="..\Lagrange\Lagrange.Core\Lagrange.Core.csproj" />
         
         <None Remove="Resources\appsettings.json" />
         <None Remove="Resources\checker.txt" />

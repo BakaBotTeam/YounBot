@@ -69,8 +69,8 @@ public class YounkooCommand
             await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
                 .Text("Stopping YounBot " + YounBotApp.VERSION).Build());
             SaveConfig("younbot-config.json", YounBotApp.Config!, true);
-            SaveConfig(YounBotApp.Configuration["ConfigPath:Keystore"] ?? "keystore.json", YounBotApp.Client!.UpdateKeystore());
-            SaveConfig(YounBotApp.Configuration["ConfigPath:DeviceInfo"] ?? "device.json", YounBotApp.Client!.UpdateDeviceInfo());
+            SaveConfig(YounBotApp.Configuration["ConfigPath:Keystore"] ?? "keystore.json", YounBotApp.Client!.UpdateKeystore(), true);
+            SaveConfig(YounBotApp.Configuration["ConfigPath:DeviceInfo"] ?? "device.json", YounBotApp.Client!.UpdateDeviceInfo(), true);
             YounBotApp.Db!.Dispose();
             YounBotApp.Client!.Dispose();
         }

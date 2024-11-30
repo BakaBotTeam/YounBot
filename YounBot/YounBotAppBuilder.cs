@@ -36,14 +36,9 @@ public sealed class YounBotAppBuilder(IConfiguration configuration)
             AutoReLogin = bool.Parse(configuration["Account:AutoReLogin"] ?? "true"),
         };
 
-        // check if keystore exists
         if (File.Exists(keystorePath))
         {
             _keystore = JsonSerializer.Deserialize<BotKeystore>(File.ReadAllText(keystorePath));
-        }
-        else
-        {
-            _keystore = null;
         }
 
         _deviceInfo = BotDeviceInfo.GenerateInfo();

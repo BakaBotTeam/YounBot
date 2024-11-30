@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using HarmonyLib;
 using Lagrange.Core;
 using Lagrange.Core.Common;
 using Lagrange.Core.Common.Entity;
@@ -12,9 +11,10 @@ using QRCoder;
 using YounBot.Command;
 using YounBot.Config;
 using YounBot.MessageFilter;
+using YounBot.Signer;
 using YounBot.Utils;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 using LogLevel = Lagrange.Core.Event.EventArg.LogLevel;
+using static YounBot.Utils.FileUtils;
 
 namespace YounBot;
 
@@ -24,6 +24,7 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
     public static BotContext? Client;
     public static YounBotConfig? Config;
     public static LiteDatabase? Db;
+    public static BotKeystore? Keystore;
     public static string VERSION;
     public static long? UpTime;
     
@@ -31,7 +32,9 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
     {
         VERSION = version;
         Configuration = appBuilder.GetConfiguration();
-        Client = keystore == null ? BotFactory.Create(config, uint.Parse(Configuration["Account:Uin"]??"0"), Configuration["Account:Password"]??"", out deviceInfo) : BotFactory.Create(config, deviceInfo, keystore);
+        Keystore = keystore;
+        Client = Keystore == null ? BotFactory.Create(config, uint.Parse(Configuration["Account:Uin"]??"0"), Configuration["Account:Password"]??"", out deviceInfo) : BotFactory.Create(config, deviceInfo, Keystore);
+        Client.Config.CustomSignProvider = new OneBotSigner(Configuration, LoggingUtils.Logger, Client);
         Config = appBuilder.GetYounBotConfig();
         
         LoggingUtils.Logger.LogInformation("Running on YounBot " + version);
@@ -60,11 +63,11 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
             }
         };
         
-        Client!.Invoker.OnBotOnlineEvent += (_, _) =>
+        Client!.Invoker.OnBotOnlineEvent += (_, @event) =>
         {
-            Client.UpdateKeystore();
-            File.WriteAllText(Configuration["ConfigPath:Keystore"] ?? "keystore.json", JsonSerializer.Serialize(appBuilder.GetKeystore()));
-            LoggingUtils.Logger.LogInformation("Bot online");
+            Keystore = Client.UpdateKeystore();
+            SaveConfig(Configuration["ConfigPath:Keystore"] ?? "keystore.json", Keystore, true);
+            LoggingUtils.Logger.LogInformation($"Bot online -> {@event.EventMessage}");
         };
 
         Client!.Invoker.OnBotOfflineEvent += (_, @event) =>
