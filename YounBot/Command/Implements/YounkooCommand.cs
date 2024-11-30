@@ -46,17 +46,16 @@ public class YounkooCommand
     }
     
     [Command("mute", "把某人的嘴巴用胶布粘上")]
-    public async Task Mute(BotContext context, MessageChain chain, BotGroupMember member, string duration, uint group = 0, string reason = "No reason")
+    public async Task Mute(BotContext context, MessageChain chain, BotGroupMember member, uint second = 600, uint group = 0, string reason = "No reason")
     {
         if (HasPermission(chain))
         {
             uint _group = (group != 0) ? group : chain.GroupUin!.Value;
-            int time = TimeUtils.ParseDuration(duration).Seconds;
-            await context.MuteGroupMember(_group, member.Uin, (uint)time);
+            await context.MuteGroupMember(_group, member.Uin, second);
             await context.SendMessage(MessageBuilder.Group(_group)
                 .Text("[滥权小助手] ").Mention(member.Uin)
                 .Text($" 获得了来自 ").Mention(chain.FriendUin).Text(" 的禁言\n")
-                .Text($"时长: {Math.Round(time / 60.0, 2)} 分钟\n")
+                .Text($"时长: {Math.Round(second / 60.0, 2)} 分钟\n")
                 .Text($"理由: {reason}").Build());
         }
     }
