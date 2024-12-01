@@ -11,7 +11,7 @@ using LiteDB;
 using Microsoft.Extensions.Logging;
 using YounBot.Utils;
 
-namespace YounBot.MessageFilter;
+namespace YounBot.Listener.MessageFilter;
 
 public static class AntiAd
 {
@@ -57,8 +57,7 @@ public static class AntiAd
     public static async Task OnGroupMessage(BotContext context, GroupMessageEvent @event) 
     {
         // check permission
-        List<BotGroupMember> members = await context.FetchMembers(@event.Chain.GroupUin!.Value);
-        GroupMemberPermission selfPermission = members.FindLast(member => member.Uin == context.BotUin)!.Permission;
+        GroupMemberPermission selfPermission = await BotUtils.GetSelfPermissionInGroup(@event.Chain.GroupUin!.Value);
         GroupMemberPermission targetPermission = @event.Chain.GroupMemberInfo!.Permission;
         if (selfPermission <= targetPermission)
         {

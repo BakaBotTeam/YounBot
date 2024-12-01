@@ -10,7 +10,8 @@ using Microsoft.Extensions.Logging;
 using QRCoder;
 using YounBot.Command;
 using YounBot.Config;
-using YounBot.MessageFilter;
+using YounBot.Listener;
+using YounBot.Listener.MessageFilter;
 using YounBot.Signer;
 using YounBot.Utils;
 using LogLevel = Lagrange.Core.Event.EventArg.LogLevel;
@@ -127,6 +128,12 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
     public Task Run()
     {
         Hookers.Init();
+
+        Client!.Invoker.OnGroupMemberIncreaseEvent += async (_, args) =>
+        {
+            if (args.MemberUin == Client.BotUin) return;
+            await NewMemberWelcome.OnGroupMemberIncrease(args);
+        };
         
         Client!.Invoker.OnGroupMessageReceived += async (context, @event) =>
         {

@@ -153,4 +153,16 @@ public class YounkooCommand
             SaveConfig("younbot-config.json", YounBotApp.Config!, true);
         }
     }
+
+    [Command("refreshCache", "清除缓存")]
+    public async Task RefreshCache(BotContext botContext, MessageChain chain)
+    {
+        if (HasPermission(chain))
+        {
+            await BotUtils.RefreshAllCache();
+            await botContext.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+                .Forward(chain)
+                .Text("Cache refreshed").Build());
+        }
+    }
 }

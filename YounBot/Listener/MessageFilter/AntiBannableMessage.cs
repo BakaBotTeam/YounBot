@@ -1,11 +1,12 @@
 ﻿using System.Reflection;
 using Lagrange.Core;
+using Lagrange.Core.Common.Entity;
 using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Event.EventArg;
 using Lagrange.Core.Message;
 using YounBot.Utils;
 
-namespace YounBot.MessageFilter;
+namespace YounBot.Listener.MessageFilter;
 
 public class AntiBannableMessage
 {
@@ -26,6 +27,13 @@ public class AntiBannableMessage
 
     public static async Task OnGroupMessage(BotContext context, GroupMessageEvent @event)
     {
+        GroupMemberPermission selfPermission = await BotUtils.GetSelfPermissionInGroup(@event.Chain.GroupUin!.Value);
+        GroupMemberPermission targetPermission = @event.Chain.GroupMemberInfo!.Permission;
+        if (selfPermission <= targetPermission)
+        {
+            return;
+        }
+        
         string text = MessageUtils.GetPlainTextForCheck(@event.Chain);
         foreach (string keyword in bannableregexes)
         {
