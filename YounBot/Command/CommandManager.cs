@@ -248,11 +248,11 @@ public class CommandManager
                 }
                 catch (ArgumentException e)
                 {
-                    throw new ArgumentException($"位置 {index + 2} 的参数错误: {e.Message}");
+                    throw new ArgumentException($"位置 {index + 2} 的参数错误: {e.Message}", e);
                 }
                 catch (Exception e)
                 {
-                    throw new ArgumentException($"位置 {index + 2} 的参数错误: ${e.Message}");
+                    throw new ArgumentException($"位置 {index + 2} 的参数错误: ${e.Message}", e);
                 }
                 
                 Task.Run(async () => await (Task)(method.Invoke(instance, objectArray) ?? Task.CompletedTask)).GetAwaiter().GetResult();
