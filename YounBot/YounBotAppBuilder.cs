@@ -48,9 +48,7 @@ public sealed class YounBotAppBuilder(IConfiguration configuration)
         _younBotConfig = YounBotConfig.NewConfig();
         SaveConfig(configPath, _younBotConfig);
         _younBotConfig = JsonSerializer.Deserialize<YounBotConfig>(File.ReadAllText(configPath)) ?? YounBotConfig.NewConfig();
-        
-        if (_younBotConfig.BotAdmins == null) _younBotConfig.BotAdmins = new();
-        if (_younBotConfig.BlackLists == null) _younBotConfig.BlackLists = new();
+        SaveConfig(configPath, _younBotConfig, true);
     }
 
     public YounBotApp Build() => new(this);

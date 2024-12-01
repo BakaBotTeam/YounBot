@@ -42,7 +42,7 @@ public class HypixelCommand
         string playerName = (rank != null ? $"[{rank}]" : "") + $"{name}\n";
         MessageChain[] basicBuilder = new []
         {
-            MessageBuilder.Group(chain.GroupUin!.Value).Text(
+            MessageBuilder.Friend(10000).Text(
                 "Hypixel 玩家数据:\n" +
                 $"玩家名: {playerName}\n" +
                 $"等级: {level}\n" +
@@ -118,7 +118,7 @@ public class HypixelCommand
 
     private static MessageChain[] AppendBedwarsStats(MessageChain[] basicBuilder, uint groupUin, JsonObject bwStats)
     {
-        return basicBuilder.Append(MessageBuilder.Group(groupUin).Text("Bedwars 信息:\n" +
+        return basicBuilder.Append(MessageBuilder.Friend(10000).Text("Bedwars 信息:\n" +
             $"等级: {Math.Round(ExpCalculator.GetBedWarsLevel(bwStats.GetIntOrNull("Experience")) * 100) / 100.0}\n" +
             $"硬币: {bwStats.GetIntOrNull("coins")}\n" +
             $"毁床数: {bwStats.GetIntOrNull("beds_broken_bedwars")}\n" +
@@ -139,7 +139,7 @@ public class HypixelCommand
 
     private static MessageChain[] AppendSkywarsStats(MessageChain[] basicBuilder, uint groupUin, JsonObject swStats)
     {
-        return basicBuilder.Append(MessageBuilder.Group(groupUin).Text("Skywars 信息:\n" +
+        return basicBuilder.Append(MessageBuilder.Friend(10000).Text("Skywars 信息:\n" +
             $"硬币: {swStats.GetIntOrNull("coins")}\n" +
             $"灵魂数量: {swStats.GetIntOrNull("souls")}\n" +
             $"总游戏数: {swStats.GetIntOrNull("games_played_skywars")}\n" +
@@ -159,7 +159,7 @@ public class HypixelCommand
 
     private static MessageChain[] AppendDuelsStats(MessageChain[] basicBuilder, uint groupUin, JsonObject duelStats)
     {
-        return basicBuilder.Append(MessageBuilder.Group(groupUin).Text("Duel 信息:\n" +
+        return basicBuilder.Append(MessageBuilder.Friend(10000).Text("Duel 信息:\n" +
             $"硬币: {duelStats.GetIntOrNull("coins")}\n" +
             $"总游戏数: {duelStats.GetIntOrNull("rounds_played")}\n" +
             $"胜利/失败: {duelStats.GetIntOrNull("wins")}/{duelStats.GetIntOrNull("losses")} " +
@@ -199,7 +199,7 @@ public class HypixelCommand
 
     private static MessageChain[] AppendMegaWallsStats(MessageChain[] basicBuilder, uint groupUin, JsonObject mwStats)
     {
-        return basicBuilder.Append(MessageBuilder.Group(groupUin).Text("Mega Walls 信息:\n" +
+        return basicBuilder.Append(MessageBuilder.Friend(10000).Text("Mega Walls 信息:\n" +
             $"硬币: {mwStats.GetIntOrNull("coins")}\n" +
             $"胜利/失败: {mwStats.GetIntOrNull("wins")}/{mwStats.GetIntOrNull("losses")} " +
             $"WLR: {
@@ -229,7 +229,7 @@ public class HypixelCommand
 
     private static MessageChain[] AppendUhcStats(MessageChain[] basicBuilder, uint groupUin, JsonObject uhcStats)
     {
-        return basicBuilder.Append(MessageBuilder.Group(groupUin).Text("UHC 信息:\n" +
+        return basicBuilder.Append(MessageBuilder.Friend(10000).Text("UHC 信息:\n" +
             $"硬币: {uhcStats.GetIntOrNull("coins")}\n" +
             $"已选择的职业 {uhcStats.GetStringOrNull("equippedKit")}\n" +
             $"胜利/失败: {uhcStats.GetIntOrNull("wins")}/{uhcStats.GetIntOrNull("deaths")} " +
@@ -242,12 +242,12 @@ public class HypixelCommand
 
     private static MessageChain[] AppendArcadeStats(MessageChain[] basicBuilder, uint groupUin, JsonObject arcadeStats)
     {
-        basicBuilder = basicBuilder.Append(MessageBuilder.Group(groupUin).Text(
+        basicBuilder = basicBuilder.Append(MessageBuilder.Friend(10000).Text(
             "街机游戏 信息:\n" +
             $"硬币: {arcadeStats.GetIntOrNull("coins")}\n\n" +
             "以下为街机游戏:"
         ).Build()).ToArray();
-        basicBuilder = basicBuilder.Append(MessageBuilder.Group(groupUin).Text(
+        basicBuilder = basicBuilder.Append(MessageBuilder.Friend(10000).Text(
             "Mini Walls:\n" +
             $"胜利: {arcadeStats.GetIntOrNull("wins_mini_walls")}\n" +
             $"击杀/死亡: {arcadeStats.GetIntOrNull("kills_mini_walls") + arcadeStats.GetIntOrNull("final_kills_mini_walls")}/{arcadeStats.GetIntOrNull("deaths_mini_walls")} " +
@@ -256,10 +256,10 @@ public class HypixelCommand
             $"凋零击杀数: {arcadeStats.GetIntOrNull("wither_kills_mini_walls")}\n" +
             $"弓箭命中率: {CalculatorR(arcadeStats.GetIntOrNull("arrows_hit_mini_walls"), arcadeStats.GetIntOrNull("arrows_shot_mini_walls"))}"
         ).Build()).ToArray();
-        basicBuilder = basicBuilder.Append(MessageBuilder.Group(groupUin).Text(
+        basicBuilder = basicBuilder.Append(MessageBuilder.Friend(10000).Text(
             $"派对游戏 胜场: {arcadeStats.GetIntOrNull("wins_party")}"
         ).Build()).ToArray();
-        basicBuilder = basicBuilder.Append(MessageBuilder.Group(groupUin).Text(
+        basicBuilder = basicBuilder.Append(MessageBuilder.Friend(10000).Text(
             "僵尸末日: \n" +
             $"最高坚持了 {arcadeStats.GetIntOrNull("best_round_zombies")} 轮\n" +
             $"死亡次数: {arcadeStats.GetIntOrNull("deaths_zombies")}\n" +
@@ -267,7 +267,7 @@ public class HypixelCommand
             $"打开门数量: {arcadeStats.GetIntOrNull("doors_opened_zombies")}\n" +
             $"救起其他玩家次数: {arcadeStats.GetIntOrNull("players_revived_zombies")}"
         ).Build()).ToArray();
-        return basicBuilder.Append(MessageBuilder.Group(groupUin).Text("以上为街机游戏").Build()).ToArray();
+        return basicBuilder.Append(MessageBuilder.Friend(10000).Text("以上为街机游戏").Build()).ToArray();
     }
 
     private static MessageChain[] AppendPitStats(MessageChain[] basicBuilder, uint groupUin, JsonObject pitStats)
@@ -277,7 +277,7 @@ public class HypixelCommand
             JsonObject pitProfileStats = pitStats[key]!.AsObject();
             if (key != "profile")
             {
-                basicBuilder = basicBuilder.Append(MessageBuilder.Group(groupUin).Text(
+                basicBuilder = basicBuilder.Append(MessageBuilder.Friend(10000).Text(
                     $"天坑 ({key}): \n" +
                     $"进入次数: {pitProfileStats.GetIntOrNull("joins")} 跳入天坑次数: {pitProfileStats.GetIntOrNull("jumped_into_pit")}\n" +
                     $"击杀/助攻/死亡: {pitProfileStats.GetIntOrNull("kills")}/{pitProfileStats.GetIntOrNull("assists")}/{pitProfileStats.GetIntOrNull("deaths")} " +

@@ -120,6 +120,7 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
         CommandManager.Instance.InitializeCommands();
         AntiAd.Init();
         AntiBannableMessage.Init();
+
         Db = new LiteDatabase("YounBot.db");
         
         return Task.CompletedTask;
@@ -142,7 +143,7 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
             if (@event.Chain.FriendUin == context.BotUin) return;
             await AntiSpammer.OnGroupMessage(context, @event);
             await AntiBannableMessage.OnGroupMessage(context, @event);
-            if (!Config!.WorkersAiUrl!.Equals("http://0.0.0.0/")) 
+            if (!Config!.CloudFlareAuthToken!.Equals("")) 
                 await AntiAd.OnGroupMessage(context, @event);
             
             if (Config!.BlackLists!.Contains(@event.Chain.FriendUin)) return;
