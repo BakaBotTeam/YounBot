@@ -40,4 +40,20 @@ public class HttpUtils
         string raw = await response.Content.ReadAsStringAsync();
         return JsonArray.Parse(raw).AsArray();
     }
+    
+    public static async Task<byte[]> GetBytes(string url, string? auth = null)
+    {
+        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
+
+        if (!string.IsNullOrEmpty(auth))
+        {
+            string basicAuth = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(auth));
+            request.Headers.Add("Authorization", basicAuth);
+        }
+
+        HttpResponseMessage response = await HttpClient.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadAsByteArrayAsync();
+    }
 }
