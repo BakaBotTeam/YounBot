@@ -1,4 +1,4 @@
-﻿# YounBot (WIP)
+﻿# YounBot
 
 YounBot is a bot developed based on Lagrange.Core, designed to manage group chats and provide practical functions.
 
