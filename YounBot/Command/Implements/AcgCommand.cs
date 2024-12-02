@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using Lagrange.Core;
 using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Message;
@@ -75,5 +76,70 @@ public class AcgCommand
         });
         preMessage.Wait();
         await context.SendMessage(builder.Build());
+    }
+    
+    [Command("ptag", "按照tag随机获取图片")]
+    public async Task PictureByTag(BotContext context, MessageChain chain, string tag)
+    {
+        uint user = chain.FriendUin;
+        if (!_cooldown.IsTimePassed(user))
+        {
+            if (_cooldown.ShouldSendCooldownNotice(user))
+                await SendMessage(context, chain, $"你可以在 {_cooldown.GetLeftTime(user) / 1000} 秒后继续使用该指令");
+            return;
+        }
+
+        _cooldown.Flag(user);
+        
+        Task preMessage = SendMessage(context, chain, "Please Wait...");
+        Dictionary<string, string> headers = new()
+        {
+            ["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0",
+            ["Referer"] = "https://www.vilipix.com/",
+            ["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+            ["Accept-Language"] = "zh-CN,zh;q=0.9,en;q=0.8",
+            ["Cache-Control"] = "max-age=0",
+            ["Connection"] = "keep-alive",
+            ["Upgrade-Insecure-Requests"] = "1"
+        };
+        string response = await HttpUtils.GetString($"https://www.vilipix.com/tags/{tag}/illusts", headers: headers);
+        // get page count, <li class="el-icon more btn-quicknext el-icon-more"></li><li class="number">48</li>
+        int pageCount = int.Parse(Regex.Match(response, @"<li class=""el-icon more btn-quicknext el-icon-more""></li><li class=""number"">(\d+)</li>").Groups[1].Value);
+        // get random page
+        int page = new Random().Next(1, pageCount + 1);
+        response = await HttpUtils.GetString($"https://www.vilipix.com/tags/{tag}/illusts?p={page}", headers: headers);
+        // get all image id, <a href="/illust/123496259"
+        MatchCollection matches = Regex.Matches(response, @"<a href=""/illust/(\d+)""");
+        string[] ids = new string[matches.Count];
+        for (int i = 0; i < matches.Count; i++)
+            ids[i] = matches[i].Groups[1].Value;
+        // get random image, retry 3 times
+        for (int i = 0; i < 3; i++)
+        {
+            try
+            {
+                // api: https://pixiv.yuki.sh/api/illust?id=
+                JsonObject _response = await HttpUtils.GetJsonObject($"https://pixiv.yuki.sh/api/illust?id={ids[new Random().Next(0, ids.Length)]}");
+                String title = _response["data"]!["title"]!.ToString();
+                String url = _response["data"]!["urls"]!["original"]!.ToString();
+                String tags = "";
+                foreach (String _tag in _response["data"]!["tags"]!.AsArray())
+                    tags += _tag + ", ";
+                String author = _response["data"]!["user"]!["name"]!.ToString();
+                byte[] image = await HttpUtils.GetBytes(url);
+                MessageBuilder builder = MessageBuilder.Group(chain.GroupUin!.Value)
+                    .Image(image).Text("\nTitle: " + title + "\nTags: " + tags + "\nAuthor: " + author + "\nUrl: https://pixiv.net/artworks/" + _response["data"]!["id"]!);
+                preMessage.Wait();
+                await context.SendMessage(builder.Build());
+                break;
+            }
+            catch
+            {
+                if (i == 2)
+                {
+                    throw;
+                }
+            }
+        }
     }
 }

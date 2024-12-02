@@ -56,4 +56,27 @@ public class HttpUtils
 
         return await response.Content.ReadAsByteArrayAsync();
     }
+    
+    public static async Task<string> GetString(string url, string? auth = null, Dictionary<string, string>? headers = null)
+    {
+        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
+
+        if (!string.IsNullOrEmpty(auth))
+        {
+            string basicAuth = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(auth));
+            request.Headers.Add("Authorization", basicAuth);
+        }
+        if (headers != null)
+        {
+            foreach (KeyValuePair<string, string> header in headers)
+            {
+                request.Headers.Add(header.Key, header.Value);
+            }
+        }
+
+        HttpResponseMessage response = await HttpClient.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadAsStringAsync();
+    }
 }
