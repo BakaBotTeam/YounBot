@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using Lagrange.Core;
 using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Message;
+using Microsoft.Extensions.Logging;
 using YounBot.Permissions;
 using YounBot.Utils;
 using static YounBot.Utils.MessageUtils;
@@ -103,16 +104,19 @@ public class AcgCommand
             ["Upgrade-Insecure-Requests"] = "1"
         };
         string response = await HttpUtils.GetString($"https://www.vilipix.com/tags/{tag}/illusts", headers: headers);
-        // get page count, <li class="el-icon more btn-quicknext el-icon-more"></li><li class="number">48</li>
-        int pageCount = int.Parse(Regex.Match(response, @"<li class=""el-icon more btn-quicknext el-icon-more""></li><li class=""number"">(\d+)</li>").Groups[1].Value);
+        // get page count, get last <li class="number">20</li>
+        MatchCollection pageCountMatches = Regex.Matches(response, @"<li class=""number"">(\d+)</li>");
+        int pageCount = int.Parse(pageCountMatches[pageCountMatches.Count - 1].Groups[1].Value);
+        LoggingUtils.Logger.LogInformation("Found " + pageCount + " pages");
         // get random page
-        int page = new Random().Next(1, pageCount + 1);
+        int page = new Random().Next(1, Math.Min(pageCount + 1, 30));
         response = await HttpUtils.GetString($"https://www.vilipix.com/tags/{tag}/illusts?p={page}", headers: headers);
         // get all image id, <a href="/illust/123496259"
         MatchCollection matches = Regex.Matches(response, @"<a href=""/illust/(\d+)""");
         string[] ids = new string[matches.Count];
         for (int i = 0; i < matches.Count; i++)
             ids[i] = matches[i].Groups[1].Value;
+        LoggingUtils.Logger.LogInformation("Found " + ids.Length + " images");
         // get random image, retry 3 times
         for (int i = 0; i < 3; i++)
         {
