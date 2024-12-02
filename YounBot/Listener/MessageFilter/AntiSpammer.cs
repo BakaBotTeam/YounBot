@@ -1,5 +1,4 @@
 ﻿using Lagrange.Core;
-using Lagrange.Core.Common.Entity;
 using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Event.EventArg;
 using Lagrange.Core.Message;
@@ -24,12 +23,7 @@ public class AntiSpammer
     {
         try
         {
-            GroupMemberPermission selfPermission = await BotUtils.GetSelfPermissionInGroup(@event.Chain.GroupUin!.Value);
-            GroupMemberPermission targetPermission = @event.Chain.GroupMemberInfo!.Permission;
-            if (selfPermission <= targetPermission)
-            {
-                return;
-            }
+            if (!(await BotUtils.HasEnoughPermission(@event.Chain))) return;
 
             uint userUin = @event.Chain.FriendUin!;
             if (!LastMessages.ContainsKey(userUin))
@@ -187,6 +181,7 @@ public class AntiSpammer
                         {
                             maxSimilarity = Math.Max(maxSimilarity, LevenshteinDistance.FindSimilarity(LastMessages[userUin][i], _msg));
                         }
+                        messageSimilarities.Add(maxSimilarity);
                     }
                     messageSimilarities.Sort();
                     for (int i = 0; i < messageSimilarities.Count; i++)

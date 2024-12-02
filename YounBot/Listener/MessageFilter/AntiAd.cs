@@ -3,7 +3,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using Lagrange.Core;
-using Lagrange.Core.Common.Entity;
 using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Event.EventArg;
 using Lagrange.Core.Message;
@@ -56,13 +55,7 @@ public static class AntiAd
     
     public static async Task OnGroupMessage(BotContext context, GroupMessageEvent @event) 
     {
-        // check permission
-        GroupMemberPermission selfPermission = await BotUtils.GetSelfPermissionInGroup(@event.Chain.GroupUin!.Value);
-        GroupMemberPermission targetPermission = @event.Chain.GroupMemberInfo!.Permission;
-        if (selfPermission <= targetPermission)
-        {
-            return;
-        }
+        if (!(await BotUtils.HasEnoughPermission(@event.Chain))) return;
         // check message
         string text = MessageUtils.GetPlainTextForCheck(@event.Chain);
         bool matched = false;

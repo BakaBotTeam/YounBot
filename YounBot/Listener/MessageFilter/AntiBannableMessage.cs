@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using Lagrange.Core;
-using Lagrange.Core.Common.Entity;
 using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Event.EventArg;
 using Lagrange.Core.Message;
@@ -27,12 +26,7 @@ public class AntiBannableMessage
 
     public static async Task OnGroupMessage(BotContext context, GroupMessageEvent @event)
     {
-        GroupMemberPermission selfPermission = await BotUtils.GetSelfPermissionInGroup(@event.Chain.GroupUin!.Value);
-        GroupMemberPermission targetPermission = @event.Chain.GroupMemberInfo!.Permission;
-        if (selfPermission <= targetPermission)
-        {
-            return;
-        }
+        if (!(await BotUtils.HasEnoughPermission(@event.Chain))) return;
         
         string text = MessageUtils.GetPlainTextForCheck(@event.Chain);
         foreach (string keyword in bannableregexes)

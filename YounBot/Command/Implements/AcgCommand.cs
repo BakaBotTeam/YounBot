@@ -11,7 +11,7 @@ namespace YounBot.Command.Implements;
 public class AcgCommand
 {
     private readonly CooldownUtils _cooldown = new(10000L);
-    private readonly CooldownUtils _sdCooldown = new(600000L);
+    private readonly CooldownUtils _sdCooldown = new(120000L);
     
     [Command("acg", "二次元图片")]
     public async Task AcgPicture(BotContext context, MessageChain chain)
