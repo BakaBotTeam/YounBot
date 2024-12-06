@@ -106,13 +106,21 @@ public class AcgCommand
         string response = await HttpUtils.GetString($"https://www.vilipix.com/tags/{tag}/illusts", headers: headers);
         // get page count, get last <li class="number">20</li>
         MatchCollection pageCountMatches = Regex.Matches(response, @"<li class=""number"">(\d+)</li>");
-        int pageCount = int.Parse(pageCountMatches[pageCountMatches.Count - 1].Groups[1].Value);
-        LoggingUtils.Logger.LogInformation("Found " + pageCount + " pages");
-        // get random page
-        int page = new Random().Next(1, Math.Min(pageCount + 1, 30));
-        response = await HttpUtils.GetString($"https://www.vilipix.com/tags/{tag}/illusts?p={page}", headers: headers);
+        if (pageCountMatches.Count != 0)
+        {
+            int pageCount = int.Parse(pageCountMatches[pageCountMatches.Count - 1].Groups[1].Value);
+            LoggingUtils.Logger.LogInformation("Found " + pageCount + " pages");
+            // get random page
+            int page = new Random().Next(1, Math.Min(pageCount + 1, 30));
+            response = await HttpUtils.GetString($"https://www.vilipix.com/tags/{tag}/illusts?p={page}", headers: headers);
+        }
         // get all image id, <a href="/illust/123496259"
         MatchCollection matches = Regex.Matches(response, @"<a href=""/illust/(\d+)""");
+        if (matches.Count == 0)
+        {
+            await SendMessage(context, chain, "No image found");
+            return;
+        }
         string[] ids = new string[matches.Count];
         for (int i = 0; i < matches.Count; i++)
             ids[i] = matches[i].Groups[1].Value;

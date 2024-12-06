@@ -6,8 +6,9 @@ namespace YounBot.Utils;
 public class HttpUtils
 {
     private static readonly HttpClient HttpClient = new HttpClient();
+    private static readonly Dictionary<string, KeyValuePair<long, string>> cache = new();
 
-    public static async Task<JsonObject> GetJsonObject(string url, string? auth = null)
+    public static async Task<JsonObject> GetJsonObject(string url, string? auth = null, Dictionary<string, string> headers = null)
     {
         HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
 
@@ -16,11 +17,29 @@ public class HttpUtils
             string basicAuth = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(auth));
             request.Headers.Add("Authorization", basicAuth);
         }
+        
+        if (headers != null)
+        {
+            foreach (KeyValuePair<string, string> header in headers)
+            {
+                request.Headers.Add(header.Key, header.Value);
+            }
+        }
+        
+        if (cache.ContainsKey(url))
+        {
+            long now = DateTimeOffset.Now.ToUnixTimeSeconds();
+            if (now - cache[url].Key < 600)
+            {
+                return JsonObject.Parse(cache[url].Value).AsObject();
+            }
+        }
 
         HttpResponseMessage response = await HttpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
 
         string raw = await response.Content.ReadAsStringAsync();
+        cache[url] = new KeyValuePair<long, string>(DateTimeOffset.Now.ToUnixTimeSeconds(), raw);
         return JsonObject.Parse(raw).AsObject();
     }
     
