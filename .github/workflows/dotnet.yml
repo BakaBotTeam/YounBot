@@ -36,7 +36,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: 9.0.x
     - name: Install GitVersion
       uses: gittools/actions/gitversion/setup@v3.0.1
       with:
@@ -45,11 +45,11 @@ jobs:
       run: dotnet restore
     - name: Build
       shell: bash
-      run: dotnet publish --no-self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none -p:RuntimeIdentifier=${{ matrix.runtimeIdentifier }} --framework net8.0
-    - name: Upload binary files(${{ matrix.runtimeIdentifier }}) for .NET 8.0
+      run: dotnet publish --no-self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none -p:RuntimeIdentifier=${{ matrix.runtimeIdentifier }} --framework net9.0
+    - name: Upload binary files(${{ matrix.runtimeIdentifier }}) for .NET 9.0
       uses: actions/upload-artifact@v4
       with:
-        name: YounBot_${{ matrix.runtimeIdentifier }}_net8.0_NoSelfContained
+        name: YounBot_${{ matrix.runtimeIdentifier }}_net9.0_NoSelfContained
         path: YounBot/bin/Release/net8.0/${{ matrix.runtimeIdentifier }}/publish
   release:
     if: ${{ always() }}
