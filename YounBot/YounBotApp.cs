@@ -129,7 +129,7 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
     
     public Task Run()
     {
-        Hookers.Init();
+        // Hookers.Init(); R.I.P My hookers
 
         Client!.Invoker.OnGroupMemberIncreaseEvent += async (_, args) =>
         {
