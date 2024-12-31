@@ -29,25 +29,17 @@ class Program
             Console.ReadLine();
         }
         
-        // 输出GitVersionInformation
         Assembly assembly = Assembly.GetExecutingAssembly();
-        string? assemblyName = assembly.GetName().Name;
-        Type? gitVersionInformationType = assembly.GetType("GitVersionInformation");
-        FieldInfo[] fields = gitVersionInformationType.GetFields();
 
-        // 创建IConfiguration实例
         IConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", false, true)
             .AddEnvironmentVariables();
         IConfigurationRoot configuration = configurationBuilder.Build();
-        // 创建YounBotAppBuilder实例
         YounBotAppBuilder appBuilder = new YounBotAppBuilder(configuration);
         YounBotApp app = appBuilder.Build();
-        // 配置应用程序
         appBuilder.ConfigureBots();
 
-        //登录
         await app.Init(appBuilder.GetConfig(), appBuilder.GetDeviceInfo(), appBuilder.GetKeystore(), assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "Unknown");
         await QrCodeLogin.Login(app);
         await app.Run();

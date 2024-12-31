@@ -17,6 +17,21 @@ public class YounkooCommand
         await SendMessage(context, chain, "Pong!");
     }
     
+    [Command("testdm", "测试私聊")]
+    public async Task TestDm(BotContext context, MessageChain chain)
+    {
+        uint user = chain.FriendUin;
+        BotFriend? friend = (await context.FetchFriends()).FindLast(f => f.Uin == user) ?? (await context.FetchFriends(true)).FindLast(f => f.Uin == user);
+            
+        if (friend == null)
+        {
+            await SendMessage(context, chain, "无好友");
+            return;
+        }
+        
+        await context.SendMessage(MessageBuilder.Friend(friend.Uin).Text("Hello! " + DateTimeOffset.Now.ToUnixTimeSeconds()).Build());
+    }
+    
     [Command("addAdmin", "添加一位机器人管理员")]
     public async Task AddAdmin(BotContext context, MessageChain chain, BotGroupMember member)
     {

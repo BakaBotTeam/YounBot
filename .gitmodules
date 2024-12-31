@@ -1,0 +1,3 @@
+[submodule "Lagrange"]
+	path = Lagrange
+	url = https://github.com/LagrangeDev/Lagrange.Core

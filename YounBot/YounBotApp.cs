@@ -34,8 +34,9 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
         VERSION = version;
         Configuration = appBuilder.GetConfiguration();
         Keystore = keystore;
-        Client = Keystore == null ? BotFactory.Create(config, uint.Parse(Configuration["Account:Uin"]??"0"), Configuration["Account:Password"]??"", out deviceInfo) : BotFactory.Create(config, deviceInfo, Keystore);
-        Client.Config.CustomSignProvider = new OneBotSigner(Configuration, LoggingUtils.Logger, Client);
+        OneBotSigner signer = new(Configuration, LoggingUtils.Logger);
+        Client = Keystore == null ? BotFactory.Create(config, uint.Parse(Configuration["Account:Uin"]??"0"), Configuration["Account:Password"]??"", signer.GetAppInfo(), out deviceInfo) : BotFactory.Create(config, deviceInfo, Keystore, signer.GetAppInfo());
+        Client.Config.CustomSignProvider = signer;
         Config = appBuilder.GetYounBotConfig();
         
         LoggingUtils.Logger.LogInformation("Running on YounBot " + version);
@@ -143,8 +144,8 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
             if (@event.Chain.FriendUin == context.BotUin) return;
             await AntiSpammer.OnGroupMessage(context, @event);
             await AntiBannableMessage.OnGroupMessage(context, @event);
-            if (!Config!.CloudFlareAuthToken!.Equals("")) 
-                await AntiAd.OnGroupMessage(context, @event);
+            // if (!Config!.CloudFlareAuthToken!.Equals("")) 
+            //     await AntiAd.OnGroupMessage(context, @event);
             
             if (Config!.BlackLists!.Contains(@event.Chain.FriendUin)) return;
             string text = MessageUtils.GetPlainText(@event.Chain);
