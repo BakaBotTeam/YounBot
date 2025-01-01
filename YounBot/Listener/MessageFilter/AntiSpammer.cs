@@ -177,7 +177,7 @@ public class AntiSpammer
                     {
                         // find most similar message from all messages
                         double maxSimilarity = 0.0;
-                        for (int i2 = 1; i < LastMessages[userUin].Count; i2++)
+                        for (int i2 = 0; i2 < LastMessages[userUin].Count; i2++)
                         {
                             if (i == i2) continue;
                             maxSimilarity = Math.Max(maxSimilarity, LevenshteinDistance.FindSimilarity(LastMessages[userUin][i], LastMessages[userUin][i2]));
