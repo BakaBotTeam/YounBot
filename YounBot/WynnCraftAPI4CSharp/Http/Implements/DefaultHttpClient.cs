@@ -17,14 +17,14 @@ public class DefaultHttpClient : IWynnHttpClient
 
     public async Task<WynnCraftHttpResponse> MakeGetRequest(string url)
     {
-        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
+        HttpRequestMessage request = new(HttpMethod.Get, url);
         request.Headers.Add("User-Agent", IWynnHttpClient.DefaultUserAgent);
         return await GetResponseAsync(request);
     }
 
     public async Task<WynnCraftHttpResponse> MakePostRequest(string url, string payload)
     {
-        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, url)
+        HttpRequestMessage request = new(HttpMethod.Post, url)
         {
             Content = new StringContent(payload, Encoding.UTF8, "application/json")
         };

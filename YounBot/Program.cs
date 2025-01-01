@@ -36,7 +36,7 @@ class Program
             .AddJsonFile("appsettings.json", false, true)
             .AddEnvironmentVariables();
         IConfigurationRoot configuration = configurationBuilder.Build();
-        YounBotAppBuilder appBuilder = new YounBotAppBuilder(configuration);
+        YounBotAppBuilder appBuilder = new(configuration);
         YounBotApp app = appBuilder.Build();
         appBuilder.ConfigureBots();
 

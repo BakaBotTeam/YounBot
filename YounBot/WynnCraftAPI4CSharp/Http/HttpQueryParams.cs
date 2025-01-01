@@ -23,7 +23,7 @@ public class HttpQueryParams
 
     public string GetAsQueryString(string @base)
     {
-        StringBuilder url = new StringBuilder(@base);
+        StringBuilder url = new(@base);
         bool startedQuery = false;
 
         foreach (KeyValuePair<string, object> entry in _params)

@@ -11,7 +11,7 @@ public class PlayerSearchResultMapAdapter : JsonConverter<Dictionary<Guid, Playe
     {
         JsonNode? jsonDocument = JsonObject.Parse(ref reader);
         JsonObject jsonObject = jsonDocument.AsObject();
-        Dictionary<Guid, PlayerSearchResult> playerResultMap = new Dictionary<Guid, PlayerSearchResult>();
+        Dictionary<Guid, PlayerSearchResult> playerResultMap = new();
 
         foreach (KeyValuePair<string, JsonNode?> property in jsonObject)
         {

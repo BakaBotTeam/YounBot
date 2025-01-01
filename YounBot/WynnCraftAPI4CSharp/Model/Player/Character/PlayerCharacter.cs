@@ -22,7 +22,7 @@ public class PlayerCharacter
         public int discoveries { get; set; }
         public PlayerPvP pvp { get; set; }
         public string[] gamemode { get; set; }
-        public PlayerSkillPoints skillPoints { get; set; } = new PlayerSkillPoints();
+        public PlayerSkillPoints skillPoints { get; set; } = new();
         public PlayerProfessions professions { get; set; }
         public PlayerDungeons dungeons { get; set; }
         public PlayerRaids raids { get; set; }

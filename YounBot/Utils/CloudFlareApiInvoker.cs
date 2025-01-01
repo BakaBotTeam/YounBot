@@ -80,7 +80,7 @@ public static class CloudFlareApiInvoker
                         }
                     }
                 };
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, url)
+                HttpRequestMessage request = new(HttpMethod.Post, url)
                 {
                     Content = new StringContent(data.ToString(), Encoding.UTF8, "application/json")
                 };
@@ -114,7 +114,7 @@ public static class CloudFlareApiInvoker
                 string url =
                     $"https://gateway.ai.cloudflare.com/v1/{YounBotApp.Config!.CloudFlareAccountID}/{YounBotApp.Config!.CloudFlareGatewayID}/workers-ai/{model}";
                 string auth = $"Bearer {YounBotApp.Config!.CloudFlareAuthToken}";
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, url)
+                HttpRequestMessage request = new(HttpMethod.Post, url)
                 {
                     Content = new StringContent(data.ToString(), Encoding.UTF8, "application/json")
                 };

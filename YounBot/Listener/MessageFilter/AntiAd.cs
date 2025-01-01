@@ -27,7 +27,7 @@ public static class AntiAd
     {
         Assembly assem = Assembly.GetExecutingAssembly();
         Stream resourceStream = assem.GetManifestResourceStream("YounBot.Resources.checker.txt")!;
-        StreamReader reader = new StreamReader(resourceStream);
+        StreamReader reader = new(resourceStream);
         string[] lines = reader.ReadToEnd().Split("\n");
         regexes = new String[lines.Length];
         for (int i = 0; i < lines.Length; i++)
@@ -45,7 +45,7 @@ public static class AntiAd
         byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(rawData));
 
         // Convert the byte array to a string
-        StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new();
         foreach (byte b in bytes)
         { 
             builder.Append(b.ToString("x2"));
@@ -61,7 +61,7 @@ public static class AntiAd
         bool matched = false;
         foreach (string pattern in regexes)
         {
-            Regex regex = new Regex(pattern);
+            Regex regex = new(pattern);
             if (regex.IsMatch(text.Replace("\n", "").Replace(" ", "")))
             {
                 matched = true;

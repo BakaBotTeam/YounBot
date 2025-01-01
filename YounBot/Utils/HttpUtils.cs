@@ -5,12 +5,12 @@ namespace YounBot.Utils;
 
 public class HttpUtils
 {
-    private static readonly HttpClient HttpClient = new HttpClient();
+    private static readonly HttpClient HttpClient = new();
     private static readonly Dictionary<string, KeyValuePair<long, string>> cache = new();
 
     public static async Task<JsonObject> GetJsonObject(string url, string? auth = null, Dictionary<string, string> headers = null)
     {
-        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
+        HttpRequestMessage request = new(HttpMethod.Get, url);
 
         if (!string.IsNullOrEmpty(auth))
         {
@@ -45,7 +45,7 @@ public class HttpUtils
     
     public static async Task<JsonArray> GetJsonArray(string url, string? auth = null)
     {
-        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
+        HttpRequestMessage request = new(HttpMethod.Get, url);
 
         if (!string.IsNullOrEmpty(auth))
         {
@@ -62,7 +62,7 @@ public class HttpUtils
     
     public static async Task<byte[]> GetBytes(string url, string? auth = null)
     {
-        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
+        HttpRequestMessage request = new(HttpMethod.Get, url);
 
         if (!string.IsNullOrEmpty(auth))
         {
@@ -78,7 +78,7 @@ public class HttpUtils
     
     public static async Task<string> GetString(string url, string? auth = null, Dictionary<string, string>? headers = null)
     {
-        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
+        HttpRequestMessage request = new(HttpMethod.Get, url);
 
         if (!string.IsNullOrEmpty(auth))
         {

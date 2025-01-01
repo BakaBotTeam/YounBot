@@ -5,7 +5,7 @@ public static class ImageUtils
     
     public static async Task<byte[]> UrlToImageMessageAsync(string url)
     {
-        using HttpClient httpClient = new HttpClient();
+        using HttpClient httpClient = new();
         using HttpResponseMessage response = await httpClient.GetAsync(url);
         
         if (response.IsSuccessStatusCode) 
@@ -19,7 +19,7 @@ public static class ImageUtils
     
     private static byte[] ReadStreamToByteArray(Stream inputStream)
     {
-        using MemoryStream memoryStream = new MemoryStream();
+        using MemoryStream memoryStream = new();
         inputStream.CopyTo(memoryStream);
         
         return memoryStream.ToArray();

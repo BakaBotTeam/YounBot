@@ -21,7 +21,7 @@ public class CharacterClassAdapter : JsonConverter<CharacterClass>
         if (!matcher.Success)
             throw new JsonException($"Invalid format for CharacterClass: {name}");
 
-        JsonObject jsonObject = new JsonObject
+        JsonObject jsonObject = new()
         {
             { "type", ToEnum(matcher.Groups[1].Value) },
             { "donorType", ToEnum(matcher.Groups[2].Value) }

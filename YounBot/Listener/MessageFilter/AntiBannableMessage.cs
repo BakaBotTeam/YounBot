@@ -15,7 +15,7 @@ public class AntiBannableMessage
     {
         Assembly assem = Assembly.GetExecutingAssembly();
         Stream resourceStream = assem.GetManifestResourceStream("YounBot.Resources.bannable.txt")!;
-        StreamReader reader = new StreamReader(resourceStream);
+        StreamReader reader = new(resourceStream);
         string[] lines = reader.ReadToEnd().Split("\n");
         bannableregexes = new String[lines.Length];
         for (int i = 0; i < lines.Length; i++)

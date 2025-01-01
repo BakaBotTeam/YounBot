@@ -35,8 +35,8 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
         Configuration = appBuilder.GetConfiguration();
         Keystore = keystore;
         OneBotSigner signer = new(Configuration, LoggingUtils.Logger);
+        config.CustomSignProvider = signer;
         Client = Keystore == null ? BotFactory.Create(config, uint.Parse(Configuration["Account:Uin"]??"0"), Configuration["Account:Password"]??"", signer.GetAppInfo(), out deviceInfo) : BotFactory.Create(config, deviceInfo, Keystore, signer.GetAppInfo());
-        Client.Config.CustomSignProvider = signer;
         Config = appBuilder.GetYounBotConfig();
         
         LoggingUtils.Logger.LogInformation("Running on YounBot " + version);

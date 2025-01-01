@@ -24,7 +24,7 @@ public class OneBotSigner : SignProvider
 
     private readonly HttpClient _client;
 
-    private readonly BotAppInfo? _info;
+    public readonly BotAppInfo? _info;
 
     private readonly string platform;
 
@@ -36,7 +36,6 @@ public class OneBotSigner : SignProvider
         _logger = logger;
 
         _signServer = string.IsNullOrEmpty(config["SignServerUrl"]) ? Url : config["SignServerUrl"];
-        logger.LogInformation("Using signature service: " + _signServer);
         string? signProxyUrl = config["SignProxyUrl"]; // Only support HTTP proxy
 
         _client = new HttpClient(handler: new HttpClientHandler
@@ -60,7 +59,7 @@ public class OneBotSigner : SignProvider
             _ => "Unknown"
         };
         version = _info.CurrentVersion;
-        logger.LogInformation("Using version: " + version);
+        logger.LogInformation($"Using version: {version}({_info.AppId})");
     }
 
     public override byte[]? Sign(string cmd, uint seq, byte[] body, [UnscopedRef] out byte[]? e, [UnscopedRef] out string? t)
@@ -121,11 +120,6 @@ public class OneBotSigner : SignProvider
         if (_info != null) return _info;
 
         return FallbackAsync<BotAppInfo>.Create()
-            .Add(async token =>
-            {
-                try { return await _client.GetFromJsonAsync<BotAppInfo>($"{_signServer}/appinfo", token); }
-                catch { return null; }
-            })
             .Add(token =>
             {
                 string path = _configuration["ConfigPath:AppInfo"] ?? "appinfo.json";
@@ -134,6 +128,11 @@ public class OneBotSigner : SignProvider
 
                 try { return Task.FromResult(JsonSerializer.Deserialize<BotAppInfo>(File.ReadAllText(path))); }
                 catch { return Task.FromResult(null as BotAppInfo); }
+            })
+            .Add(async token =>
+            {
+                try { return await _client.GetFromJsonAsync<BotAppInfo>($"{_signServer}/appinfo", token); }
+                catch { return null; }
             })
             .ExecuteAsync(token => Task.FromResult(
                 BotAppInfo.ProtocolToAppInfo[_configuration["Account:Protocol"] switch

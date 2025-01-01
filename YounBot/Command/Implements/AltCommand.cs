@@ -65,7 +65,7 @@ public class AltCommand
     
     static string GenerateSignature(string data, string key)
     {
-        using (HMACSHA256 hmac = new HMACSHA256(Encoding.UTF8.GetBytes(key)))
+        using (HMACSHA256 hmac = new(Encoding.UTF8.GetBytes(key)))
         {
             byte[] hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(data));
             return BitConverter.ToString(hash).Replace("-", "").ToLower();

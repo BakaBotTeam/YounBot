@@ -9,7 +9,7 @@ public static class HypixelApiUtils
     public static async Task<JsonObject> RequestAsync(string url)
     {
         string fullUrl = $"https://api.hypixel.net{url}";
-        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, fullUrl);
+        HttpRequestMessage request = new(HttpMethod.Get, fullUrl);
 
         string apiKey = YounBotApp.Config!.HypixelApiKey!;
         request.Headers.Add("API-Key", apiKey);

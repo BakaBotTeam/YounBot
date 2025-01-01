@@ -9,7 +9,7 @@ public class CoordinateSearchResultMapAdapter : JsonConverter<Dictionary<string,
     public override Dictionary<string, CoordinateSearchResult> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         JsonElement jsonObject = JsonDocument.ParseValue(ref reader).RootElement;
-        Dictionary<string, CoordinateSearchResult> coordinateResultMap = new Dictionary<string, CoordinateSearchResult>();
+        Dictionary<string, CoordinateSearchResult> coordinateResultMap = new();
 
         foreach (JsonProperty property in jsonObject.EnumerateObject())
         {

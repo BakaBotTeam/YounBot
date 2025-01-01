@@ -4,7 +4,7 @@ namespace YounBot.WynnCraftAPI4CSharp.Model.Character;
 
 public class CharacterArchetype
 {
-    private static readonly Regex StripColorPattern = new Regex("(?i)&[0-9A-FK-OR]");
+    private static readonly Regex StripColorPattern = new("(?i)&[0-9A-FK-OR]");
 
     public string Name { get; set; }
     public int Difficulty { get; set; }

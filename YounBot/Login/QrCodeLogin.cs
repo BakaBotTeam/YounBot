@@ -29,10 +29,10 @@ public static class QrCodeLogin
 
         if (qrCodeInfo != null)
         {
-            using (QRCodeGenerator qrGenerator = new QRCodeGenerator())
+            using (QRCodeGenerator qrGenerator = new())
             using (QRCodeData qrCodeData = qrGenerator.CreateQrCode(qrCodeInfo.Value.Url, QRCodeGenerator.ECCLevel.Q))
-            using (PngByteQRCode qrCode = new PngByteQRCode(qrCodeData))
-            using (AsciiQRCode asciiQrCode = new AsciiQRCode(qrCodeData))
+            using (PngByteQRCode qrCode = new(qrCodeData))
+            using (AsciiQRCode asciiQrCode = new(qrCodeData))
             {
                 byte[] qrCodeImage = qrCode.GetGraphic(20);
                 await File.WriteAllBytesAsync("qrcode.png", qrCodeImage);
