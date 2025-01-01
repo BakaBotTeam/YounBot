@@ -2,7 +2,9 @@
 using System.Runtime;
 using System.Text;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using YounBot.Login;
+using YounBot.Utils;
 
 namespace YounBot;
 
@@ -41,7 +43,22 @@ class Program
         appBuilder.ConfigureBots();
 
         await app.Init(appBuilder.GetConfig(), appBuilder.GetDeviceInfo(), appBuilder.GetKeystore(), assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "Unknown");
+        AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+        Console.CancelKeyPress += OnCancelKeyPress;
         await QrCodeLogin.Login(app);
         await app.Run();
+    }
+    
+    private static void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
+    {
+        e.Cancel = true;
+        Environment.Exit(0);
+    }
+    
+    private static void OnProcessExit(object? sender, EventArgs e)
+    {
+        LoggingUtils.Logger.LogInformation("Exiting...");
+        if (YounBotApp.Db != null) YounBotApp.Db.Dispose();
+        if (YounBotApp.Config != null) FileUtils.SaveConfig("younbot-config.json", YounBotApp.Config, true);
     }
 }
