@@ -51,7 +51,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: YounBot_${{ matrix.runtimeIdentifier }}_net9.0_NoSelfContained
-        path: YounBot/bin/Release/net8.0/${{ matrix.runtimeIdentifier }}/publish
+        path: YounBot/bin/Release/net9.0/${{ matrix.runtimeIdentifier }}/publish
   release:
     if: ${{ always() }}
     runs-on: ubuntu-latest
