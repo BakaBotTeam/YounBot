@@ -4,6 +4,7 @@
 public class YounBotConfig
 {
     public string HypixelApiKey { get; set; } = "00000000-0000-0000-0000-00000000";
+    public string PrivateBinUrl { get; set; } = "null";
     public uint BotOwner { get; set; }
     public string CloudFlareAccountID { get; set; } = "";
     public string CloudFlareGatewayID { get; set; } = "";
@@ -20,6 +21,7 @@ public class YounBotConfig
         MaxMessageCache = 12,
         MaxGroupMessageCache = 25,
         BotAdmins = new List<uint>(),
-        BlackLists = new List<uint>()
+        BlackLists = new List<uint>(),
+        PrivateBinUrl = "null"
     };
 }

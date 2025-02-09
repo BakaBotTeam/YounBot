@@ -2,6 +2,8 @@
 using Lagrange.Core.Common.Entity;
 using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Message;
+using Microsoft.Extensions.Logging;
+using PrivateBinSharp;
 using YounBot.Permissions;
 using YounBot.Utils;
 
@@ -163,6 +165,37 @@ public class YounkooCommand
             await botContext.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
                 .Forward(chain)
                 .Text("Cache refreshed").Build());
+        }
+    }
+    
+    [Command("testprivatebin", "测试PrivateBin")]
+    public async Task TestPrivateBin(BotContext context, MessageChain chain)
+    {
+        if (HasPermission(chain))
+        {
+            await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+                .Forward(chain)
+                .Text("Please Wait...").Build());
+            string url = "上传失败";
+            try
+            {
+                Paste paste = await YounBotApp.PrivateBinClient?.CreatePaste($"Hello world from YounBot {DateTimeOffset.Now.ToUnixTimeSeconds()}", "")!;
+                if (paste.IsSuccess)
+                {
+                    url = paste.ViewURL;
+                }
+                else
+                {
+                    LoggingUtils.Logger.LogWarning(await paste.Response?.Content.ReadAsStringAsync()!);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+                .Forward(chain)
+                .Text("Result: " + url).Build());
         }
     }
 }

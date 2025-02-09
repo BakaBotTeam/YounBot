@@ -15,62 +15,40 @@ public static class CloudFlareApiInvoker
             try
             {
                 string url =
-                    $"https://gateway.ai.cloudflare.com/v1/{YounBotApp.Config!.CloudFlareAccountID}/{YounBotApp.Config!.CloudFlareGatewayID}/workers-ai/@cf/qwen/qwen1.5-14b-chat-awq";
+                    $"https://gateway.ai.cloudflare.com/v1/{YounBotApp.Config!.CloudFlareAccountID}/{YounBotApp.Config!.CloudFlareGatewayID}/workers-ai/@cf/deepseek-ai/deepseek-r1-distill-qwen-32b";
                 string auth = $"Bearer {YounBotApp.Config!.CloudFlareAuthToken}";
                 JsonObject data = new()
                 {
                     ["messages"] = new JsonArray
                     {
-                        new JsonObject
+                        new JsonObject()
                         {
                             ["role"] = "system",
                             ["content"] = """
-                                          你是一个专门检测售卖商品广告、网络发卡网内容以及NFA/MFA类型卡网商品销售的AI模型。你的任务是分析给定的输入消息，判断其是否属于这三类广告内容。只有在明确无疑地确认输入内容符合这三种类型之一时，才能返回肯定的判断。
+                                          请严格判断以下内容是否为广告或包含政治敏感内容。检测标准：
+                                          包含推广产品/服务/群组的信息
+                                          出现网址、联系方式或邀请加入群组
+                                          使用促销性描述（如"价格优惠""补货""最新"等）
+                                          列举产品功能优势（带+或✓符号列表）
+                                          涉及游戏作弊工具/外挂内容（如Bypass、Killaura、Blink等术语）
+                                          包含明确的诱导行为（如"进群""加我""获取"等）
+                                          包含政治敏感内容（如涉及政府、政党、政策、领导人、敏感事件等）
                                           
-                                          ### 检测规则：
-                                          1. **商品销售广告**的典型特征：  
-                                             - 描述具体商品或服务（例如：“手机”“衣服”“家用电器”）。  
-                                             - 包含促销性质的语言（例如：“限时优惠”“全场5折”“买一送一”）。  
-                                             - 明确的行动号召（例如：“点击购买”“立即下单”“联系客服”）。  
+                                          判断步骤：
+                                          首先检查是否包含政治敏感内容，如果是则判定为true
+                                          否则检查是否包含至少3个上述广告特征（前6项）
+                                          确认主要目的是否为推广
+                                          排除普通用户讨论产品的情况
+                                          只是单纯的发个网址的情况不算广告
                                           
-                                          2. **网络发卡网内容**的典型特征：  
-                                             - 提到发卡网、自动发卡、代充、卡密销售等相关关键词。  
-                                             - 包含网站链接或提示访问特定平台（例如：“www.xxx发卡网.com”）。  
+                                          返回格式（严格遵循）：
+                                          [true|false]|[原因（不超过6字）]
                                           
-                                          3. **NFA/MFA类型卡网商品销售**的典型特征：  
-                                             - 涉及账号或虚拟商品交易，明确提到“NFA”或“MFA”等字样。  
-                                             - 描述交易虚拟服务或账号，例如“低价MFA批发”“NFA账号秒发”。  
-                                             - 包含相关促销用语或联系方式（例如：“联系客服”“立即购买”）。  
-                                          
-                                          4. 如果检测到输入符合其中之一，返回：  
-                                             - **"true|[类型]|[原因]"**  
-                                               - `[类型]`：广告类别，例如“商品销售”“网络发卡网”或“NFA/MFA销售”。  
-                                               - `[原因]`：导致判断的关键词或内容依据。  
-                                          
-                                          5. 如果输入内容不符合上述特征，返回：  
-                                             - **"false|None"**  
-                                          
-                                          ### 示例：
-                                          **输入**：  
-                                          “低价NFA账号批发，联系客服领取优惠，立即购买！”  
-                                          **输出**：  
-                                          true|NFA/MFA销售|包含关键词：“NFA账号”；含有促销语言：“低价”“立即购买”；明确行动号召：“联系客服”。
-                                          
-                                          **输入**：
-                                          “shop.xuebimc.com 补货大量tokenNFA 1+ MFA 21+”
-                                          **输出**：
-                                          true|NFA/MFA销售|包含关键词：“补货”“NFA 1+”“MFA 21+”。
-                                          
-                                          
-                                          **输入**：  
-                                          “出售MFA账号，每个仅需10元，自动发货，数量有限！”  
-                                          **输出**：  
-                                          true|NFA/MFA销售|包含关键词：“MFA账号”；含有促销语言：“仅需10元”；包含描述“自动发货”。
-                                          
-                                          **输入**：  
-                                          “你好，今天天气不错，一起去公园散步吧！”  
-                                          **输出**：  
-                                          false|None
+                                          示例响应：
+                                          true|推广作弊工具
+                                          true|政治敏感
+                                          false|无
+                                          请严格按标准判断以下内容：
                                           """
                         },
                         new JsonObject

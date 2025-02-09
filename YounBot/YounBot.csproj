@@ -21,6 +21,7 @@
         <PackageReference Include="GitVersion.MsBuild" Version="6.0.5">
             <PrivateAssets>All</PrivateAssets>
         </PackageReference>
+        <PackageReference Include="PrivateBinSharp" Version="1.0.2" />
         <PackageReference Include="QRCoder" Version="1.6.0" />
         <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="9.0.0" />
         

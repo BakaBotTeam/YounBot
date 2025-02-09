@@ -7,6 +7,7 @@ using Lagrange.Core.Common.Interface.Api;
 using LiteDB;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using PrivateBinSharp;
 using QRCoder;
 using YounBot.Command;
 using YounBot.Config;
@@ -28,6 +29,7 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
     public static BotKeystore? Keystore;
     public static string VERSION;
     public static long? UpTime;
+    public static PrivateBinClient? PrivateBinClient;
     
     public Task Init(BotConfig config, BotDeviceInfo deviceInfo, BotKeystore? keystore, string version)
     {
@@ -38,6 +40,11 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
         config.CustomSignProvider = signer;
         Client = Keystore == null ? BotFactory.Create(config, uint.Parse(Configuration["Account:Uin"]??"0"), Configuration["Account:Password"]??"", signer.GetAppInfo(), out deviceInfo) : BotFactory.Create(config, deviceInfo, Keystore, signer.GetAppInfo());
         Config = appBuilder.GetYounBotConfig();
+        
+        if (Config.PrivateBinUrl != "null")
+        {
+            PrivateBinClient = new PrivateBinClient(Config.PrivateBinUrl);
+        }
         
         LoggingUtils.Logger.LogInformation("Running on YounBot " + version);
         
@@ -144,8 +151,8 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
             if (@event.Chain.FriendUin == context.BotUin) return;
             await AntiSpammer.OnGroupMessage(context, @event);
             await AntiBannableMessage.OnGroupMessage(context, @event);
-            // if (!Config!.CloudFlareAuthToken!.Equals("")) 
-            //     await AntiAd.OnGroupMessage(context, @event);
+            if (!Config!.CloudFlareAuthToken!.Equals("")) 
+                await AntiAd.OnGroupMessage(context, @event);
             
             if (Config!.BlackLists!.Contains(@event.Chain.FriendUin)) return;
             string text = MessageUtils.GetPlainText(@event.Chain);
@@ -156,18 +163,6 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
             }
             stopwatch.Stop();
             InformationCollector.MessageInvokeCount[DateTimeOffset.Now.ToUnixTimeMilliseconds()] = stopwatch.ElapsedMilliseconds;
-        };
-        
-        Client!.Invoker.OnFriendRequestEvent += async (context, @event) =>
-        {
-            try
-            {
-                await context.SetFriendRequest(@event);
-            }
-            catch (Exception e)
-            {
-                LoggingUtils.Logger.LogWarning(e.ToString());
-            }
         };
 
         Client!.Invoker.OnGroupInvitationReceived += async (context, @event) =>
