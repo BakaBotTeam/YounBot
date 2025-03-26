@@ -269,12 +269,13 @@ public class YounkooCommand
             });
             JsonObject data = new()
             {
-                ["messages"] = ChatDatas[chain.FriendUin].Data.DeepClone()
+                ["messages"] = ChatDatas[chain.FriendUin].Data.DeepClone(),
+                ["model"] = "grok-2-latest"
             };
             Cooldown.Flag(chain.FriendUin);
             // send the message to the chatbot
-            JsonObject response = (JsonObject)JsonNode.Parse(Encoding.UTF8.GetString(await CloudFlareApiInvoker.InvokeCustomAiTask("@cf/deepseek-ai/deepseek-r1-distill-qwen-32b", data)))!;
-            string reply = response["result"]["response"].GetValue<string>();
+            JsonObject response = await CloudFlareApiInvoker.InvokeGrokTask(data);
+            string reply = response["choices"][0]["message"]["content"].GetValue<string>();
             ChatDatas[chain.FriendUin].Data.Add(new JsonObject
             {
                 ["role"] = "assistant",
@@ -285,33 +286,61 @@ public class YounkooCommand
             {
                 ChatDatas[chain.FriendUin].Data.RemoveAt(1);
             }
-            // upload think part to privatebin
-            string url = "上传失败";
+            await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+                .Forward(chain)
+                .Text(reply).Build());
+        }
+        else
+        {
+            if (Cooldown.ShouldSendCooldownNotice(chain.FriendUin))
+            {
+                await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+                    .Forward(chain)
+                    .Text($"冷却中, 你可以在 {Cooldown.GetLeftTime(chain.FriendUin) / 1000} 秒后继续使用该指令").Build());
+            }
+        }
+    }
+
+    [Command("grokimage", "使用GrokAI生成图片")]
+    public async Task GenerateGrokImage(BotContext context, MessageChain chain, string prompt)
+    {
+        if (HasPermission(chain) || Cooldown.IsTimePassed(chain.FriendUin))
+        {
+            await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+                .Forward(chain)
+                .Text("Please Wait...").Build());
+            // get raw message from the chain
+            string rawMessage = GetPlainText(chain);
+            // remove the command from the message
+            rawMessage = rawMessage.Substring((YounBotApp.Configuration["CommandPrefix"] ?? "!").Length + 10);
+            JsonObject data = new()
+            {
+                ["prompt"] = rawMessage,
+                ["model"] = "grok-2-image"
+            };
+            Cooldown.Flag(chain.FriendUin);
+            // send the message to the chatbot
+            JsonObject response = await CloudFlareApiInvoker.InvokeGrokTask(data, endpoint: "/v1/images/generations");
+            string url = response["data"][0]["url"].GetValue<string>();
+            string details = response["data"][0]["revised_prompt"].GetValue<string>();
+            string urls = "上传至PrivateBin失败";
             try
             {
-                Paste paste = await YounBotApp.PrivateBinClient?.CreatePaste(reply, "")!;
+                string uploadContent = $"MessageContext: {rawMessage}\n\nDetails: {details}";
+                Paste paste = await YounBotApp.PrivateBinClient?.CreatePaste(uploadContent, "", "1week")!;
                 if (paste.IsSuccess)
                 {
-                    url = paste.ViewURL;
-                }
-                else
-                {
-                    LoggingUtils.Logger.LogWarning(await paste.Response?.Content.ReadAsStringAsync()!);
+                    urls = paste.ViewURL;
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                LoggingUtils.Logger.LogWarning(e.ToString());
             }
-            if (reply.Contains("</think>"))
-            {
-                reply = reply.Substring(reply.IndexOf("</think>", StringComparison.Ordinal) + 10);
-            }
-            // replace new line 
-            reply += "\n\n完整内容: " + url;
             await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
                 .Forward(chain)
-                .Text(reply).Build());
+                .Image(await HttpUtils.GetBytes(url))
+                .Text("\n详细信息: " + urls).Build());
         }
         else
         {

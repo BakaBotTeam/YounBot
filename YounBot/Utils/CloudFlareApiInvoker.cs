@@ -14,11 +14,9 @@ public static class CloudFlareApiInvoker
         {
             try
             {
-                string url =
-                    $"https://gateway.ai.cloudflare.com/v1/{YounBotApp.Config!.CloudFlareAccountID}/{YounBotApp.Config!.CloudFlareGatewayID}/workers-ai/@cf/deepseek-ai/deepseek-r1-distill-qwen-32b";
-                string auth = $"Bearer {YounBotApp.Config!.CloudFlareAuthToken}";
                 JsonObject data = new()
                 {
+                    ["model"] = "grok-2-latest",
                     ["messages"] = new JsonArray
                     {
                         new JsonObject()
@@ -58,16 +56,8 @@ public static class CloudFlareApiInvoker
                         }
                     }
                 };
-                HttpRequestMessage request = new(HttpMethod.Post, url)
-                {
-                    Content = new StringContent(data.ToString(), Encoding.UTF8, "application/json")
-                };
-                request.Headers.Add("Authorization", auth);
-                HttpResponseMessage response = await _httpClient.SendAsync(request);
-                response.EnsureSuccessStatusCode();
-                raw = await response.Content.ReadAsStringAsync();
-                JsonObject responseJson = JsonObject.Parse(raw).AsObject();
-                return responseJson["result"]["response"].GetValue<string>();
+                JsonObject response = await InvokeGrokTask(data);
+                return response["choices"][0]["message"]["content"].GetValue<string>();
             }
             catch (Exception e)
             {
@@ -100,6 +90,39 @@ public static class CloudFlareApiInvoker
                 HttpResponseMessage response = await _httpClient.SendAsync(request);
                 response.EnsureSuccessStatusCode();
                 return await response.Content.ReadAsByteArrayAsync();
+            }
+            catch (Exception e)
+            {
+                lastException = new Exception("Failed to invoke AI task", e);
+            }
+            finally
+            {
+                await Task.Delay(delayMilliseconds);
+            }
+        }
+
+        throw new Exception("Failed to invoke AI task", lastException);
+    }
+    
+    public static async Task<JsonObject> InvokeGrokTask(JsonObject data, int maxRetries = 3, int delayMilliseconds = 1000, string endpoint = "/v1/chat/completions")
+    {
+        Exception lastException = new("Failed to invoke AI task");
+        for (int i = 0; i < maxRetries; i++)
+        {
+            try
+            {
+                string url =
+                    $"https://gateway.ai.cloudflare.com/v1/{YounBotApp.Config!.CloudFlareAccountID}/{YounBotApp.Config!.CloudFlareGatewayID}/grok{endpoint}";
+                string auth = $"Bearer {YounBotApp.Config!.GrokApiKey}";
+                HttpRequestMessage request = new(HttpMethod.Post, url)
+                {
+                    Content = new StringContent(data.ToString(), Encoding.UTF8, "application/json")
+                };
+                request.Headers.Add("Authorization", auth);
+                HttpResponseMessage response = await _httpClient.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+                string raw = await response.Content.ReadAsStringAsync();
+                return JsonObject.Parse(raw).AsObject();
             }
             catch (Exception e)
             {

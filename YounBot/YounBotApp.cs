@@ -151,8 +151,8 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
             if (@event.Chain.FriendUin == context.BotUin) return;
             await AntiSpammer.OnGroupMessage(context, @event);
             await AntiBannableMessage.OnGroupMessage(context, @event);
-            // if (!Config!.CloudFlareAuthToken!.Equals("")) 
-            //     await AntiAd.OnGroupMessage(context, @event);
+            if (!Config!.CloudFlareAuthToken!.Equals("")) 
+                await AntiAd.OnGroupMessage(context, @event);
             
             if (Config!.BlackLists!.Contains(@event.Chain.FriendUin)) return;
             string text = MessageUtils.GetPlainText(@event.Chain);

@@ -29,7 +29,7 @@ public class AcgCommand
         _cooldown.Flag(user);
         
         Task preMessage = SendMessage(context, chain, "Please Wait...");
-        JsonObject response = await HttpUtils.GetJsonObject("https://pixiv.yuki.sh/api/recommend?type=json");
+        JsonObject response = await HttpUtils.GetJsonObject("https://pixiv.yuki.sh/api/recommend?type=json&nocache=" + new Random().Next(0, 1000000));
         String title = response["data"]!["title"]!.ToString();
         String url = response["data"]!["urls"]!["original"]!.ToString();
         String tags = "";

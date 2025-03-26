@@ -3,6 +3,7 @@
 [Serializable]
 public class YounBotConfig
 {
+    public string GrokApiKey { get; set; } = "00000000-0000-0000-0000-00000000";
     public string HypixelApiKey { get; set; } = "00000000-0000-0000-0000-00000000";
     public string PrivateBinUrl { get; set; } = "null";
     public uint BotOwner { get; set; }
@@ -16,6 +17,7 @@ public class YounBotConfig
     
     public static YounBotConfig NewConfig() => new()
     {
+        GrokApiKey = "00000000-0000-0000-0000-00000000",
         HypixelApiKey = "00000000-0000-0000-0000-00000000",
         BotOwner = 0,
         MaxMessageCache = 12,
