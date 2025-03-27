@@ -36,6 +36,7 @@ public class CommandManager
         RegisterCommand(new HypixelCommand());
         RegisterCommand(new WynnCommand());
         RegisterCommand(new AltCommand());
+        RegisterCommand(new VvCommand());
     }
 
     public string GetCommandArgs(string commandName)
