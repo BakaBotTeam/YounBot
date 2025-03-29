@@ -38,6 +38,7 @@ public class CommandManager
         RegisterCommand(new VvCommand());
         RegisterCommand(new TldrCommand());
         RegisterCommand(new MFaceCommand());
+        RegisterCommand(new RAnimalCommand());
     }
 
     public string GetCommandArgs(string commandName)
