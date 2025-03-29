@@ -12,7 +12,6 @@ using QRCoder;
 using YounBot.Command;
 using YounBot.Config;
 using YounBot.Listener;
-using YounBot.Listener.MessageFilter;
 using YounBot.Signer;
 using YounBot.Utils;
 using LogLevel = Lagrange.Core.Event.EventArg.LogLevel;
@@ -126,8 +125,6 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
         };
 
         CommandManager.Instance.InitializeCommands();
-        AntiAd.Init();
-        AntiBannableMessage.Init();
 
         Db = new LiteDatabase("YounBot.db");
         
@@ -136,7 +133,7 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
     
     public Task Run()
     {
-        // Hookers.Init(); R.I.P My hookers
+        Hookers.Init();
 
         Client!.Invoker.OnGroupMemberIncreaseEvent += async (_, args) =>
         {
@@ -149,10 +146,6 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
             Stopwatch stopwatch = Stopwatch.StartNew();
             MessageCounter.AddMessageReceived(DateTimeOffset.Now.ToUnixTimeSeconds());
             if (@event.Chain.FriendUin == context.BotUin) return;
-            await AntiSpammer.OnGroupMessage(context, @event);
-            await AntiBannableMessage.OnGroupMessage(context, @event);
-            if (!Config!.CloudFlareAuthToken!.Equals("")) 
-                await AntiAd.OnGroupMessage(context, @event);
             
             if (Config!.BlackLists!.Contains(@event.Chain.FriendUin)) return;
             string text = MessageUtils.GetPlainText(@event.Chain);

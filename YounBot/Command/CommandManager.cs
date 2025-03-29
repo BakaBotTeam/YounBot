@@ -35,7 +35,6 @@ public class CommandManager
         RegisterCommand(new HelpCommand());
         RegisterCommand(new HypixelCommand());
         RegisterCommand(new WynnCommand());
-        RegisterCommand(new AltCommand());
         RegisterCommand(new VvCommand());
         RegisterCommand(new TldrCommand());
         RegisterCommand(new MFaceCommand());

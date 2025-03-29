@@ -55,21 +55,6 @@ public class YounkooCommand
         }
     }
     
-    [Command("mute", "把某人的嘴巴用胶布粘上")]
-    public async Task Mute(BotContext context, MessageChain chain, BotGroupMember member, uint second = 600, uint group = 0, string reason = "No reason")
-    {
-        if (HasPermission(chain))
-        {
-            uint _group = (group != 0) ? group : chain.GroupUin!.Value;
-            await context.MuteGroupMember(_group, member.Uin, second);
-            await context.SendMessage(MessageBuilder.Group(_group)
-                .Text("[滥权小助手] ").Mention(member.Uin)
-                .Text($" 获得了来自 ").Mention(chain.FriendUin).Text(" 的禁言\n")
-                .Text($"时长: {Math.Round(second / 60.0, 2)} 分钟\n")
-                .Text($"理由: {reason}").Build());
-        }
-    }
-    
     [Command("stop", "停止机器人")]
     public async Task Stop(BotContext context, MessageChain chain)
     {
@@ -83,19 +68,6 @@ public class YounkooCommand
             SaveConfig(YounBotApp.Configuration["ConfigPath:DeviceInfo"] ?? "device.json", YounBotApp.Client!.UpdateDeviceInfo(), true);
             YounBotApp.Db!.Dispose();
             YounBotApp.Client!.Dispose();
-        }
-    }
-
-    [Command("unmute", "把胶布从某人的嘴巴上撕下来")]
-    public async Task UnMute(BotContext context, MessageChain chain, BotGroupMember member, uint group = 0)
-    {
-        if (HasPermission(chain))
-        {
-            uint _group = (group != 0) ? group : chain.GroupUin!.Value;
-            await context.MuteGroupMember(_group, member.Uin, 0);
-            await context.SendMessage(MessageBuilder.Group(_group)
-                .Text("[滥权小助手] ").Mention(member.Uin)
-                .Text($" 获得了来自 ").Mention(chain.FriendUin).Text(" 的解除禁言\n").Build());
         }
     }
     
@@ -117,16 +89,6 @@ public class YounkooCommand
             .Text($"Avg invoke time (ms) (10m): {InformationCollector.GetAvgMessageInvokeCountMinutes(10)}")
             .Build()
         );
-    }
-
-    [Command("ban", "把某人从群聊封禁")]
-    public async Task Ban(BotContext context, MessageChain chain, BotGroupMember member, uint group = 0, string reason = "No reason")
-    {
-        if (HasPermission(chain))
-        {
-            uint _group = (group != 0) ? group : chain.GroupUin!.Value;
-            await context.KickGroupMember(_group, member.Uin, false, reason);
-        }
     }
     
     [Command("blacklist", "黑名单")]
