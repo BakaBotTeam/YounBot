@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
@@ -24,7 +24,7 @@
         <PackageReference Include="PrivateBinSharp" Version="1.0.2" />
         <PackageReference Include="QRCoder" Version="1.6.0" />
         <PackageReference Include="SixLabors.ImageSharp" Version="3.1.7" />
-        <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="9.0.0" />
+        <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="9.0.3" />
         
         <None Remove="Resources\appsettings.json" />
         <None Remove="Resources\checker.txt" />
