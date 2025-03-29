@@ -37,6 +37,8 @@ public class CommandManager
         RegisterCommand(new WynnCommand());
         RegisterCommand(new AltCommand());
         RegisterCommand(new VvCommand());
+        RegisterCommand(new TldrCommand());
+        RegisterCommand(new MFaceCommand());
     }
 
     public string GetCommandArgs(string commandName)

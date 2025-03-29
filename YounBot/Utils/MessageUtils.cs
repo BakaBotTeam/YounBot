@@ -44,6 +44,29 @@ public static class MessageUtils
 
         return plainText;
     }
+
+    public static List<string> GetMultiMessageContent(MultiMsgEntity? multiMsgEntity, int layer = 0)
+    {
+        if (layer >= 4)
+        {
+            return ["[Too many layers]"];
+        }
+        List<string> result = [];
+        foreach (MessageChain chain in multiMsgEntity.Chains)
+        {
+            result.Add($"{chain.GroupMemberInfo.MemberName}: {GetPlainText(chain)}");
+            MultiMsgEntity? innerMultiMsgEntity = chain.FirstOrDefault(entity => entity is MultiMsgEntity) as MultiMsgEntity;
+            if (innerMultiMsgEntity != null)
+            {
+                List<string> innerChain = GetMultiMessageContent(innerMultiMsgEntity, layer + 1);
+                if (innerChain.Count > 0)
+                {
+                    result.AddRange(innerChain.Select(inner => $"  {inner}"));
+                }
+            }
+        }
+        return result;
+    }
     
     public static async Task SendMessage(BotContext context, MessageChain chain, string message, bool mention = false)
     {
@@ -67,5 +90,24 @@ public static class MessageUtils
         {
             await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value).Image(imageBytes).Build());
         }
+    }
+    
+    public static List<IMessageEntity> GetMessageEntitiesFromMultiMsg(MultiMsgEntity multiMsgEntity)
+    {
+        List<IMessageEntity> entities = [];
+        foreach (IMessageEntity messageEntity in multiMsgEntity.Chains.SelectMany(messageChain => messageChain))
+        {
+            switch (messageEntity)
+            {
+                case TextEntity or ImageEntity:
+                    entities.Add(messageEntity);
+                    break;
+                case MultiMsgEntity entity:
+                    entities.AddRange(GetMessageEntitiesFromMultiMsg(entity));
+                    break;
+            }
+        }
+
+        return entities;
     }
 }
