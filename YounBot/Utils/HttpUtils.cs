@@ -43,6 +43,37 @@ public class HttpUtils
         return JsonObject.Parse(raw).AsObject();
     }
     
+    public static async Task<JsonObject> PostJsonObject(string url, string? auth = null, Dictionary<string, string> headers = null, JsonObject data = null)
+    {
+        HttpRequestMessage request = new(HttpMethod.Post, url);
+
+        if (!string.IsNullOrEmpty(auth))
+        {
+            string basicAuth = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(auth));
+            request.Headers.Add("Authorization", basicAuth);
+        }
+        
+        if (headers != null)
+        {
+            foreach (KeyValuePair<string, string> header in headers)
+            {
+                request.Headers.Add(header.Key, header.Value);
+            }
+        }
+
+        if (data != null)
+        {
+            request.Content = new StringContent(data.ToString(), Encoding.UTF8, "application/json");
+        }
+
+        HttpResponseMessage response = await HttpClient.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+
+        string raw = await response.Content.ReadAsStringAsync();
+        cache[url] = new KeyValuePair<long, string>(DateTimeOffset.Now.ToUnixTimeSeconds(), raw);
+        return JsonObject.Parse(raw).AsObject();
+    }
+    
     public static async Task<JsonArray> GetJsonArray(string url, string? auth = null)
     {
         HttpRequestMessage request = new(HttpMethod.Get, url);
