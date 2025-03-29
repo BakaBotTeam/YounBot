@@ -50,6 +50,9 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
         Client!.Invoker.OnBotLogEvent += (_, @event) =>
         {
             ILogger logger = LoggingUtils.CreateLogger(@event.Tag);
+            if (@event.EventMessage.Contains("Unsupported SSOFrame Received") || 
+                @event.EventMessage.Contains("Error while handling msf push: 12 trpc.msg.olpush.OlPushService.MsgPush") ||
+                @event.EventMessage.Contains("at Lagrange.Core.Internal.Service.Message.PushMessageService.ProcessEvent0x210(Span`1 payload, PushMsg msg, List`1 extraEvents)")) return;
             switch (@event.Level)
             {
                 case LogLevel.Debug:
@@ -67,6 +70,9 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
                     break;
                 case LogLevel.Fatal:
                     logger.LogCritical(@event.EventMessage);
+                    break;
+                default:
+                    logger.LogInformation(@event.EventMessage);
                     break;
             }
         };
