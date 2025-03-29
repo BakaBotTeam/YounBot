@@ -46,6 +46,11 @@ public class TldrCommand
                     };
                     foreach (MessageChain messageChain in multiEntity.Chains)
                     {
+                        if (data.Count >= 250)
+                        {
+                            await MessageUtils.SendMessage(context, chain, "太多消息了... 可能总结会不完整哦");
+                            break;
+                        }
                         string plainText = $"{messageChain.GroupMemberInfo.MemberName}: {MessageUtils.GetPlainTextForCheck(messageChain)}";
                         MultiMsgEntity? innerMultiMsgEntity = chain.FirstOrDefault(entity => entity is MultiMsgEntity) as MultiMsgEntity;
                         if (innerMultiMsgEntity != null)
@@ -56,7 +61,7 @@ public class TldrCommand
                                 plainText = innerChain.Select(inner => $"  {inner}").Aggregate(plainText, (current, se) => current + $"\n{se}");
                             }
                         }
-                        JsonArray singleData = new JsonArray
+                        JsonArray singleData = new()
                         {
                             new JsonObject
                             {
@@ -77,6 +82,7 @@ public class TldrCommand
                             foreach (ImageEntity imageEntity in images)
                             {
                                 byte[] imageBytes = await HttpUtils.GetBytes(imageEntity.ImageUrl);
+                                if (imageBytes.Length > 10 * 1024 * 1024) continue;
                                 string imageBase64 = Convert.ToBase64String(imageBytes);
                                 singleData.Add(new JsonObject
                                 {
