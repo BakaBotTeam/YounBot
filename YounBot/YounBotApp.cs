@@ -12,6 +12,7 @@ using QRCoder;
 using YounBot.Command;
 using YounBot.Config;
 using YounBot.Listener;
+using YounBot.Scheduler;
 using YounBot.Signer;
 using YounBot.Utils;
 using LogLevel = Lagrange.Core.Event.EventArg.LogLevel;
@@ -29,6 +30,7 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
     public static string VERSION;
     public static long? UpTime;
     public static PrivateBinClient? PrivateBinClient;
+    public static CancellationTokenSource? CancellationTokenSource;
     
     public Task Init(BotConfig config, BotDeviceInfo deviceInfo, BotKeystore? keystore, string version)
     {
@@ -39,6 +41,7 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
         config.CustomSignProvider = signer;
         Client = Keystore == null ? BotFactory.Create(config, uint.Parse(Configuration["Account:Uin"]??"0"), Configuration["Account:Password"]??"", signer.GetAppInfo(), out deviceInfo) : BotFactory.Create(config, deviceInfo, Keystore, signer.GetAppInfo());
         Config = appBuilder.GetYounBotConfig();
+        CancellationTokenSource = new CancellationTokenSource();
         
         if (Config.PrivateBinUrl != "null")
         {
@@ -141,6 +144,16 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
     public Task Run()
     {
         Hookers.Init();
+        
+        // add scheduled tasks here
+        Task.Run(async () =>
+        {
+            while (Client != null && !CancellationTokenSource.Token.IsCancellationRequested)
+            {
+                await Task.Delay(1000 * 60 * 60, CancellationTokenSource.Token);
+                await GitCodeTokenRefresher.Refresh();
+            }
+        }, CancellationTokenSource.Token);
 
         Client!.Invoker.OnGroupMemberIncreaseEvent += async (_, args) =>
         {

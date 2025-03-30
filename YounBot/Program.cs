@@ -60,5 +60,6 @@ class Program
         LoggingUtils.Logger.LogInformation("Exiting...");
         if (YounBotApp.Db != null) YounBotApp.Db.Dispose();
         if (YounBotApp.Config != null) FileUtils.SaveConfig("younbot-config.json", YounBotApp.Config, true);
+        YounBotApp.CancellationTokenSource?.Cancel();
     }
 }

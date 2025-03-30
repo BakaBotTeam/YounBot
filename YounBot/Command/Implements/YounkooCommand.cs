@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using PrivateBinSharp;
 using YounBot.Data;
 using YounBot.Permissions;
+using YounBot.Scheduler;
 using YounBot.Utils;
 
 namespace YounBot.Command.Implements;
@@ -327,6 +328,18 @@ public class YounkooCommand
             await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
                 .Forward(chain)
                 .Text("Chat context reset").Build());
+        }
+    }
+    
+    [Command("refresh", "刷新一些可以刷新的东西")]
+    public async Task Refresh(BotContext context, MessageChain chain)
+    {
+        if (HasPermission(chain))
+        {
+            GitCodeTokenRefresher.Refresh();
+            await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+                .Forward(chain)
+                .Text("刷\u2606新\u2606大\u2606成\u2606功").Build());
         }
     }
 }
