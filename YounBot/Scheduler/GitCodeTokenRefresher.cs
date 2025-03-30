@@ -7,7 +7,7 @@ public class GitCodeTokenRefresher
 {
     public static async Task Refresh()
     {
-        HttpClient client = new HttpClient();
+        HttpClient client = new();
         string refreshToken = YounBotApp.Configuration["GitCodeRefreshToken"] ?? throw new NullReferenceException("GitCodeRefreshToken is not configured.");
         HttpRequestMessage request = new(HttpMethod.Get, "https://web-api.gitcode.com/uc/api/v1/user/oauth/token");
         request.Headers.Add("origin", "https://gitcode.com");

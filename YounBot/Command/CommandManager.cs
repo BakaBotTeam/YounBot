@@ -39,6 +39,7 @@ public class CommandManager
         RegisterCommand(new TldrCommand());
         RegisterCommand(new MFaceCommand());
         RegisterCommand(new RAnimalCommand());
+        RegisterCommand(new BrowserCommand());
     }
 
     public string GetCommandArgs(string commandName)
