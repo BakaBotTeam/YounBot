@@ -3,7 +3,9 @@ using Lagrange.Core;
 using Lagrange.Core.Common.Entity;
 using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Message;
+using Microsoft.Extensions.Logging;
 using YounBot.Command.Implements;
+using YounBot.Utils;
 
 namespace YounBot.Command;
 
@@ -269,6 +271,7 @@ public class CommandManager
                     MessageBuilder.Friend(context.BotUin).Text("堆载信息: ").Time(DateTime.MaxValue).Build(),
                     MessageBuilder.Friend(context.BotUin).Text(e.ToString()).Time(DateTime.MaxValue).Build()
                 }).Build());
+                LoggingUtils.Logger.LogError($"指令运行错误: \n{e.Message}\n{e.StackTrace}");
             }
         }
         

@@ -279,13 +279,18 @@ public class YounkooCommand
             JsonObject data = new()
             {
                 ["prompt"] = rawMessage,
-                ["model"] = "grok-2-image"
+                ["model"] = "grok-2-image",
+                ["n"] = 4,
+                ["user"] = "QQUser_" + chain.FriendUin
             };
             Cooldown.Flag(chain.FriendUin);
             // send the message to the chatbot
             JsonObject response = await CloudFlareApiInvoker.InvokeGrokTask(data, endpoint: "/v1/images/generations");
-            string url = response["data"][0]["url"].GetValue<string>();
-            string details = response["data"][0]["revised_prompt"].GetValue<string>();
+            string details = "";
+            foreach (JsonNode? x in response["data"]!.AsArray())
+            {
+                details += x?["revised_prompt"]?.GetValue<string>() + "\n\n";
+            }
             string urls = "上传至PrivateBin失败";
             try
             {
@@ -300,10 +305,21 @@ public class YounkooCommand
             {
                 LoggingUtils.Logger.LogWarning(e.ToString());
             }
+            List<MessageChain> messageChains = new();
+            foreach (JsonNode? x in response["data"]!.AsArray())
+            {
+                string url = x?["url"]?.GetValue<string>() ?? "";
+                if (url == "")
+                {
+                    continue;
+                }
+                byte[] image = await HttpUtils.GetBytes(url);
+                messageChains.Add(MessageBuilder.Friend(10000)
+                    .Image(image).Build());
+            }
+            messageChains.Add(MessageBuilder.Friend(10000).Text("详细信息: " + urls).Build());
             await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
-                .Forward(chain)
-                .Image(await HttpUtils.GetBytes(url))
-                .Text("\n详细信息: " + urls).Build());
+                .MultiMsg(messageChains.ToArray()).Build());
         }
         else
         {

@@ -6,6 +6,8 @@ public class YounBotConfig
     public string GrokApiKey { get; set; } = "00000000-0000-0000-0000-00000000";
     public string HypixelApiKey { get; set; } = "00000000-0000-0000-0000-00000000";
     public string PrivateBinUrl { get; set; } = "null";
+    public string EasyImageApiUrl { get; set; } = "https://example.com/api/index.php";
+    public string EasyImageApiKey { get; set; } = "00000000-0000-0000-0000-00000000";
     public uint BotOwner { get; set; }
     public string CloudFlareAccountID { get; set; } = "";
     public string CloudFlareGatewayID { get; set; } = "";

@@ -1,4 +1,5 @@
 ﻿using System.IO.Compression;
+using System.Net.Http.Headers;
 using System.Text.Json.Nodes;
 using Lagrange.Core;
 using Lagrange.Core.Common.Entity;
@@ -235,62 +236,42 @@ public class MFaceCommand
                 fileName += ".png";
             }
         }
-        string gitCodeToken = YounBotApp.Configuration["GitCodeToken"] ?? throw new Exception("GitCodeToken not configured");
-        string gitCodeUrl = "https://web-api.gitcode.com/api/v1/obs/image";
-        Dictionary<string, string> headers = new()
-        {
-            ["Authorization"] = $"Bearer {gitCodeToken}",
-            ["user-agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0",
-            ["origin"] = "https://gitcode.com",
-            ["referer"] = "https://gitcode.com/",
-            ["x-app-channel"] = "gitcode-fe",
-            ["x-app-version"] = "0",
-            ["x-device-id"] = "unknown",
-            ["x-device-type"] = "Windows",
-            ["x-network-type"] = "4g",
-            ["x-os-version"] = "10",
-            ["x-platform"] = "web"
-        };
-        JsonObject data = new()
-        {
-            ["object_key"] = fileName,
-            ["is_avatar"] = false,
-            ["content_type"] = "image/" + fileName.Split(".").Last(),
-            ["file_type"] = fileName.Split(".").Last()
-        };
-        JsonObject response = await HttpUtils.PostJsonObject(gitCodeUrl, headers: headers, data: data);
-        string uploadUrl = ((IDictionary<string, JsonNode?>)response).Keys.First();
-        if (!uploadUrl.StartsWith("https://") && !uploadUrl.StartsWith("http://"))
-        {
-            await context.SendMessage(MessageBuilder.Group(chain.GroupUin.Value).Text("上传失败...服务器返回了一个奇怪的上传Url").Build());
-        }
-        string downloadUrl = response[uploadUrl]["cdn-img-addr"].GetValue<string>();
-        if (!downloadUrl.StartsWith("https://") && !downloadUrl.StartsWith("http://"))
-        {
-            await context.SendMessage(MessageBuilder.Group(chain.GroupUin.Value).Text("上传失败...服务器返回了一个奇怪的下载Url").Build());
-        }
-        IDictionary<string, JsonNode?> uploadInfo = (IDictionary<string, JsonNode?>)response[uploadUrl];
-        Dictionary<string, string> uploadHeader = new();
-        foreach (KeyValuePair<string, JsonNode?> pair in uploadInfo)
-        {
-            if (!pair.Key.ToLower().StartsWith("x-")) continue;
-            uploadHeader.Add(pair.Key, pair.Value!.GetValue<string>());
-        }
-        HttpClient client = new();
-        HttpRequestMessage request = new(HttpMethod.Put, uploadUrl);
-        request.Headers.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0");
-        request.Headers.Add("origin", "https://gitcode.com");
-        request.Headers.Add("referer", "https://gitcode.com/");
-        foreach (KeyValuePair<string, string> pair in uploadHeader)
-        {
-            request.Headers.Add(pair.Key, pair.Value);
-        }
-        request.Content = new ByteArrayContent(imageBytes);
-        request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/" + fileName.Split(".").Last());
-        HttpResponseMessage uploadResponse = await client.SendAsync(request);
-        uploadResponse.EnsureSuccessStatusCode();
-        preMessage.Wait();
+        string downloadUrl = await UploadImageAsync(imageBytes, fileName);
         await context.RecallGroupMessage(chain.GroupUin.Value, preMessage.Result);
         await context.SendMessage(MessageBuilder.Group(chain.GroupUin.Value).Text($"上\u2606传\u2606大\u2606成\u2606功\n{downloadUrl}").Build());
+    }
+    
+    public async Task<string> UploadImageAsync(byte[] file, string filename) { 
+        try { 
+            using HttpClient client = new();
+            using MultipartFormDataContent form = new();
+            using StreamContent streamContent = new(new MemoryStream(file));
+            // 设置Content-Type
+            streamContent.Headers.ContentType = new MediaTypeHeaderValue("multipart/form-data");
+    
+            // 添加文件和token参数
+            form.Add(streamContent, "image", Path.GetFileName(filename));
+            form.Add(new StringContent(YounBotApp.Config!.EasyImageApiKey), "token");
+
+            // 发送POST请求
+            HttpResponseMessage response = await client.PostAsync(YounBotApp.Config!.EasyImageApiUrl, form);
+    
+            // 检查响应状态码
+            if (response.IsSuccessStatusCode)
+            {
+                string responseContent = await response.Content.ReadAsStringAsync();
+                JsonObject jsonResponse = JsonNode.Parse(responseContent)!.AsObject();
+                if (jsonResponse["code"]!.GetValue<int>() == 200)
+                {
+                    return jsonResponse["url"]!.GetValue<string>();
+                }
+                throw new Exception($"图片上传失败: {jsonResponse["result"]}: {jsonResponse["message"]}");
+            }
+            throw new Exception($"图片上传失败，状态码: {response.StatusCode}");
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"图片上传异常: {ex.Message}", ex);
+        }
     }
 }

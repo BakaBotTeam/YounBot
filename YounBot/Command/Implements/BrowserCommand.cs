@@ -53,5 +53,6 @@ public class BrowserCommand
         preMessage.Wait();
         await context.RecallGroupMessage(chain.GroupUin!.Value, preMessage.Result);
         await context.SendMessage(MessageBuilder.Group(chain.GroupUin.Value).Image(image).Build());
+        await browser.CloseAsync();
     }
 }
