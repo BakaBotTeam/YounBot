@@ -145,7 +145,7 @@ public static class CloudFlareApiInvoker
             try
             {
                 string url =
-                    $"https://api.deepseek.com{endpoint}";
+                    $"https://gateway.ai.cloudflare.com/v1/{YounBotApp.Config!.CloudFlareAccountID}/{YounBotApp.Config!.CloudFlareGatewayID}/deepseek{endpoint}";
                 string auth = $"Bearer {YounBotApp.Config!.DeepSeekApiKey}";
                 HttpRequestMessage request = new(HttpMethod.Post, url)
                 {
