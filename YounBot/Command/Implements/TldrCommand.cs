@@ -11,6 +11,7 @@ namespace YounBot.Command.Implements;
 public class TldrCommand
 {
     private bool _isUsingTldr = false;
+    private CooldownUtils _cooldownUtils = new(120000);
     
     [Command("tldr", "量子速读")]
     public async Task Tldr(BotContext context, MessageChain chain)
@@ -18,6 +19,14 @@ public class TldrCommand
         if (_isUsingTldr)
         {
             await MessageUtils.SendMessage(context, chain, "正在处理上一个请求，请稍后再试。");
+            return;
+        }
+        if (!_cooldownUtils.IsTimePassed(chain.FriendUin))
+        {
+            if (_cooldownUtils.ShouldSendCooldownNotice(chain.FriendUin))
+            {
+                await MessageUtils.SendMessage(context, chain, $"冷却中，请在 {_cooldownUtils.GetLeftTime(chain.FriendUin) / 1000} 秒后再试。");
+            }
             return;
         }
         _isUsingTldr = true;
@@ -118,6 +127,7 @@ public class TldrCommand
                         };
                         await context.RecallGroupMessage(chain.GroupUin.Value, preMessage);
                         preMessage = await context.SendMessage(MessageBuilder.Group(chain.GroupUin.Value).Text("让我思考一下...").Build());
+                        _cooldownUtils.Flag(chain.FriendUin);
                         JsonObject response = await CloudFlareApiInvoker.InvokeGrokTask(jsonObject);
                         await context.RecallGroupMessage(chain.GroupUin.Value, preMessage);
                         await MessageUtils.SendMessage(context, chain, response["choices"][0]["message"]["content"].GetValue<string>());
@@ -142,6 +152,14 @@ public class TldrCommand
         if (_isUsingTldr)
         {
             await MessageUtils.SendMessage(context, chain, "正在处理上一个请求，请稍后再试。");
+            return;
+        }
+        if (!_cooldownUtils.IsTimePassed(chain.FriendUin))
+        {
+            if (_cooldownUtils.ShouldSendCooldownNotice(chain.FriendUin))
+            {
+                await MessageUtils.SendMessage(context, chain, $"冷却中，请在 {_cooldownUtils.GetLeftTime(chain.FriendUin) / 1000} 秒后再试。");
+            }
             return;
         }
         _isUsingTldr = true;
@@ -274,6 +292,7 @@ public class TldrCommand
                 };
                 await context.RecallGroupMessage(chain.GroupUin.Value, preMessage);
                 preMessage = await context.SendMessage(MessageBuilder.Group(chain.GroupUin.Value).Text("让我思考一下...").Build());
+                _cooldownUtils.Flag(chain.FriendUin);
                 JsonObject response = await CloudFlareApiInvoker.InvokeGrokTask(jsonObject);
                 await context.SendMessage(MessageBuilder.Group(chain.GroupUin.Value).MultiMsg([
                     MessageBuilder.Friend(10000).Text($"共找到 {allMessage.Count} 条消息，以下是总结：").Time(DateTime.MaxValue)
