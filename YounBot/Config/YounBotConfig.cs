@@ -16,16 +16,20 @@ public class YounBotConfig
     public int MaxGroupMessageCache { get; set; } = 25;
     public List<uint> BotAdmins { get; set; } = new();
     public List<uint> BlackLists { get; set; } = new();
-    
+    public string DeepSeekApiKey { get; set; } = "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+
     public static YounBotConfig NewConfig() => new()
     {
         GrokApiKey = "00000000-0000-0000-0000-00000000",
         HypixelApiKey = "00000000-0000-0000-0000-00000000",
+        DeepSeekApiKey = "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
         BotOwner = 0,
         MaxMessageCache = 12,
         MaxGroupMessageCache = 25,
         BotAdmins = new List<uint>(),
         BlackLists = new List<uint>(),
-        PrivateBinUrl = "null"
+        PrivateBinUrl = "null",
+        EasyImageApiUrl = "https://example.com/api/index.php",
+        EasyImageApiKey = "00000000-0000-0000-0000-00000000",
     };
 }

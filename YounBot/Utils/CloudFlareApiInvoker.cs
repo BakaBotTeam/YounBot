@@ -136,4 +136,37 @@ public static class CloudFlareApiInvoker
 
         throw new Exception("Failed to invoke AI task", lastException);
     }
+    
+    public static async Task<JsonObject> InvokeDeepSeekTask(JsonObject data, int maxRetries = 3, int delayMilliseconds = 1000, string endpoint = "/chat/completions")
+    {
+        Exception lastException = new("Failed to invoke AI task");
+        for (int i = 0; i < maxRetries; i++)
+        {
+            try
+            {
+                string url =
+                    $"https://api.deepseek.com{endpoint}";
+                string auth = $"Bearer {YounBotApp.Config!.DeepSeekApiKey}";
+                HttpRequestMessage request = new(HttpMethod.Post, url)
+                {
+                    Content = new StringContent(data.ToString(), Encoding.UTF8, "application/json")
+                };
+                request.Headers.Add("Authorization", auth);
+                HttpResponseMessage response = await _httpClient.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+                string raw = await response.Content.ReadAsStringAsync();
+                return JsonObject.Parse(raw).AsObject();
+            }
+            catch (Exception e)
+            {
+                lastException = new Exception("Failed to invoke AI task", e);
+            }
+            finally
+            {
+                await Task.Delay(delayMilliseconds);
+            }
+        }
+
+        throw new Exception("Failed to invoke AI task", lastException);
+    }
 }

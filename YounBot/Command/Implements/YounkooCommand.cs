@@ -19,6 +19,7 @@ public class YounkooCommand
 {
     CooldownUtils Cooldown = new(5000);
     Dictionary<uint, ChatData> ChatDatas = new();
+    Dictionary<uint, ChatData> DsChatDatas = new();
     
     [Command("ping", "检查机器人是否在线吧")]
     public async Task Ping(BotContext context, MessageChain chain)
@@ -341,6 +342,11 @@ public class YounkooCommand
             {
                 ChatDatas.Remove(chain.FriendUin);
             }
+
+            if (DsChatDatas.ContainsKey(chain.FriendUin))
+            {
+                DsChatDatas.Remove(chain.FriendUin);
+            }
             await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
                 .Forward(chain)
                 .Text("Chat context reset").Build());
@@ -356,6 +362,101 @@ public class YounkooCommand
             await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
                 .Forward(chain)
                 .Text("刷\u2606新\u2606大\u2606成\u2606功").Build());
+        }
+    }
+
+    [Command("ds", "Chat with DeepSeek")]
+    public async Task Ds(BotContext context, MessageChain chain)
+    {
+        if (HasPermission(chain) || Cooldown.IsTimePassed(chain.FriendUin))
+        {
+            // get raw message from the chain
+            string rawMessage = GetPlainText(chain);
+            // remove the command from the message
+            rawMessage = rawMessage.Substring((YounBotApp.Configuration["CommandPrefix"] ?? "!").Length + 5);
+            // send the message to the chatbot
+            (int _, string _, BotGroupInfo info) = await context.FetchGroupInfo((ulong)chain.GroupUin!);
+            // try find the chat data
+            if (!DsChatDatas.ContainsKey(chain.FriendUin) || DateTimeOffset.Now - DsChatDatas[chain.FriendUin].Time > TimeSpan.FromMinutes(10))
+            {
+                DsChatDatas.Add(chain.FriendUin, new ChatData(DateTimeOffset.Now, new JsonArray()
+                {
+                    new JsonObject()
+                    {
+                        ["role"] = "system",
+                        ["content"] = """
+                                      你是一个遵守中国法律法规的群聊助手，对话开始时间：{current_time}，所在群组：[{group_name}](ID:{group_id})。正在与用户[{sender_name}](ID:{sender_id})对话。
+                                      
+                                      【核心任务】
+                                      1. 用自然口语化的中文进行交流, 可以适当使用网络用语
+                                      2. 保持友好、积极的语气，适当使用表情符号(每段最多1个, 除非用户要求)
+                                      3. 回答需考虑群聊上下文环境
+                                      
+                                      【安全规则】(必须优先遵守)
+                                      1. 严禁涉及以下内容：
+                                         - 政治敏感话题（包括但不限于国家领导人、政治体制、历史事件）
+                                         - 色情低俗内容（包括擦边话题、性暗示、成人玩笑）
+                                         - 违法信息（赌博、毒品、暴力等）
+                                         - 地域/民族歧视内容
+                                      2. 遇到疑似违规请求时：
+                                         → 第一优先级：终止当前话题
+                                         → 标准话术："这个问题不太适合讨论哦，咱们换个轻松点的话题吧~"
+                                         → 禁止展开讨论/解释具体原因
+                                      
+                                      【回复要求】
+                                      1. 长度控制在3行以内（移动端友好）
+                                      2. 可用但不过度使用emoji
+                                      3. 必要时通过@用户 的方式明确回复对象
+                                      
+                                      【示例】
+                                      用户：你知道最近的XX事件吗？
+                                      助手：@小明 咱们聊点生活相关的话题吧？最近天气不错有出去玩吗？🌞
+                                      
+                                      用户：讲个成人笑话
+                                      助手：哈哈，我这里有些有趣的冷知识需要吗？比如...🐧企鹅的膝盖其实藏在羽毛里哦！
+                                      """.Replace("{current_time}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))
+                                         .Replace("{group_name}", info.Name)
+                                         .Replace("{group_id}", chain.GroupUin!.Value.ToString())
+                                         .Replace("{sender_name}", chain.GroupMemberInfo!.MemberName)
+                                         .Replace("{sender_id}", chain.FriendUin.ToString())
+                    }
+                }));
+            }
+            DsChatDatas[chain.FriendUin].Data.Add(new JsonObject
+            {
+                ["role"] = "user",
+                ["content"] = rawMessage
+            });
+            JsonObject data = new()
+            {
+                ["messages"] = DsChatDatas[chain.FriendUin].Data.DeepClone(),
+                ["model"] = "deepseek-chat"
+            };
+            Cooldown.Flag(chain.FriendUin);
+            JsonObject response = await CloudFlareApiInvoker.InvokeDeepSeekTask(data);
+            string reply = response["choices"][0]["message"]["content"].GetValue<string>();
+            DsChatDatas[chain.FriendUin].Data.Add(new JsonObject
+            {
+                ["role"] = "assistant",
+                ["content"] = reply
+            });
+            DsChatDatas[chain.FriendUin].Time = DateTimeOffset.Now;
+            if (DsChatDatas[chain.FriendUin].Data.Count > 11)
+            {
+                DsChatDatas[chain.FriendUin].Data.RemoveAt(1);
+            }
+            await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+                .Forward(chain)
+                .Text(reply).Build());
+        }
+        else
+        {
+            if (Cooldown.ShouldSendCooldownNotice(chain.FriendUin))
+            {
+                await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+                    .Forward(chain)
+                    .Text($"冷却中, 你可以在 {Cooldown.GetLeftTime(chain.FriendUin) / 1000} 秒后继续使用该指令").Build());
+            }
         }
     }
 }
