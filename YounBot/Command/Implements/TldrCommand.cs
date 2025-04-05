@@ -5,6 +5,7 @@ using Lagrange.Core.Message;
 using Lagrange.Core.Message.Entity;
 using Microsoft.Extensions.Logging;
 using YounBot.Utils;
+using Permission = YounBot.Permissions.Permission;
 
 namespace YounBot.Command.Implements;
 
@@ -21,7 +22,7 @@ public class TldrCommand
             await MessageUtils.SendMessage(context, chain, "正在处理上一个请求，请稍后再试。");
             return;
         }
-        if (!_cooldownUtils.IsTimePassed(chain.FriendUin))
+        if (!_cooldownUtils.IsTimePassed(chain.FriendUin) && !Permission.HasPermission(chain))
         {
             if (_cooldownUtils.ShouldSendCooldownNotice(chain.FriendUin))
             {
@@ -154,7 +155,7 @@ public class TldrCommand
             await MessageUtils.SendMessage(context, chain, "正在处理上一个请求，请稍后再试。");
             return;
         }
-        if (!_cooldownUtils.IsTimePassed(chain.FriendUin))
+        if (!_cooldownUtils.IsTimePassed(chain.FriendUin) && !Permission.HasPermission(chain))
         {
             if (_cooldownUtils.ShouldSendCooldownNotice(chain.FriendUin))
             {
