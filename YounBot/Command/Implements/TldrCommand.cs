@@ -180,7 +180,7 @@ public class TldrCommand
             }
             MessageResult preMessage = await context.SendMessage(MessageBuilder.Group(chain.GroupUin.Value).Text("让我找找...").Build());
             List<MessageChain> allMessage = new();
-            int sequence = (int)(chain.Sequence) - 1;
+            uint sequence = chain.Sequence - 1;
             DateTime minTime = DateTime.Parse("1970/1/1 8:00:00");
             int noMessageCount = 0;
             while (sequence > 0)
@@ -191,7 +191,7 @@ public class TldrCommand
                     break;
                 }
                 LoggingUtils.Logger.LogInformation($"Fetching messages from sequence {sequence} to {Math.Max(sequence - 25, 0)}");
-                List<MessageChain>? messageChains = await context.GetGroupMessage(chain.GroupUin.Value, (uint)Math.Max(sequence - 25, 0), (uint)sequence);
+                List<MessageChain>? messageChains = await context.GetGroupMessage(chain.GroupUin.Value, Math.Max(sequence - 25, 0), sequence);
                 if (messageChains == null || messageChains.Count == 0)
                 {
                     sequence -= 20;
@@ -209,7 +209,7 @@ public class TldrCommand
                     break;
                 }
                 allMessage.AddRange(messageChains.Where(m => m.Time >= startTime && m.Time <= endTime));
-                sequence = (int)(messageChains.Min(m => m.Sequence) - 1);
+                sequence = messageChains.Min(m => m.Sequence) - 1;
                 LoggingUtils.Logger.LogInformation($"Found {messageChains.Count} messages, moving to sequence {sequence}");
                 if (allMessage.Count > 5000)
                 {
@@ -222,7 +222,7 @@ public class TldrCommand
             allMessage.Sort((messageChain, chain1) => messageChain.Time < chain1.Time ? -1 : 1);
             if (allMessage.Count == 0)
             {
-                await MessageUtils.SendMessage(context, chain, "没有找到符合条件的消息");
+                await MessageUtils.SendMessage(context, chain, "没有找到符合条件的消息，可能是群权限限制机器人无法查看历史消息，或者本时间段没有任何消息。");
                 return;
             }
             try
