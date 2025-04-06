@@ -242,6 +242,7 @@ public class TldrCommand
                         }
                     }
                 };
+                int addedImageSize = 0;
                 foreach (MessageChain messageChain in allMessage)
                 {
                     if (data.Count >= 5000)
@@ -275,7 +276,7 @@ public class TldrCommand
                             images.Add(imageEntity);
                         }
                     }
-                    if (images.Count == 1)
+                    /*if (images.Count > 0)
                     {
                         foreach (ImageEntity imageEntity in images)
                         {
@@ -291,7 +292,7 @@ public class TldrCommand
                                 }
                             });
                         }
-                    }
+                    }*/
                     data.Add(new JsonObject
                     {
                         ["role"] = "user",
