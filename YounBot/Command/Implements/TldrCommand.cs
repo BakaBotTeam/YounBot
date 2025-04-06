@@ -267,7 +267,7 @@ public class TldrCommand
                             ["text"] = plainText
                         }
                     };
-                    /*List<ImageEntity> images = new();
+                    List<ImageEntity> images = new();
                     foreach (IMessageEntity entity in messageChain)
                     {
                         if (entity is ImageEntity imageEntity)
@@ -275,7 +275,7 @@ public class TldrCommand
                             images.Add(imageEntity);
                         }
                     }
-                    if (images.Count > 0)
+                    if (images.Count == 1)
                     {
                         foreach (ImageEntity imageEntity in images)
                         {
@@ -291,7 +291,7 @@ public class TldrCommand
                                 }
                             });
                         }
-                    }*/
+                    }
                     data.Add(new JsonObject
                     {
                         ["role"] = "user",
