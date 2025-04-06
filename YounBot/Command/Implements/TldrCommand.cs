@@ -309,8 +309,10 @@ public class TldrCommand
                 preMessage = await context.SendMessage(MessageBuilder.Group(chain.GroupUin.Value).Text("让我思考一下...").Build());
                 _cooldownUtils.Flag(chain.FriendUin);
                 JsonObject response = await CloudFlareApiInvoker.InvokeGrokTask(jsonObject);
+                uint minSequence = allMessage.Min(m => m.Sequence);
+                uint maxSequence = allMessage.Max(m => m.Sequence);
                 await context.SendMessage(MessageBuilder.Group(chain.GroupUin.Value).MultiMsg([
-                    MessageBuilder.Friend(10000).Text($"共找到 {allMessage.Count} 条消息，以下是总结：").Time(DateTime.MaxValue)
+                    MessageBuilder.Friend(10000).Text($"共找到 {allMessage.Count} 条消息 (seq: {minSequence} -> {maxSequence})，以下是总结：").Time(DateTime.MaxValue)
                         .Build(),
                     MessageBuilder.Friend(10000).Text(response["choices"][0]["message"]["content"].GetValue<string>())
                         .Time(DateTime.MaxValue).Build()
