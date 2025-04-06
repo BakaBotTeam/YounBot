@@ -173,18 +173,30 @@ public class TldrCommand
             }
             DateTime endTime = DateTime.UtcNow;
             DateTime startTime = endTime - timeSpan;
+            if (timeSpan > TimeSpan.FromDays(3))
+            {
+                await MessageUtils.SendMessage(context, chain, "时间跨度过大，请限制在3天内。");
+                return;
+            }
             MessageResult preMessage = await context.SendMessage(MessageBuilder.Group(chain.GroupUin.Value).Text("让我找找...").Build());
             List<MessageChain> allMessage = new();
-            uint sequence = chain.Sequence - 1;
+            int sequence = (int)(chain.Sequence) - 1;
             DateTime minTime = DateTime.Parse("1970/1/1 8:00:00");
+            int noMessageCount = 0;
             while (sequence > 0)
             {
+                if (noMessageCount >= 3)
+                {
+                    LoggingUtils.Logger.LogInformation("Failed to get messages, stopping");
+                    break;
+                }
                 LoggingUtils.Logger.LogInformation($"Fetching messages from sequence {sequence} to {Math.Max(sequence - 25, 0)}");
-                List<MessageChain>? messageChains = await context.GetGroupMessage(chain.GroupUin.Value, Math.Max(sequence - 25, 0), sequence);
+                List<MessageChain>? messageChains = await context.GetGroupMessage(chain.GroupUin.Value, (uint)Math.Max(sequence - 25, 0), (uint)sequence);
                 if (messageChains == null || messageChains.Count == 0)
                 {
                     sequence -= 20;
                     LoggingUtils.Logger.LogInformation($"Found no messages, moving to sequence {sequence}");
+                    noMessageCount++;
                     continue;
                 }
                 messageChains = messageChains.Where(m => m.Time != minTime).ToList();
@@ -197,7 +209,7 @@ public class TldrCommand
                     break;
                 }
                 allMessage.AddRange(messageChains.Where(m => m.Time >= startTime && m.Time <= endTime));
-                sequence = messageChains.Min(m => m.Sequence) - 1;
+                sequence = (int)(messageChains.Min(m => m.Sequence) - 1);
                 LoggingUtils.Logger.LogInformation($"Found {messageChains.Count} messages, moving to sequence {sequence}");
                 if (allMessage.Count > 5000)
                 {
@@ -205,6 +217,8 @@ public class TldrCommand
                     break;
                 }
             }
+            // filter out invalid messages
+            allMessage = allMessage.Where(m => m.GroupUin != null && m.GroupMemberInfo != null).ToList();
             allMessage.Sort((messageChain, chain1) => messageChain.Time < chain1.Time ? -1 : 1);
             if (allMessage.Count == 0)
             {
