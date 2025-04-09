@@ -211,7 +211,7 @@ public class TldrCommand
                 allMessage.AddRange(messageChains.Where(m => m.Time >= startTime && m.Time <= endTime));
                 sequence = messageChains.Min(m => m.Sequence) - 1;
                 LoggingUtils.Logger.LogInformation($"Found {messageChains.Count} messages, moving to sequence {sequence}");
-                if (allMessage.Count > 5000)
+                if (allMessage.Count > 1000)
                 {
                     LoggingUtils.Logger.LogInformation("Found too many messages, cutting off");
                     break;
@@ -232,20 +232,13 @@ public class TldrCommand
                     new JsonObject()
                     {
                         ["role"] = "system",
-                        ["content"] = new JsonArray
-                        {
-                            new JsonObject
-                            {
-                                ["type"] = "text",
-                                ["text"] = "你是一个量子速读机器人，你的任务是总结以下群聊聊天记录，但请不要解读图片内的文本（如果有），大致赅括图片是什么类型的即可（如漫画，猫，狗，女孩子等，可适当添加形容词），避免回复政治敏感，色情，广告内容，但不要在消息内加上类似“没有涉及政治敏感、色情或广告内容。”的语句。"
-                            }
-                        }
+                        ["content"] = "你是一个量子速读机器人，你的任务是总结以下群聊聊天记录,避免回复政治敏感内容"
                     }
                 };
                 int addedImageSize = 0;
                 foreach (MessageChain messageChain in allMessage)
                 {
-                    if (data.Count >= 5000)
+                    if (data.Count >= 1000)
                     {
                         await MessageUtils.SendMessage(context, chain, "太多消息了... 可能总结会不完整哦");
                         break;
@@ -260,56 +253,24 @@ public class TldrCommand
                             plainText = innerChain.Select(inner => $"  {inner}").Aggregate(plainText, (current, se) => current + $"\n{se}");
                         }
                     }
-                    JsonArray singleData = new()
-                    {
-                        new JsonObject
-                        {
-                            ["type"] = "text",
-                            ["text"] = plainText
-                        }
-                    };
-                    List<ImageEntity> images = new();
-                    foreach (IMessageEntity entity in messageChain)
-                    {
-                        if (entity is ImageEntity imageEntity)
-                        {
-                            images.Add(imageEntity);
-                        }
-                    }
-                    /*if (images.Count > 0)
-                    {
-                        foreach (ImageEntity imageEntity in images)
-                        {
-                            byte[] imageBytes = await HttpUtils.GetBytes(imageEntity.ImageUrl);
-                            if (imageBytes.Length > 10 * 1024 * 1024) continue;
-                            singleData.Add(new JsonObject
-                            {
-                                ["type"] = "image_url",
-                                ["image_url"] = new JsonObject
-                                {
-                                    ["url"] = imageEntity.ImageUrl,
-                                    ["detail"] = "high"
-                                }
-                            });
-                        }
-                    }*/
+                    
                     data.Add(new JsonObject
                     {
                         ["role"] = "user",
-                        ["content"] = singleData
+                        ["content"] = plainText
                     });
                 }
 
                 JsonObject jsonObject = new()
                 {
-                    ["model"] = "grok-2-vision-latest",
+                    ["model"] = "deepseek-chat",
                     ["messages"] = data,
-                    ["max_tokens"] = 16384
+                    ["max_tokens"] = 8192
                 };
                 await context.RecallGroupMessage(chain.GroupUin.Value, preMessage);
                 preMessage = await context.SendMessage(MessageBuilder.Group(chain.GroupUin.Value).Text("让我思考一下...").Build());
                 _cooldownUtils.Flag(chain.FriendUin);
-                JsonObject response = await CloudFlareApiInvoker.InvokeGrokTask(jsonObject);
+                JsonObject response = await CloudFlareApiInvoker.InvokeDeepSeekTask(jsonObject);
                 uint minSequence = allMessage.Min(m => m.Sequence);
                 uint maxSequence = allMessage.Max(m => m.Sequence);
                 await context.SendMessage(MessageBuilder.Group(chain.GroupUin.Value).MultiMsg([
