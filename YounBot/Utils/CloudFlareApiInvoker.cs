@@ -16,7 +16,7 @@ public static class CloudFlareApiInvoker
             {
                 JsonObject data = new()
                 {
-                    ["model"] = "grok-2-latest",
+                    ["model"] = "grok-3-fast",
                     ["messages"] = new JsonArray
                     {
                         new JsonObject()

@@ -234,7 +234,8 @@ public class YounkooCommand
             JsonObject data = new()
             {
                 ["messages"] = ChatDatas[chain.FriendUin].Data.DeepClone(),
-                ["model"] = "grok-2-latest"
+                ["model"] = "grok-3-fast",
+                ["temperature"] = 1.3
             };
             Cooldown.Flag(chain.FriendUin);
             // send the message to the chatbot
