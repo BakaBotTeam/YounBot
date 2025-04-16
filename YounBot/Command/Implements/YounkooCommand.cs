@@ -183,6 +183,7 @@ public class YounkooCommand
             // try find the chat data
             if (!ChatDatas.ContainsKey(chain.FriendUin) || DateTimeOffset.Now - ChatDatas[chain.FriendUin].Time > TimeSpan.FromMinutes(10))
             {
+                ChatDatas.Remove(chain.FriendUin);
                 ChatDatas.Add(chain.FriendUin, new ChatData(DateTimeOffset.Now, new JsonArray()
                 {
                     new JsonObject()
@@ -193,15 +194,13 @@ public class YounkooCommand
                                       
                                       【核心任务】
                                       1. 用自然口语化的中文进行交流, 可以适当使用网络用语
-                                      2. 保持友好、积极的语气，适当使用表情符号(每段最多1个, 除非用户要求)
+                                      2. 适当使用表情符号
                                       3. 回答需考虑群聊上下文环境
                                       
                                       【安全规则】(必须优先遵守)
                                       1. 严禁涉及以下内容：
                                          - 政治敏感话题（包括但不限于国家领导人、政治体制、历史事件）
-                                         - 色情低俗内容（包括擦边话题、性暗示、成人玩笑）
                                          - 违法信息（赌博、毒品、暴力等）
-                                         - 地域/民族歧视内容
                                       2. 遇到疑似违规请求时：
                                          → 第一优先级：终止当前话题
                                          → 标准话术："这个问题不太适合讨论哦，咱们换个轻松点的话题吧~"
@@ -215,9 +214,6 @@ public class YounkooCommand
                                       【示例】
                                       用户：你知道最近的XX事件吗？
                                       助手：@小明 咱们聊点生活相关的话题吧？最近天气不错有出去玩吗？🌞
-                                      
-                                      用户：讲个成人笑话
-                                      助手：哈哈，我这里有些有趣的冷知识需要吗？比如...🐧企鹅的膝盖其实藏在羽毛里哦！
                                       """.Replace("{current_time}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))
                                          .Replace("{group_name}", info.Name)
                                          .Replace("{group_id}", chain.GroupUin!.Value.ToString())
@@ -234,8 +230,8 @@ public class YounkooCommand
             JsonObject data = new()
             {
                 ["messages"] = ChatDatas[chain.FriendUin].Data.DeepClone(),
-                ["model"] = "grok-3-fast",
-                ["temperature"] = 1.3
+                ["model"] = "grok-3",
+                ["temperature"] = 1.6
             };
             Cooldown.Flag(chain.FriendUin);
             // send the message to the chatbot
@@ -380,6 +376,7 @@ public class YounkooCommand
             // try find the chat data
             if (!DsChatDatas.ContainsKey(chain.FriendUin) || DateTimeOffset.Now - DsChatDatas[chain.FriendUin].Time > TimeSpan.FromMinutes(10))
             {
+                DsChatDatas.Remove(chain.FriendUin);
                 DsChatDatas.Add(chain.FriendUin, new ChatData(DateTimeOffset.Now, new JsonArray()
                 {
                     new JsonObject()

@@ -123,7 +123,7 @@ public class TldrCommand
 
                         JsonObject jsonObject = new()
                         {
-                            ["model"] = "grok-3-fast",
+                            ["model"] = "grok-2-vision-latest",
                             ["messages"] = data
                         };
                         await context.RecallGroupMessage(chain.GroupUin.Value, preMessage);
