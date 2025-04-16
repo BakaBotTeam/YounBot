@@ -69,212 +69,180 @@ public class CommandManager
         }
     }
     
-    public Task ExecuteCommand(BotContext context, MessageChain chain, string input)
+    public async Task ExecuteCommand(BotContext context, MessageChain chain, string input)
     {
         string[] args = input.Split(" ");
         string commandName = args[0].ToLower();
-        if (_commands.TryGetValue(commandName, out (object Instance, MethodInfo Method) command))
+        if (!_commands.TryGetValue(commandName, out (object Instance, MethodInfo Method) command)) return;
+
+        (object instance, MethodInfo method) = command;
+        string[] stringArray = args.Skip(1).ToArray();
+        object[] objectArray = new object[] { context, chain };
+        ParameterInfo[] argTypes = method.GetParameters().Skip(2).ToArray();
+        int index = 0;
+
+        try
         {
-            (object instance, MethodInfo method) = command;
-            string[] stringArray = args.Skip(1).ToArray();
-            object[] objectArray = new object[] { context, chain }.ToArray();
-            ParameterInfo[] argTypes = method.GetParameters().Skip(2).ToArray();
-            int index = 0;
+            foreach (ParameterInfo type in argTypes)
+            {
+                object? parsedArg;
+                if (type.IsOptional && (index >= stringArray.Length || stringArray[index] == "-"))
+                {
+                    parsedArg = type.DefaultValue;
+                    index++;
+                }
+                else
+                {
+                    if (index >= stringArray.Length) throw new ArgumentException("参数不足");
+                    string argStr = stringArray[index];
+
+                    try
+                    {
+                        parsedArg = ConvertArgument(context, chain, type.ParameterType, argStr);
+                    }
+                    catch (Exception e)
+                    {
+                        throw new ArgumentException($"位置 {index + 2} 的参数错误: {e.Message}", e);
+                    }
+
+                    index++;
+                }
+                objectArray = objectArray.Append(parsedArg).ToArray();
+            }
+
+            await (Task)(method.Invoke(instance, objectArray) ?? Task.CompletedTask);
+        }
+        catch (Exception e)
+        {
+            context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value).Text($"指令运行错误: \n{e.Message}").Build());
+            context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value).MultiMsg(new[]
+            {
+                MessageBuilder.Friend(context.BotUin).Text("堆载信息: ").Time(DateTime.MaxValue).Build(),
+                MessageBuilder.Friend(context.BotUin).Text(e.ToString()).Time(DateTime.MaxValue).Build()
+            }).Build());
+            LoggingUtils.Logger.LogError($"指令运行错误: \n{e.Message}\n{e.StackTrace}");
+        }
+    }
+
+    private object ConvertArgument(BotContext context, MessageChain chain, Type argType, string argStr)
+    {
+        if (argType == typeof(string))
+        {
+            if (argStr.StartsWith('\"') && argStr.EndsWith('\"'))
+            {
+                return argStr.Substring(1, argStr.Length - 2);
+            }
+
+            return argStr;
+        }
+
+        if (argType == typeof(BotGroupMember))
+        {
+            return ParseBotGroupMember(context, chain, argStr);
+        }
+
+        try
+        {
+            return Convert.ChangeType(argStr, argType);
+        }
+        catch (FormatException)
+        {
             try
             {
-                try
-                {
-                    foreach (ParameterInfo type in argTypes)
-                    {
-                        try
-                        {
-                            if (type.IsOptional && stringArray[index] == "-")
-                            {
-                                index++;
-                                continue;
-                            }
-                            Type argType = type.ParameterType;
-                            if (argType == typeof(string))
-                            {
-                                string str = stringArray[index];
-                                if (str.StartsWith('\"') && str.EndsWith('\"'))
-                                {
-                                    str = str.Substring(1, str.Length - 2);
-                                }
-                                else if (str.StartsWith('\"'))
-                                {
-                                    while (!str.EndsWith('\"'))
-                                    {
-                                        index++;
-                                        str += " " + stringArray[index];
-                                    }
-
-                                    str = str.Substring(1, str.Length - 2);
-                                }
-
-                                objectArray = objectArray.Append(str).ToArray();
-                            }
-                            else if (argType == typeof(int))
-                            {
-                                objectArray = objectArray.Append(int.Parse(stringArray[index])).ToArray();
-                            }
-                            else if (argType == typeof(uint))
-                            {
-                                objectArray = objectArray.Append(uint.Parse(stringArray[index])).ToArray();
-                            }
-                            else if (argType == typeof(long))
-                            {
-                                objectArray = objectArray.Append(long.Parse(stringArray[index])).ToArray();
-                            }
-                            else if (argType == typeof(bool))
-                            {
-                                objectArray = objectArray.Append(bool.Parse(stringArray[index])).ToArray();
-                            }
-                            else if (argType == typeof(double))
-                            {
-                                objectArray = objectArray.Append(double.Parse(stringArray[index])).ToArray();
-                            }
-                            else if (argType == typeof(float))
-                            {
-                                objectArray = objectArray.Append(float.Parse(stringArray[index])).ToArray();
-                            }
-                            else if (argType == typeof(BotGroupMember))
-                            {
-                                string str = stringArray[index];
-                                if (str.StartsWith('@'))
-                                {
-                                    str = str.Substring(1);
-                                }
-
-                                if (str == "") 
-                                    throw new ArgumentException("群成员解析: 无法格式化群成员");
-                                string[] array = str.Split(".");
-                                BotGroupMember? member;
-                                uint memberUin;
-                                uint groupUin;
-                            
-                                if (array.Length == 1)
-                                {
-                                    if (chain.GroupUin == null) 
-                                        throw new ArgumentException("群成员解析: 无法格式化群成员");
-
-                                    if (array[0] == "$")
-                                    {
-                                        List<BotGroupMember> members = context.FetchMembers(chain.GroupUin!.Value).Result;
-                                        objectArray = objectArray.Append(members[new Random().Next(members.Count)])
-                                            .ToArray();
-                                        ++index;
-                                        continue;
-                                    }
-            
-                                    try
-                                    {
-                                        memberUin = uint.Parse(array[0]);
-                                    } catch (FormatException)
-                                    {
-                                        throw new ArgumentException("群成员解析: 无法格式化群成员");
-                                    }
-                                
-                                    member = context.FetchMembers(chain.GroupUin!.Value).Result
-                                        .Find(groupMember => groupMember.Uin == memberUin);
-                                    if (member == null) 
-                                        throw new ArgumentException("群成员解析: 无法格式化群成员");
-
-                                    objectArray = objectArray.Append(member)
-                                        .ToArray();
-                                    ++index;
-                                    continue;
-                                } else if (array.Length >= 3) 
-                                    throw new ArgumentException("群成员解析: 给予了太多参数");
-                            
-                                try
-                                {
-                                    groupUin = uint.Parse(array[0]);
-                                } catch (FormatException)
-                                {
-                                    throw new ArgumentException("群解析: 无法格式化群");
-                                }
-        
-                                if (array[1] == "$")
-                                {
-                                    List<BotGroupMember> members = context.FetchMembers(chain.GroupUin!.Value).Result;
-                                    objectArray = objectArray.Append(members[new Random().Next(members.Count)])
-                                        .ToArray();
-                                    ++index;
-                                    continue;
-                                }
-            
-                                try
-                                {
-                                    memberUin = uint.Parse(array[1]);
-                                } catch (FormatException)
-                                {
-                                    throw new ArgumentException("群成员解析: 无法格式化群成员");
-                                }
-        
-                                member = context.FetchMembers(groupUin).Result
-                                    .Find(botMember => botMember.Uin == memberUin);
-                                if (member == null) 
-                                    throw new ArgumentException("群成员解析: 无法格式化群成员");
-                                objectArray = objectArray.Append(member)
-                                    .ToArray();
-                                ++index;
-                                continue;
-                            }
-                            else
-                            {
-                                try
-                                {
-                                    objectArray = objectArray.Append(argType.GetMethod("Parse")!
-                                        .Invoke(null, new object[] {stringArray[index]})!).ToArray();
-                                } catch (Exception)
-                                {
-                                    throw new ArgumentException($"无法解析参数 {argType.Name}");
-                                }
-                            }
-                        }
-                        catch (Exception _e)
-                        {
-                            if (type.IsOptional)
-                            {
-                                objectArray = objectArray.Append(type.DefaultValue).ToArray()!;
-                            }
-                            else
-                            {
-                                throw;
-                            }
-                        }
-
-                        index++;
-                    }
-                }
-                catch (IndexOutOfRangeException)
-                {
-                    throw new ArgumentException("参数不足");
-                }
-                catch (ArgumentException e)
-                {
-                    throw new ArgumentException($"位置 {index + 2} 的参数错误: {e.Message}", e);
-                }
-                catch (Exception e)
-                {
-                    throw new ArgumentException($"位置 {index + 2} 的参数错误: ${e.Message}", e);
-                }
-                
-                Task.Run(async () => await (Task)(method.Invoke(instance, objectArray) ?? Task.CompletedTask)).GetAwaiter().GetResult();
+                // 尝试使用Parse方法进行转换
+                return argType.GetMethod("Parse", new[] { typeof(string) })!.Invoke(null, new object[] { argStr })!;
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value).Text($"指令运行错误: \n{e.Message}").Build());
-                context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value).MultiMsg(new []
-                {
-                    MessageBuilder.Friend(context.BotUin).Text("堆载信息: ").Time(DateTime.MaxValue).Build(),
-                    MessageBuilder.Friend(context.BotUin).Text(e.ToString()).Time(DateTime.MaxValue).Build()
-                }).Build());
-                LoggingUtils.Logger.LogError($"指令运行错误: \n{e.Message}\n{e.StackTrace}");
+                throw new ArgumentException($"无法解析参数 {argType.Name}");
             }
         }
-        
-        return Task.CompletedTask;
+    }
+
+    private BotGroupMember ParseBotGroupMember(BotContext context, MessageChain chain, string argStr)
+    {
+        if (argStr.StartsWith('@'))
+        {
+            argStr = argStr.Substring(1);
+        }
+
+        if (string.IsNullOrEmpty(argStr))
+        {
+            throw new ArgumentException("群成员解析: 无法格式化群成员");
+        }
+
+        string[] array = argStr.Split(".");
+        uint memberUin;
+        uint groupUin;
+
+        if (array.Length == 1)
+        {
+            if (chain.GroupUin == null)
+            {
+                throw new ArgumentException("群成员解析: 无法格式化群成员");
+            }
+
+            if (array[0] == "$")
+            {
+                List<BotGroupMember> members = context.FetchMembers(chain.GroupUin!.Value).Result;
+                return members[new Random().Next(members.Count)];
+            }
+
+            try
+            {
+                memberUin = uint.Parse(array[0]);
+            }
+            catch (FormatException)
+            {
+                throw new ArgumentException("群成员解析: 无法格式化群成员");
+            }
+
+            BotGroupMember? member = context.FetchMembers(chain.GroupUin!.Value).Result
+                .Find(groupMember => groupMember.Uin == memberUin);
+            if (member == null)
+            {
+                throw new ArgumentException("群成员解析: 无法格式化群成员");
+            }
+
+            return member;
+        }
+
+        if (array.Length >= 3)
+        {
+            throw new ArgumentException("群成员解析: 给予了太多参数");
+        }
+
+        try
+        {
+            groupUin = uint.Parse(array[0]);
+        }
+        catch (FormatException)
+        {
+            throw new ArgumentException("群解析: 无法格式化群");
+        }
+
+        if (array[1] == "$")
+        {
+            List<BotGroupMember> members = context.FetchMembers(chain.GroupUin!.Value).Result;
+            return members[new Random().Next(members.Count)];
+        }
+
+        try
+        {
+            memberUin = uint.Parse(array[1]);
+        }
+        catch (FormatException)
+        {
+            throw new ArgumentException("群成员解析: 无法格式化群成员");
+        }
+
+        BotGroupMember? memberz = context.FetchMembers(groupUin).Result
+            .Find(botMember => botMember.Uin == memberUin);
+        if (memberz == null)
+        {
+            throw new ArgumentException("群成员解析: 无法格式化群成员");
+        }
+
+        return memberz;
     }
 }
