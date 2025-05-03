@@ -52,7 +52,7 @@ public static class CharacterTypeExtensions
         }
     }
     
-    public static CharacterType FromName(String name) {
+    public static CharacterType FromName(string name) {
         foreach (CharacterType characterType in Enum.GetValues(typeof(CharacterType)))
         {
             if (characterType.GetName().Equals(name))

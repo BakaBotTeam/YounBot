@@ -30,12 +30,12 @@ public class AcgCommand
         
         Task preMessage = SendMessage(context, chain, "Please Wait...");
         JsonObject response = await HttpUtils.GetJsonObject("https://pixiv.yuki.sh/api/recommend?type=json&nocache=" + new Random().Next(0, 1000000));
-        String title = response["data"]!["title"]!.ToString();
-        String url = response["data"]!["urls"]!["original"]!.ToString();
-        String tags = "";
-        foreach (String tag in response["data"]!["tags"]!.AsArray())
+        string title = response["data"]!["title"]!.ToString();
+        string url = response["data"]!["urls"]!["original"]!.ToString();
+        string tags = "";
+        foreach (string tag in response["data"]!["tags"]!.AsArray())
             tags += tag + ", ";
-        String author = response["data"]!["user"]!["name"]!.ToString();
+        string author = response["data"]!["user"]!["name"]!.ToString();
         byte[] image = await HttpUtils.GetBytes(url);
         MessageBuilder builder = MessageBuilder.Group(chain.GroupUin!.Value)
             .Image(image).Text("\nTitle: " + title + "\nTags: " + tags + "\nAuthor: " + author + "\nUrl: https://pixiv.net/artworks/" + response["data"]!["id"]!);
@@ -103,18 +103,28 @@ public class AcgCommand
             ["Connection"] = "keep-alive",
             ["Upgrade-Insecure-Requests"] = "1"
         };
+        DateTime startTime = DateTime.Now;
         string response = await HttpUtils.GetString($"https://www.vilipix.com/tags/{tag}/illusts", headers: headers);
+        DateTime endTime = DateTime.Now;
+        int timeTotal = (int)(endTime - startTime).TotalMilliseconds;
         // get page count, get last <li class="number">20</li>
+        startTime = DateTime.Now;
         MatchCollection pageCountMatches = Regex.Matches(response, @"<li class=""number"">(\d+)</li>");
+        endTime = DateTime.Now;
+        int regexTime = (int)(endTime - startTime).TotalMilliseconds;
         if (pageCountMatches.Count != 0)
         {
             int pageCount = int.Parse(pageCountMatches[pageCountMatches.Count - 1].Groups[1].Value);
             LoggingUtils.Logger.LogInformation("Found " + pageCount + " pages");
             // get random page
             int page = new Random().Next(1, Math.Min(pageCount + 1, 30));
+            startTime = DateTime.Now;
             response = await HttpUtils.GetString($"https://www.vilipix.com/tags/{tag}/illusts?p={page}", headers: headers);
+            endTime = DateTime.Now;
+            timeTotal += (int)(endTime - startTime).TotalMilliseconds;
         }
         // get all image id, <a href="/illust/123496259"
+        startTime = DateTime.Now;
         MatchCollection matches = Regex.Matches(response, @"<a href=""/illust/(\d+)""");
         if (matches.Count == 0)
         {
@@ -125,22 +135,31 @@ public class AcgCommand
         for (int i = 0; i < matches.Count; i++)
             ids[i] = matches[i].Groups[1].Value;
         LoggingUtils.Logger.LogInformation("Found " + ids.Length + " images");
+        endTime = DateTime.Now;
+        regexTime += (int)(endTime - startTime).TotalMilliseconds;
         // get random image, retry 3 times
+        int imgDownloadTime = 0;
         for (int i = 0; i < 3; i++)
         {
             try
             {
                 // api: https://pixiv.yuki.sh/api/illust?id=
+                startTime = DateTime.Now;
                 JsonObject _response = await HttpUtils.GetJsonObject($"https://pixiv.yuki.sh/api/illust?id={ids[new Random().Next(0, ids.Length)]}");
-                String title = _response["data"]!["title"]!.ToString();
-                String url = _response["data"]!["urls"]!["original"]!.ToString();
-                String tags = "";
-                foreach (String _tag in _response["data"]!["tags"]!.AsArray())
+                endTime = DateTime.Now;
+                imgDownloadTime += (int)(endTime - startTime).TotalMilliseconds;
+                string title = _response["data"]!["title"]!.ToString();
+                string url = _response["data"]!["urls"]!["original"]!.ToString();
+                string tags = "";
+                foreach (string _tag in _response["data"]!["tags"]!.AsArray())
                     tags += _tag + ", ";
-                String author = _response["data"]!["user"]!["name"]!.ToString();
+                string author = _response["data"]!["user"]!["name"]!.ToString();
+                startTime = DateTime.Now;
                 byte[] image = await HttpUtils.GetBytes(url);
+                endTime = DateTime.Now;
+                imgDownloadTime += (int)(endTime - startTime).TotalMilliseconds;
                 MessageBuilder builder = MessageBuilder.Group(chain.GroupUin!.Value)
-                    .Image(image).Text("\nTitle: " + title + "\nTags: " + tags + "\nAuthor: " + author + "\nUrl: https://pixiv.net/artworks/" + _response["data"]!["id"]!);
+                    .Image(image).Text("\nTitle: " + title + "\nTags: " + tags + "\nAuthor: " + author + "\nUrl: https://pixiv.net/artworks/" + _response["data"]!["id"]! + "\n(req: " + timeTotal + "ms, img: " + imgDownloadTime + "ms, other: " + regexTime + "ms)");
                 preMessage.Wait();
                 await context.SendMessage(builder.Build());
                 break;

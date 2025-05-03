@@ -4,7 +4,7 @@ public static class HomoIntUtils
 {
     private static NRandom nRandom = new(DateTime.Now.Millisecond);
 
-    public static String getInt(long num) {
+    public static string getInt(long num) {
         if (num == 229028L) return "114514+114514";
         if (num == 114514L) return "114514";
         if (num == 58596L) return "114*514";

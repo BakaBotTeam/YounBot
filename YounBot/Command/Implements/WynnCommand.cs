@@ -82,7 +82,7 @@ public class WynnCommand
             string? uuid = playerSelection?.GetPlayer()?.characters.ToList()
                 .Find(pair => playerSelection?.GetPlayer()?.characters[pair.Key] == character).Key.ToString();
 
-            String text = "档案信息:\n" +
+            string text = "档案信息:\n" +
                           $"档案名称: {character.nickName ?? name}\n" +
                           $"档案 UUID: {uuid}\n" +
                           $"职业: {character.type}\n" +
