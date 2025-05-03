@@ -147,7 +147,7 @@ public class MFaceCommand
             MarketfaceEntity? marketfaceEntity = forwardMessage.FirstOrDefault(entity => entity is MarketfaceEntity) as MarketfaceEntity;
             if (marketfaceEntity != null)
             {
-                tips += $"\nTips: 这是个MFace! 你应当先使用 {YounBotApp.Configuration["CommandPrefix"] ?? "/"}mface 命令";
+                tips += $"\nTips: 这是个MFace! 你应当先使用 {CommandManager.GetCommandPrefix()}mface 命令";
             }
             await context.SendMessage(MessageBuilder.Group(chain.GroupUin.Value).Text(tips).Build());
             return;

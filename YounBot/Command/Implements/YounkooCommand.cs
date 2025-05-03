@@ -177,7 +177,7 @@ public class YounkooCommand
             // get raw message from the chain
             string rawMessage = GetPlainText(chain);
             // remove the command from the message
-            rawMessage = rawMessage.Substring((YounBotApp.Configuration["CommandPrefix"] ?? "!").Length + 5);
+            rawMessage = rawMessage.Substring((CommandManager.GetCommandPrefix()).Length + 5);
             // send the message to the chatbot
             (int _, string _, BotGroupInfo info) = await context.FetchGroupInfo((ulong)chain.GroupUin!);
             // try find the chat data
@@ -273,7 +273,7 @@ public class YounkooCommand
             // get raw message from the chain
             string rawMessage = GetPlainText(chain);
             // remove the command from the message
-            rawMessage = rawMessage.Substring((YounBotApp.Configuration["CommandPrefix"] ?? "!").Length + 10);
+            rawMessage = rawMessage.Substring((CommandManager.GetCommandPrefix()).Length + 10);
             JsonObject data = new()
             {
                 ["prompt"] = rawMessage,
@@ -370,7 +370,7 @@ public class YounkooCommand
             // get raw message from the chain
             string rawMessage = GetPlainText(chain);
             // remove the command from the message
-            rawMessage = rawMessage.Substring((YounBotApp.Configuration["CommandPrefix"] ?? "!").Length + 5);
+            rawMessage = rawMessage.Substring((CommandManager.GetCommandPrefix()).Length + 5);
             // send the message to the chatbot
             (int _, string _, BotGroupInfo info) = await context.FetchGroupInfo((ulong)chain.GroupUin!);
             // try find the chat data

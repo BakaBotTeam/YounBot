@@ -44,6 +44,11 @@ public class CommandManager
         RegisterCommand(new BrowserCommand());
     }
 
+    public static string GetCommandPrefix()
+    {
+        return YounBotApp.Configuration["CommandPrefix"] ?? "/";
+    }
+
     public string GetCommandArgs(string commandName)
     {
         if (!_commands.TryGetValue(commandName, out (object Instance, MethodInfo Method) command)) return "";
