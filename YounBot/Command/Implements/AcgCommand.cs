@@ -154,7 +154,7 @@ public class AcgCommand
                 endTime = DateTime.Now;
                 imgDownloadTime += (endTime - startTime).TotalMilliseconds;
                 MessageBuilder builder = MessageBuilder.Group(chain.GroupUin!.Value)
-                    .Image(info.Image).Text("\nTitle: " + info.Title + "\nTags: " + info.Tags + "\nAuthor: " + info.Author + "\nUrl: " + info.Url + "\n(req: " + Math.Round(timeTotal, 2) + "ms, img: " + Math.Round(imgDownloadTime, 2) + "ms, other: " + Math.Round(regexTime, 2) + "ms)");
+                    .Image(info.Image).Text("\nTitle: " + info.Title + "\nTags: " + info.Tags + "\nAuthor: " + info.Author + "\nUrl: " + info.Url + "\n(req: " + Math.Round(timeTotal, 2) + "ms, img: " + Math.Round(imgDownloadTime, 2) + "ms, other: " + Math.Round(regexTime, 2) + "ms, offical: " + info.IsOfficialApi + ")");
                 preMessage.Wait();
                 await context.SendMessage(builder.Build());
                 break;
@@ -173,8 +173,10 @@ public class AcgCommand
     {
         string url = $"https://www.pixiv.net/ajax/illust/{id}?lang=zh";
         JsonObject response = await HttpUtils.GetJsonObject(url);
-        if (response["error"] != null)
+        if (response["error"]!.GetValue<bool>())
+        {
             throw new Exception("获取图片信息失败");
+        }
         ImageInfo imageInfo = new();
         imageInfo.Title = response["body"]!["title"]!.ToString();
         imageInfo.Url = "https://www.pixiv.net/artworks/" + id;
@@ -182,7 +184,8 @@ public class AcgCommand
         foreach (JsonObject tag in response["body"]!["tags"]!["tags"]!.AsArray())
             imageInfo.Tags += tag["tag"].GetValue<string>() + ", ";
         imageInfo.Author = response["body"]!["userName"]!.ToString();
-        imageInfo.Image = await HttpUtils.GetBytes(response["body"]!["urls"]!["original"]!.ToString());
+        imageInfo.Image = await HttpUtils.GetBytes(response["body"]!["urls"]!["regular"]!.ToString().Replace("i.pximg.net", "i.pixiv.cat"));
+        imageInfo.IsOfficialApi = true;
         return imageInfo;
     }
 
@@ -190,8 +193,6 @@ public class AcgCommand
     {
         string url = $"https://pixiv.yuki.sh/api/illust?id={id}";
         JsonObject response = await HttpUtils.GetJsonObject(url);
-        if (response["error"] != null)
-            throw new Exception("获取图片信息失败");
         ImageInfo imageInfo = new();
         imageInfo.Title = response["data"]!["title"]!.ToString();
         imageInfo.Url = "https://www.pixiv.net/artworks/" + id;
@@ -199,7 +200,8 @@ public class AcgCommand
         foreach (string tag in response["data"]!["tags"]!.AsArray())
             imageInfo.Tags += tag + ", ";
         imageInfo.Author = response["data"]!["user"]!["name"]!.ToString();
-        imageInfo.Image = await HttpUtils.GetBytes(response["data"]!["urls"]!["original"]!.ToString());
+        imageInfo.Image = await HttpUtils.GetBytes(response["data"]!["urls"]!["regular"]!.ToString());
+        imageInfo.IsOfficialApi = false;
         return imageInfo;
     }
 
@@ -207,6 +209,13 @@ public class AcgCommand
     {
         Task<ImageInfo>[] tasks = [GetImageInfoFromOfficalApi(id), GetImageInfoFromUnofficalApi(id)];
         Task<ImageInfo> completedTask = await Task.WhenAny(tasks);
+        if (completedTask.IsFaulted)
+        {
+            LoggingUtils.Logger.LogError(completedTask.Exception!.ToString());
+            completedTask = tasks.First(t => t != completedTask);
+            if (completedTask.IsFaulted)
+                throw new Exception("获取图片信息失败", completedTask.Exception);
+        }
 
         foreach (Task<ImageInfo> task in tasks)
         {
@@ -232,6 +241,7 @@ public class AcgCommand
         public string Tags { get; set; }
         public string Author { get; set; }
         public byte[] Image { get; set; }
+        public bool IsOfficialApi { get; set; }
 
         public void Dispose()
         {

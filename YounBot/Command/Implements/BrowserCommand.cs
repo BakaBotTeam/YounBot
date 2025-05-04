@@ -1,7 +1,6 @@
 ﻿using Lagrange.Core;
 using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Message;
-using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 using YounBot.Permissions;
 using YounBot.Utils;
@@ -41,6 +40,11 @@ public class BrowserCommand
         await page.WaitForSelectorAsync("#__nuxt > div > div.ping-container > div.media-container > div.right-container > div > div.zha-card-body > div > div.process-container");
         Thread.Sleep(1);
         string innerHtml = await page.InnerHTMLAsync("#__nuxt > div > div.ping-container > div.media-container > div.right-container > div > div.zha-card-body > div > div.process-container");
+        while (innerHtml.Contains("data-process=\"100.00%\""))
+        {
+            Thread.Sleep(1);
+            innerHtml = await page.InnerHTMLAsync("#__nuxt > div > div.ping-container > div.media-container > div.right-container > div > div.zha-card-body > div > div.process-container");
+        }
         while (!innerHtml.Contains("data-process=\"100.00%\""))
         {
             Thread.Sleep(1);

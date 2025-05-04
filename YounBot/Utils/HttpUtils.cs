@@ -11,6 +11,11 @@ public class HttpUtils
     public static async Task<JsonObject> GetJsonObject(string url, string? auth = null, Dictionary<string, string> headers = null)
     {
         HttpRequestMessage request = new(HttpMethod.Get, url);
+        
+        request.Headers.Add("Accept", "application/json");
+        request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36");
+        request.Headers.Add("Accept-Language", "en-US,en;q=0.9");
+        request.Headers.Add("Connection", "keep-alive");
 
         if (!string.IsNullOrEmpty(auth))
         {
@@ -94,6 +99,11 @@ public class HttpUtils
     public static async Task<byte[]> GetBytes(string url, string? auth = null)
     {
         HttpRequestMessage request = new(HttpMethod.Get, url);
+        
+        request.Headers.Add("Accept", "application/json");
+        request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36");
+        request.Headers.Add("Accept-Language", "en-US,en;q=0.9");
+        request.Headers.Add("Connection", "keep-alive");
 
         if (!string.IsNullOrEmpty(auth))
         {
