@@ -29,16 +29,22 @@ public class AcgCommand
         _cooldown.Flag(user);
         
         Task preMessage = SendMessage(context, chain, "Please Wait...");
+        DateTime startTime = DateTime.Now;
         JsonObject response = await HttpUtils.GetJsonObject("https://pixiv.yuki.sh/api/recommend?type=json&nocache=" + new Random().Next(0, 1000000));
+        DateTime endTime = DateTime.Now;
+        double timeTotal = (endTime - startTime).TotalMilliseconds;
         string title = response["data"]!["title"]!.ToString();
         string url = response["data"]!["urls"]!["original"]!.ToString();
         string tags = "";
         foreach (string tag in response["data"]!["tags"]!.AsArray())
             tags += tag + ", ";
         string author = response["data"]!["user"]!["name"]!.ToString();
+        startTime = DateTime.Now;
         byte[] image = await HttpUtils.GetBytes(url);
+        endTime = DateTime.Now;
+        double imgDownloadTime = (endTime - startTime).TotalMilliseconds;
         MessageBuilder builder = MessageBuilder.Group(chain.GroupUin!.Value)
-            .Image(image).Text("\nTitle: " + title + "\nTags: " + tags + "\nAuthor: " + author + "\nUrl: https://pixiv.net/artworks/" + response["data"]!["id"]!);
+            .Image(image).Text("\nTitle: " + title + "\nTags: " + tags + "\nAuthor: " + author + "\nUrl: https://pixiv.net/artworks/" + response["data"]!["id"]! + "\n(req: " + Math.Round(timeTotal, 2) + "ms, img: " + Math.Round(imgDownloadTime, 2) + "ms)");
         preMessage.Wait();
         await context.SendMessage(builder.Build());
     }
@@ -106,12 +112,12 @@ public class AcgCommand
         DateTime startTime = DateTime.Now;
         string response = await HttpUtils.GetString($"https://www.vilipix.com/tags/{tag}/illusts", headers: headers);
         DateTime endTime = DateTime.Now;
-        int timeTotal = (int)(endTime - startTime).TotalMilliseconds;
+        double timeTotal = (endTime - startTime).TotalMilliseconds;
         // get page count, get last <li class="number">20</li>
         startTime = DateTime.Now;
         MatchCollection pageCountMatches = Regex.Matches(response, @"<li class=""number"">(\d+)</li>");
         endTime = DateTime.Now;
-        int regexTime = (int)(endTime - startTime).TotalMilliseconds;
+        double regexTime = (endTime - startTime).TotalMilliseconds;
         if (pageCountMatches.Count != 0)
         {
             int pageCount = int.Parse(pageCountMatches[pageCountMatches.Count - 1].Groups[1].Value);
@@ -121,7 +127,7 @@ public class AcgCommand
             startTime = DateTime.Now;
             response = await HttpUtils.GetString($"https://www.vilipix.com/tags/{tag}/illusts?p={page}", headers: headers);
             endTime = DateTime.Now;
-            timeTotal += (int)(endTime - startTime).TotalMilliseconds;
+            timeTotal += (endTime - startTime).TotalMilliseconds;
         }
         // get all image id, <a href="/illust/123496259"
         startTime = DateTime.Now;
@@ -136,30 +142,19 @@ public class AcgCommand
             ids[i] = matches[i].Groups[1].Value;
         LoggingUtils.Logger.LogInformation("Found " + ids.Length + " images");
         endTime = DateTime.Now;
-        regexTime += (int)(endTime - startTime).TotalMilliseconds;
+        regexTime += (endTime - startTime).TotalMilliseconds;
         // get random image, retry 3 times
-        int imgDownloadTime = 0;
+        double imgDownloadTime = 0;
         for (int i = 0; i < 3; i++)
         {
             try
             {
-                // api: https://pixiv.yuki.sh/api/illust?id=
                 startTime = DateTime.Now;
-                JsonObject _response = await HttpUtils.GetJsonObject($"https://pixiv.yuki.sh/api/illust?id={ids[new Random().Next(0, ids.Length)]}");
+                using ImageInfo info = await GetImageInfo(ids[new Random().Next(0, ids.Length)]);
                 endTime = DateTime.Now;
-                imgDownloadTime += (int)(endTime - startTime).TotalMilliseconds;
-                string title = _response["data"]!["title"]!.ToString();
-                string url = _response["data"]!["urls"]!["original"]!.ToString();
-                string tags = "";
-                foreach (string _tag in _response["data"]!["tags"]!.AsArray())
-                    tags += _tag + ", ";
-                string author = _response["data"]!["user"]!["name"]!.ToString();
-                startTime = DateTime.Now;
-                byte[] image = await HttpUtils.GetBytes(url);
-                endTime = DateTime.Now;
-                imgDownloadTime += (int)(endTime - startTime).TotalMilliseconds;
+                imgDownloadTime += (endTime - startTime).TotalMilliseconds;
                 MessageBuilder builder = MessageBuilder.Group(chain.GroupUin!.Value)
-                    .Image(image).Text("\nTitle: " + title + "\nTags: " + tags + "\nAuthor: " + author + "\nUrl: https://pixiv.net/artworks/" + _response["data"]!["id"]! + "\n(req: " + timeTotal + "ms, img: " + imgDownloadTime + "ms, other: " + regexTime + "ms)");
+                    .Image(info.Image).Text("\nTitle: " + info.Title + "\nTags: " + info.Tags + "\nAuthor: " + info.Author + "\nUrl: " + info.Url + "\n(req: " + Math.Round(timeTotal, 2) + "ms, img: " + Math.Round(imgDownloadTime, 2) + "ms, other: " + Math.Round(regexTime, 2) + "ms)");
                 preMessage.Wait();
                 await context.SendMessage(builder.Build());
                 break;
@@ -171,6 +166,76 @@ public class AcgCommand
                     throw;
                 }
             }
+        }
+    }
+
+    private async Task<ImageInfo> GetImageInfoFromOfficalApi(string id)
+    {
+        string url = $"https://www.pixiv.net/ajax/illust/{id}?lang=zh";
+        JsonObject response = await HttpUtils.GetJsonObject(url);
+        if (response["error"] != null)
+            throw new Exception("获取图片信息失败");
+        ImageInfo imageInfo = new();
+        imageInfo.Title = response["body"]!["title"]!.ToString();
+        imageInfo.Url = "https://www.pixiv.net/artworks/" + id;
+        imageInfo.Tags = "";
+        foreach (JsonObject tag in response["body"]!["tags"]!["tags"]!.AsArray())
+            imageInfo.Tags += tag["tag"].GetValue<string>() + ", ";
+        imageInfo.Author = response["body"]!["userName"]!.ToString();
+        imageInfo.Image = await HttpUtils.GetBytes(response["body"]!["urls"]!["original"]!.ToString());
+        return imageInfo;
+    }
+
+    private async Task<ImageInfo> GetImageInfoFromUnofficalApi(string id)
+    {
+        string url = $"https://pixiv.yuki.sh/api/illust?id={id}";
+        JsonObject response = await HttpUtils.GetJsonObject(url);
+        if (response["error"] != null)
+            throw new Exception("获取图片信息失败");
+        ImageInfo imageInfo = new();
+        imageInfo.Title = response["data"]!["title"]!.ToString();
+        imageInfo.Url = "https://www.pixiv.net/artworks/" + id;
+        imageInfo.Tags = "";
+        foreach (string tag in response["data"]!["tags"]!.AsArray())
+            imageInfo.Tags += tag + ", ";
+        imageInfo.Author = response["data"]!["user"]!["name"]!.ToString();
+        imageInfo.Image = await HttpUtils.GetBytes(response["data"]!["urls"]!["original"]!.ToString());
+        return imageInfo;
+    }
+
+    private async Task<ImageInfo> GetImageInfo(string id)
+    {
+        Task<ImageInfo>[] tasks = [GetImageInfoFromOfficalApi(id), GetImageInfoFromUnofficalApi(id)];
+        Task<ImageInfo> completedTask = await Task.WhenAny(tasks);
+
+        foreach (Task<ImageInfo> task in tasks)
+        {
+            if (task != completedTask)
+            {
+                task.ContinueWith(t =>
+                {
+                    if (!t.IsFaulted)
+                    {
+                        t.Result.Dispose();
+                    }
+                });
+            }
+        }
+
+        return await completedTask;
+    }
+    
+    private class ImageInfo : IDisposable
+    {
+        public string Title { get; set; }
+        public string Url { get; set; }
+        public string Tags { get; set; }
+        public string Author { get; set; }
+        public byte[] Image { get; set; }
+
+        public void Dispose()
+        {
+            Image = null;
         }
     }
 }
