@@ -1,5 +1,4 @@
-﻿using System.Text;
-using System.Text.Json.Nodes;
+﻿using System.Text.Json.Nodes;
 using Lagrange.Core;
 using Lagrange.Core.Common.Entity;
 using Lagrange.Core.Common.Interface.Api;
@@ -370,7 +369,7 @@ public class YounkooCommand
             // get raw message from the chain
             string rawMessage = GetPlainText(chain);
             // remove the command from the message
-            rawMessage = rawMessage.Substring((CommandManager.GetCommandPrefix()).Length + 5);
+            rawMessage = rawMessage.Substring((CommandManager.GetCommandPrefix()).Length + 3);
             // send the message to the chatbot
             (int _, string _, BotGroupInfo info) = await context.FetchGroupInfo((ulong)chain.GroupUin!);
             // try find the chat data
