@@ -3,6 +3,7 @@
 # YounBot
 
 YounBot is a bot developed based on Lagrange.Core, designed to provide funny functions.
+[Sponsor me @ Afdian](https://afdian.com/a/makabaka_qwq)
 
 ## Conbrtibuting
 
@@ -25,7 +26,7 @@ YounBot is a bot developed based on Lagrange.Core, designed to provide funny fun
     dotnet restore
     ```
 
-### Build&Run
+### Build&RunSponsor meSponsor me
 
 1. Build the project:
     ```sh
