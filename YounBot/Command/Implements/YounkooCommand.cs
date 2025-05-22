@@ -452,4 +452,76 @@ public class YounkooCommand
             }
         }
     }
+
+    [Command("findperson", "盒！")]
+    public async Task FindPerson(BotContext context, MessageChain chain, uint uin)
+    {
+        if (!HasPermission(chain)) return;
+        await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+            .Forward(chain)
+            .Text("请稍等...").Build());
+        List<string> sameGroup = [];
+
+        foreach (BotGroup group in await context.FetchGroups())
+        {
+            BotGroupMember? member = (await context.FetchMembers(group.GroupUin)).Find(member => member.Uin == uin);
+            if (member == null) continue;
+            string role = member.Permission switch
+            {
+                GroupMemberPermission.Admin => "管理员",
+                GroupMemberPermission.Owner => "群主",
+                _ => "成员"
+            };
+            sameGroup.Add($"{group.GroupName}[{group.GroupUin}] -> {role} | 上次发言时间: {member.LastMsgTime}");
+        }
+        
+        if (sameGroup.Count == 0)
+        {
+            await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+                .Forward(chain)
+                .Text($"没有找到 {uin} 的说...").Build());
+            return;
+        }
+        string groups = sameGroup.Aggregate("", (current, group) => current + (group + "\n"));
+        await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+            .Forward(chain)
+            .Text($"找到 {uin} 了:\n{groups}").Build());
+    }
+    
+    [Command("findpersonbyname", "盒！")]
+    public async Task FindPerson(BotContext context, MessageChain chain, string name)
+    {
+        if (!HasPermission(chain)) return;
+        await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+            .Forward(chain)
+            .Text("请稍等...").Build());
+        List<string> sameGroup = [];
+
+        foreach (BotGroup group in await context.FetchGroups())
+        {
+            List<BotGroupMember> members = (await context.FetchMembers(group.GroupUin)).FindAll(member => member.MemberName != null && member.MemberName.Contains(name, StringComparison.OrdinalIgnoreCase));
+            foreach (BotGroupMember member in members)
+            {
+                string role = member.Permission switch
+                {
+                    GroupMemberPermission.Admin => "管理员",
+                    GroupMemberPermission.Owner => "群主",
+                    _ => "成员"
+                };
+                sameGroup.Add($"{group.GroupName}[{group.GroupUin}] -> ({role}){member.MemberName}({member.Uin}) | 上次发言时间: {member.LastMsgTime}");
+            }
+        }
+        
+        if (sameGroup.Count == 0)
+        {
+            await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+                .Forward(chain)
+                .Text($"没有找到 {name} 的说...").Build());
+            return;
+        }
+        string groups = sameGroup.Aggregate("", (current, group) => current + (group + "\n"));
+        await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+            .Forward(chain)
+            .Text($"找到 {name} 了:\n{groups}").Build());
+    }
 }

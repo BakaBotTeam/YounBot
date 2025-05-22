@@ -33,18 +33,12 @@ public class AcgCommand
         JsonObject response = await HttpUtils.GetJsonObject("https://pixiv.yuki.sh/api/recommend?type=json&nocache=" + new Random().Next(0, 1000000));
         DateTime endTime = DateTime.Now;
         double timeTotal = (endTime - startTime).TotalMilliseconds;
-        string title = response["data"]!["title"]!.ToString();
-        string url = response["data"]!["urls"]!["original"]!.ToString();
-        string tags = "";
-        foreach (string tag in response["data"]!["tags"]!.AsArray())
-            tags += tag + ", ";
-        string author = response["data"]!["user"]!["name"]!.ToString();
         startTime = DateTime.Now;
-        byte[] image = await HttpUtils.GetBytes(url);
+        using ImageInfo info = await GetImageInfo(response["data"]!["id"]!.ToString());
         endTime = DateTime.Now;
         double imgDownloadTime = (endTime - startTime).TotalMilliseconds;
         MessageBuilder builder = MessageBuilder.Group(chain.GroupUin!.Value)
-            .Image(image).Text("\nTitle: " + title + "\nTags: " + tags + "\nAuthor: " + author + "\nUrl: https://pixiv.net/artworks/" + response["data"]!["id"]! + "\n(req: " + Math.Round(timeTotal, 2) + "ms, img: " + Math.Round(imgDownloadTime, 2) + "ms)");
+            .Image(info.Image).Text("\nTitle: " + info.Title + "\nTags: " + info.Tags + "\nAuthor: " + info.Author + "\nUrl: " + info.Url + "\n(req: " + Math.Round(timeTotal, 2) + "ms, img: " + Math.Round(imgDownloadTime, 2) + "ms, other: 0ms, offical: " + info.IsOfficialApi + ")");
         preMessage.Wait();
         await context.SendMessage(builder.Build());
     }

@@ -108,7 +108,7 @@ public class TldrCommand
                                         ["type"] = "image_url",
                                         ["image_url"] = new JsonObject
                                         {
-                                            ["url"] = imageEntity.ImageUrl,
+                                            ["url"] = "data:image/png;base64," + Convert.ToBase64String(imageBytes),
                                             ["detail"] = "high"
                                         }
                                     });
