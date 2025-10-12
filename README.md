@@ -26,7 +26,7 @@ YounBot is a bot developed based on Lagrange.Core, designed to provide funny fun
     dotnet restore
     ```
 
-### Build&RunSponsor meSponsor me
+### Build & Run
 
 1. Build the project:
     ```sh
