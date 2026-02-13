@@ -157,18 +157,25 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
         //     }
         // }, CancellationTokenSource.Token);
 
-        Client!.Invoker.OnGroupMemberIncreaseEvent += async (_, args) =>
-        {
-            if (args.MemberUin == Client.BotUin) return;
-            await NewMemberWelcome.OnGroupMemberIncrease(args);
-        };
+        // Client!.Invoker.OnGroupMemberIncreaseEvent += async (_, args) =>
+        // {
+        //     if (args.MemberUin == Client.BotUin) return;
+        //     await NewMemberWelcome.OnGroupMemberIncrease(args);
+        // };
         
         Client!.Invoker.OnGroupMessageReceived += async (context, @event) =>
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
             MessageCounter.AddMessageReceived(DateTimeOffset.Now.ToUnixTimeSeconds());
             // do query place first
-            await QueryPlaceListener.OnGroupMessage(context, @event.Chain);
+            try
+            {
+                await QueryPlaceListener.OnGroupMessage(context, @event.Chain);
+            }
+            catch (Exception e)
+            {
+                LoggingUtils.Logger.LogError($"QueryPlaceListener error: {e}");
+            }
             if (@event.Chain.FriendUin == context.BotUin) return;
             
             if (Config!.BlackLists!.Contains(@event.Chain.FriendUin)) return;

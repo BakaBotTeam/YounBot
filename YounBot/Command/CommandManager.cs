@@ -41,6 +41,7 @@ public class CommandManager
         RegisterCommand(new RAnimalCommand());
         RegisterCommand(new BrowserCommand());
         RegisterCommand(new QueryCommand());
+        RegisterCommand(new SAuthCommand());
     }
 
     public static string GetCommandPrefix()
