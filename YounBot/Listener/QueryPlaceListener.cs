@@ -33,6 +33,7 @@ public class QueryPlaceListener
             if (match.Value.Length != message.Length) return;
             string place = match.Groups[1].Value.Trim();
             short number = short.Parse(match.Groups[2].Value);
+            if (number > 256) return;
             QueryPlace? queryPlace = YounBotApp.QueryPlaceManager?.GetPlace(place, chain.GroupUin.Value);
             if (queryPlace == null) return;
             if (queryPlace.Count.Count == 0) queryPlace.Count.Add(0);
@@ -54,6 +55,7 @@ public class QueryPlaceListener
             if (match.Value.Length != message.Length) return;
             string place = match.Groups[1].Value.Trim();
             short number = short.Parse(match.Groups[2].Value);
+            if (number > 256) return;
             QueryPlace? queryPlace = YounBotApp.QueryPlaceManager?.GetPlace(place, chain.GroupUin.Value);
             if (queryPlace == null) return;
             if (queryPlace.Count.Count == 0) queryPlace.Count.Add(0);
@@ -115,6 +117,13 @@ public class QueryPlaceListener
             if (match.Value.Length != message.Length) return;
             string place = match.Groups[1].Value.Trim();
             List<short> numbers = match.Groups[2].Value.Split(',').Select(short.Parse).ToList();
+            short numberSum = (short)numbers.Sum(c => c);
+            // if numberSum > 256 return;
+            if (numberSum > 256) return;
+            // if numbers like [8,9,4,6], return;
+            if (numbers.Find(n => n == 8) != 0 && numbers.Find(n => n == 9) != 0 && numbers.Find(n => n == 4) != 0 && numbers.Find(n => n == 6) != 0) return;
+            if (numbers.Any(n => n < 0)) return;
+            if (numbers.Count == 0) return;
             QueryPlace? queryPlace = YounBotApp.QueryPlaceManager?.GetPlace(place, chain.GroupUin.Value);
             if (queryPlace == null) return;
             List<short> oldCount = queryPlace.Count.Count == 0 ? new List<short> { 0 } : new List<short>(queryPlace.Count);
