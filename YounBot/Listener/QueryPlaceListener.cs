@@ -32,12 +32,12 @@ public class QueryPlaceListener
         {
             if (match.Value.Length != message.Length) return;
             string place = match.Groups[1].Value.Trim();
-            int number = int.Parse(match.Groups[2].Value);
+            short number = short.Parse(match.Groups[2].Value);
             QueryPlace? queryPlace = YounBotApp.QueryPlaceManager?.GetPlace(place, chain.GroupUin.Value);
             if (queryPlace == null) return;
             if (queryPlace.Count.Count == 0) queryPlace.Count.Add(0);
-            int oldCount = queryPlace.Count[0];
-            queryPlace.Count[0] = Math.Max(0, queryPlace.Count[0] - number);
+            short oldCount = queryPlace.Count[0];
+            queryPlace.Count[0] = (short)Math.Max(0, queryPlace.Count[0] - number);
             YounBotApp.QueryPlaceManager?.UpdateCount(place, chain.GroupUin.Value, queryPlace.Count);
             string response = $"更新成功！";
             response += (queryPlace.Count[0] - oldCount) switch
@@ -53,11 +53,11 @@ public class QueryPlaceListener
         {
             if (match.Value.Length != message.Length) return;
             string place = match.Groups[1].Value.Trim();
-            int number = int.Parse(match.Groups[2].Value);
+            short number = short.Parse(match.Groups[2].Value);
             QueryPlace? queryPlace = YounBotApp.QueryPlaceManager?.GetPlace(place, chain.GroupUin.Value);
             if (queryPlace == null) return;
             if (queryPlace.Count.Count == 0) queryPlace.Count.Add(0);
-            int oldCount = queryPlace.Count[0];
+            short oldCount = queryPlace.Count[0];
             queryPlace.Count[0] += number;
             YounBotApp.QueryPlaceManager?.UpdateCount(place, chain.GroupUin.Value, queryPlace.Count);
             string response = $"更新成功！";
@@ -77,7 +77,7 @@ public class QueryPlaceListener
             QueryPlace? queryPlace = YounBotApp.QueryPlaceManager?.GetPlace(place, chain.GroupUin.Value);
             if (queryPlace == null) return;
             if (queryPlace.Count.Count == 0) queryPlace.Count.Add(0);
-            int oldCount = queryPlace.Count[0];
+            short oldCount = queryPlace.Count[0];
             queryPlace.Count[0] += 1;
             YounBotApp.QueryPlaceManager?.UpdateCount(place, chain.GroupUin.Value, queryPlace.Count);
             string response = $"更新成功！";
@@ -97,8 +97,8 @@ public class QueryPlaceListener
             QueryPlace? queryPlace = YounBotApp.QueryPlaceManager?.GetPlace(place, chain.GroupUin.Value);
             if (queryPlace == null) return;
             if (queryPlace.Count.Count == 0) queryPlace.Count.Add(0);
-            int oldCount = queryPlace.Count[0];
-            queryPlace.Count[0] = Math.Max(0, oldCount - 1);
+            short oldCount = queryPlace.Count[0];
+            queryPlace.Count[0] = (short)Math.Max(0, oldCount - 1);
             YounBotApp.QueryPlaceManager?.UpdateCount(place, chain.GroupUin.Value, queryPlace.Count);
             string response = $"更新成功！";
             response += (queryPlace.Count[0] - oldCount) switch
@@ -114,16 +114,16 @@ public class QueryPlaceListener
         {
             if (match.Value.Length != message.Length) return;
             string place = match.Groups[1].Value.Trim();
-            List<int> numbers = match.Groups[2].Value.Split(',').Select(int.Parse).ToList();
+            List<short> numbers = match.Groups[2].Value.Split(',').Select(short.Parse).ToList();
             QueryPlace? queryPlace = YounBotApp.QueryPlaceManager?.GetPlace(place, chain.GroupUin.Value);
             if (queryPlace == null) return;
-            List<int> oldCount = queryPlace.Count.Count == 0 ? new List<int> { 0 } : new List<int>(queryPlace.Count);
+            List<short> oldCount = queryPlace.Count.Count == 0 ? new List<short> { 0 } : new List<short>(queryPlace.Count);
             queryPlace.Count.Clear();
             queryPlace.Count.AddRange(numbers);
             YounBotApp.QueryPlaceManager?.UpdateCount(place, chain.GroupUin.Value, queryPlace.Count);
             string response = $"更新成功！";
-            int oldTotal = oldCount.Sum();
-            int newTotal = queryPlace.Count.Sum();
+            short oldTotal = (short)oldCount.Sum(c => c);
+            short newTotal = (short)queryPlace.Count.Sum(c => c);
             response += (newTotal - oldTotal) switch
             {
                 > 0 => $"新增了 {newTotal - oldTotal} 卡",
@@ -139,18 +139,18 @@ public class QueryPlaceListener
             string place = match.Groups[1].Value.Trim();
             QueryPlace? queryPlace = YounBotApp.QueryPlaceManager?.GetPlace(place, chain.GroupUin.Value);
             if (queryPlace == null) return;
-            string response = $"{queryPlace.Name}现在 {string.Join(", ", queryPlace.Count.Count == 0 ? new List<int> { 0 } : queryPlace.Count)} 卡";
+            string response = $"{queryPlace.Name}现在 {string.Join(", ", queryPlace.Count.Count == 0 ? new List<short> { 0 } : queryPlace.Count)} 卡";
             await MessageUtils.SendMessage(context, chain, response);
         } /*
         if ((match = Regex.Match(message, AddPattern)).Success)
         {
             if (match.Value.Length != message.Length) return;
             string place = match.Groups[1].Value.Trim();
-            int number = int.Parse(match.Groups[2].Value);
+            short number = short.Parse(match.Groups[2].Value);
             QueryPlace? queryPlace = YounBotApp.QueryPlaceManager?.GetPlace(place, chain.GroupUin.Value);
             if (queryPlace == null) return;
             if (queryPlace.Count.Count == 0) queryPlace.Count.Add(0);
-            int oldCount = queryPlace.Count[0];
+            short oldCount = queryPlace.Count[0];
             queryPlace.Count[0] = number;
             YounBotApp.QueryPlaceManager?.UpdateCount(place, chain.GroupUin.Value, queryPlace.Count);
             string response = $"更新成功！";
@@ -168,7 +168,7 @@ public class QueryPlaceListener
             List<QueryPlace> places = YounBotApp.QueryPlaceManager?.GetAllPlaces(chain.GroupUin.Value) ?? [];
             if (places.Count == 0) return;
             string response = "";
-            int total = 0;
+            short total = 0;
             foreach (QueryPlace place in places)
             {
                 if (place.Count.Count == 0)

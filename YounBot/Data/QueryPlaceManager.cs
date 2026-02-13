@@ -12,7 +12,7 @@ public class QueryPlaceManager
         _collection.EnsureIndex(x => x.Id, true);
     }
 
-    public List<int>? GetCountByName(string name, ulong groupId)
+    public List<short>? GetCountByName(string name, ulong groupId)
     {
         QueryPlace? place = _collection.FindOne(p => p.Name == name && p.GroupId == groupId);
         if (place == null) return null;
@@ -22,7 +22,7 @@ public class QueryPlaceManager
         return place?.Count;
     }
 
-    public List<int>? GetCountByShortName(string shortName, ulong groupId)
+    public List<short>? GetCountByShortName(string shortName, ulong groupId)
     {
         QueryPlace? place = _collection.FindOne(p => p.ShortNmae == shortName && p.GroupId == groupId);
         if (place == null) return null;
@@ -50,7 +50,7 @@ public class QueryPlaceManager
         return true;
     }
 
-    public bool UpdateCount(string nameOrShortName, ulong groupId, List<int> newCount)
+    public bool UpdateCount(string nameOrShortName, ulong groupId, List<short> newCount)
     {
         QueryPlace? place = _collection.FindOne(p => (p.Name == nameOrShortName || p.ShortNmae == nameOrShortName) && p.GroupId == groupId);
         if (place == null) return false;
