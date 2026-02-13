@@ -84,24 +84,6 @@ public class OneBotSigner : SignProvider
         if (message.StatusCode != HttpStatusCode.OK) throw new Exception($"Signer server returned a {message.StatusCode}");
         JsonElement json = JsonDocument.Parse(message.Content.ReadAsStream()).RootElement;
 
-        if (json.TryGetProperty("platform", out JsonElement platformJson))
-        {
-            if (platformJson.GetString() != platform) throw new Exception("Signer platform mismatch");
-        }
-        else
-        {
-            _logger.LogWarning("Signer platform miss");
-        }
-
-        if (json.TryGetProperty("version", out JsonElement versionJson))
-        {
-            if (versionJson.GetString() != version) throw new Exception("Signer version mismatch");
-        }
-        else
-        {
-            _logger.LogWarning("Signer version miss");
-        }
-
         JsonElement valueJson = json.GetProperty("value");
         JsonElement extraJson = valueJson.GetProperty("extra");
         JsonElement tokenJson = valueJson.GetProperty("token");

@@ -34,22 +34,28 @@ public class BrowserCommand
         await page.WaitForLoadStateAsync();
         await page.FillAsync("#__nuxt > div > div.actions > div > form > div.search-container > div > div.search-input > input[type=text]", url);
         await page.ClickAsync("#__nuxt > div > div.actions > div > form > div.action-btn.btn-info");
+        Thread.Sleep(2000);
         await page.WaitForLoadStateAsync();
-        Thread.Sleep(3);
         // wait #__nuxt > div > div.ping-container > div.media-container > div.right-container > div > div.zha-card-body > div > div.process-container > div.loading disappear
         await page.WaitForSelectorAsync("#__nuxt > div > div.ping-container > div.media-container > div.right-container > div > div.zha-card-body > div > div.process-container");
-        Thread.Sleep(1);
+        Thread.Sleep(12000);
         string innerHtml = await page.InnerHTMLAsync("#__nuxt > div > div.ping-container > div.media-container > div.right-container > div > div.zha-card-body > div > div.process-container");
-        while (innerHtml.Contains("data-process=\"100.00%\""))
-        {
-            Thread.Sleep(1);
-            innerHtml = await page.InnerHTMLAsync("#__nuxt > div > div.ping-container > div.media-container > div.right-container > div > div.zha-card-body > div > div.process-container");
-        }
+        // while (!innerHtml.Contains("data-process=\"100.00%\""))
+        // {
+            // Thread.Sleep(1);
+            // innerHtml = await page.InnerHTMLAsync("#__nuxt > div > div.ping-container > div.media-container > div.right-container > div > div.zha-card-body > div > div.process-container");
+        // }
+        // while (innerHtml.Contains("data-process=\"100.00%\""))
+        // {
+            // Thread.Sleep(1);
+            // innerHtml = await page.InnerHTMLAsync("#__nuxt > div > div.ping-container > div.media-container > div.right-container > div > div.zha-card-body > div > div.process-container");
+        // }
         while (!innerHtml.Contains("data-process=\"100.00%\""))
         {
             Thread.Sleep(1);
             innerHtml = await page.InnerHTMLAsync("#__nuxt > div > div.ping-container > div.media-container > div.right-container > div > div.zha-card-body > div > div.process-container");
         }
+        await page.Locator("#__nuxt > div > div.actions > div > form > div.search-container > div > div.search-input > input[type=text]").ClearAsync();
         byte[] image = await page.ScreenshotAsync(new PageScreenshotOptions
         {
             FullPage = true

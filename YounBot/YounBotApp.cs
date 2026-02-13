@@ -11,8 +11,8 @@ using PrivateBinSharp;
 using QRCoder;
 using YounBot.Command;
 using YounBot.Config;
+using YounBot.Data;
 using YounBot.Listener;
-using YounBot.Scheduler;
 using YounBot.Signer;
 using YounBot.Utils;
 using LogLevel = Lagrange.Core.Event.EventArg.LogLevel;
@@ -31,7 +31,8 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
     public static long? UpTime;
     public static PrivateBinClient? PrivateBinClient;
     public static CancellationTokenSource? CancellationTokenSource;
-    
+    public static QueryPlaceManager? QueryPlaceManager;
+
     public Task Init(BotConfig config, BotDeviceInfo deviceInfo, BotKeystore? keystore, string version)
     {
         VERSION = version;
@@ -48,6 +49,9 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
             PrivateBinClient = new PrivateBinClient(Config.PrivateBinUrl);
         }
         
+        Db = new LiteDatabase("YounBot.db");
+        QueryPlaceManager = new QueryPlaceManager(Db);
+
         LoggingUtils.Logger.LogInformation("Running on YounBot " + version);
         
         Client!.Invoker.OnBotLogEvent += (_, @event) =>
@@ -136,8 +140,6 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
 
         CommandManager.Instance.InitializeCommands();
 
-        Db = new LiteDatabase("YounBot.db");
-        
         return Task.CompletedTask;
     }
     
@@ -146,14 +148,14 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
         Hookers.Init();
         
         // add scheduled tasks here
-        Task.Run(async () =>
-        {
-            while (Client != null && !CancellationTokenSource.Token.IsCancellationRequested)
-            {
-                await Task.Delay(1000 * 60 * 60, CancellationTokenSource.Token);
-                await GitCodeTokenRefresher.Refresh();
-            }
-        }, CancellationTokenSource.Token);
+        // Task.Run(async () =>
+        // {
+        //     while (Client != null && !CancellationTokenSource.Token.IsCancellationRequested)
+        //     {
+        //         await GitCodeTokenRefresher.Refresh();
+        //         await Task.Delay(1000 * 60, CancellationTokenSource.Token);
+        //     }
+        // }, CancellationTokenSource.Token);
 
         Client!.Invoker.OnGroupMemberIncreaseEvent += async (_, args) =>
         {
@@ -165,6 +167,8 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
             MessageCounter.AddMessageReceived(DateTimeOffset.Now.ToUnixTimeSeconds());
+            // do query place first
+            await QueryPlaceListener.OnGroupMessage(context, @event.Chain);
             if (@event.Chain.FriendUin == context.BotUin) return;
             
             if (Config!.BlackLists!.Contains(@event.Chain.FriendUin)) return;

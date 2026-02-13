@@ -1,4 +1,4 @@
-﻿namespace YounBot.Config;
+﻿﻿namespace YounBot.Config;
 
 [Serializable]
 public class YounBotConfig
@@ -17,6 +17,8 @@ public class YounBotConfig
     public List<uint> BotAdmins { get; set; } = new();
     public List<uint> BlackLists { get; set; } = new();
     public string DeepSeekApiKey { get; set; } = "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+    public string CustomOpenAiEndpoint { get; set; } = "https://api.openai.com/v1";
+    public string CustomOpenAiApiKey { get; set; } = "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 
     public static YounBotConfig NewConfig() => new()
     {
@@ -31,5 +33,7 @@ public class YounBotConfig
         PrivateBinUrl = "null",
         EasyImageApiUrl = "https://example.com/api/index.php",
         EasyImageApiKey = "00000000-0000-0000-0000-00000000",
+        CustomOpenAiEndpoint = "https://api.openai.com/v1",
+        CustomOpenAiApiKey = "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     };
 }

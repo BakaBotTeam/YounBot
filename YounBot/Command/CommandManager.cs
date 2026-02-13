@@ -35,13 +35,12 @@ public class CommandManager
         RegisterCommand(new HttpCatCommand());
         RegisterCommand(new YounkooCommand());
         RegisterCommand(new HelpCommand());
-        RegisterCommand(new HypixelCommand());
         RegisterCommand(new WynnCommand());
         RegisterCommand(new VvCommand());
-        RegisterCommand(new TldrCommand());
         RegisterCommand(new MFaceCommand());
         RegisterCommand(new RAnimalCommand());
         RegisterCommand(new BrowserCommand());
+        RegisterCommand(new QueryCommand());
     }
 
     public static string GetCommandPrefix()
