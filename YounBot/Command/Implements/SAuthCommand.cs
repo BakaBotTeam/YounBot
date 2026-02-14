@@ -4,6 +4,7 @@ using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Message;
 using Microsoft.Extensions.Logging;
 using PrivateBinSharp;
+using YounBot.Permissions;
 using YounBot.Utils;
 
 namespace YounBot.Command.Implements;
@@ -15,7 +16,7 @@ public class SAuthCommand
     [Command("sauth", "转SAuth")]
     public async Task SAuth(BotContext context, MessageChain chain, string account, string password)
     {
-        if (!Cooldown.IsTimePassed(chain.FriendUin))
+        if (!Cooldown.IsTimePassed(chain.FriendUin) && !Permission.HasPermission(chain))
         {
             if (Cooldown.ShouldSendCooldownNotice(chain.FriendUin))
                 await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value).Forward(chain).Text($"你可以在 {Cooldown.GetLeftTime(chain.FriendUin) / 1000} 秒后继续使用该指令").Build());

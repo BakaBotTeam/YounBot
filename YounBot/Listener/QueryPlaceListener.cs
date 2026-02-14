@@ -126,7 +126,7 @@ public class QueryPlaceListener
             if (numbers.Count == 0) return;
             QueryPlace? queryPlace = YounBotApp.QueryPlaceManager?.GetPlace(place, chain.GroupUin.Value);
             if (queryPlace == null) return;
-            List<short> oldCount = queryPlace.Count.Count == 0 ? new List<short> { 0 } : new List<short>(queryPlace.Count);
+            List<short> oldCount = queryPlace.Count.Count == 0 ? [0] : [..queryPlace.Count];
             queryPlace.Count.Clear();
             queryPlace.Count.AddRange(numbers);
             YounBotApp.QueryPlaceManager?.UpdateCount(place, chain.GroupUin.Value, queryPlace.Count);
