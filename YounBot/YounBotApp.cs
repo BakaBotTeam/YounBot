@@ -91,6 +91,35 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
             Keystore = Client.UpdateKeystore();
             SaveConfig(Configuration["ConfigPath:Keystore"] ?? "keystore.json", Keystore, true);
             LoggingUtils.Logger.LogInformation($"Bot online -> {@event.EventMessage}");
+            string ntfyUrl = Config.NtfyUrl;
+            string ntfyTopic = Config.NtfyTopic;
+            string ntfyToken = Config.NtfyToken;
+            if (ntfyUrl != "null")
+            {
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        Dictionary<string, string> headers = new();
+                        if (ntfyToken != "null")
+                        {
+                            headers["Authorization"] = $"Bearer {ntfyToken}";
+                        }
+                        JsonObject data = new()
+                        {
+                            ["topic"] = ntfyTopic != "null" ? ntfyTopic : "younbot-online",
+                            ["title"] = "YounBot Online",
+                            ["message"] = $"Bot came online at {@event.EventTime}",
+                            ["priority"] = 5
+                        };
+                        await HttpUtils.PostJsonObject(ntfyUrl, headers: headers, data: data);
+                    }
+                    catch (Exception e)
+                    {
+                        LoggingUtils.Logger.LogError("Failed to send ntfy message: " + e.Message);
+                    }
+                });
+            }
         };
 
         Client!.Invoker.OnBotOfflineEvent += (_, @event) =>
