@@ -14,6 +14,9 @@ public class YounBotConfig
     public string CustomOpenAiEndpoint { get; set; } = "https://api.openai.com/v1";
     public string CustomOpenAiApiKey { get; set; } = "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
     public string SauthApi { get; set; } = "null";
+    public string NtfyUrl { get; set; } = "null";
+    public string NtfyTopic { get; set; } = "younbot";
+    public string NtfyToken { get; set; } = "null";
 
     public static YounBotConfig NewConfig() => new()
     {
@@ -27,6 +30,9 @@ public class YounBotConfig
         EasyImageApiKey = "00000000-0000-0000-0000-00000000",
         CustomOpenAiEndpoint = "https://api.openai.com/v1",
         CustomOpenAiApiKey = "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-        SauthApi = "null"
+        SauthApi = "null",
+        NtfyUrl = "null",
+        NtfyTopic = "younbot",
+        NtfyToken = "null"
     };
 }
