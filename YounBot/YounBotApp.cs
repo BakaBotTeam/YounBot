@@ -152,7 +152,7 @@ public class YounBotApp(YounBotAppBuilder appBuilder)
                     {
                         LoggingUtils.Logger.LogError("Failed to send ntfy message: " + e.Message);
                     }
-                });
+                }).Wait();
             }
 
         };
