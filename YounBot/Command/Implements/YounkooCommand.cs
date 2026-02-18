@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Text.Json.Nodes;
 using Lagrange.Core;
 using Lagrange.Core.Common.Entity;
 using Lagrange.Core.Common.Interface.Api;
@@ -273,45 +274,47 @@ public class YounkooCommand
         }
     }
 
-    // [Command("see", "看看汐洛在干嘛")]
-    // public async Task See(BotContext context, MessageChain chain)
-    // {
-    //     // GET https://see.qwq.cam/api/status
-    //     // {"battery_level":95,"battery_type":"Li-ion","power_wattage":-1,"power_save":false,"current_app_name":null,"current_app_pkg":null,"is_charging":false,"is_wifi_connected":true,"last_updated":"2026-02-15T18:43:43.854Z"}
-    //     string url = "https://see.qwq.cam/api/status?t=" + DateTimeOffset.Now.ToUnixTimeSeconds();
-    //     try
-    //     {
-    //         JsonObject response = await HttpUtils.GetJsonObject(url);
-    //         string result = "";
-    //         if (response["power_save"]!.GetValue<bool>())
-    //         {
-    //             result += "!!! 省电模式已启用 数据更新可能有延迟!!! \n";
-    //         }
-    //         result += $"电量: {response["battery_level"]}% ({response["battery_type"]})";
-    //         if (response["is_charging"]!.GetValue<bool>())
-    //         {
-    //             result += $" (正在充电 功率: {response["power_wattage"]})";
-    //         }
-    //         result += "\n";
-    //         if (response["current_app_name"] != null)
-    //         {
-    //             result += $"当前应用: {response["current_app_name"]} ({response["current_app_pkg"]})\n";
-    //         }
-    //         else
-    //         {
-    //             result += "设备已熄屏\n";
-    //         }
-    //         result += $"WiFi: {(response["is_wifi_connected"]!.GetValue<bool>() ? "已连接" : "未连接")}\n";
-    //         result += $"最后更新时间: {response["last_updated"]!.GetValue<DateTime>().ToLocalTime()}";
-    //         await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
-    //             .Forward(chain)
-    //             .Text(result).Build());
-    //     }
-    //     catch (Exception e)
-    //     {
-    //         await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
-    //             .Forward(chain)
-    //             .Text("请求失败: " + e.Message).Build());
-    //     }
-    // }
+    [Command("see", "看看汐洛在干嘛")]
+    public async Task See(BotContext context, MessageChain chain)
+    {
+        // GET https://see.qwq.cam/api/status
+        // {"battery_level":95,"battery_type":"Li-ion","power_wattage":-1,"power_save":false,"current_app_name":null,"current_app_pkg":null,"is_charging":false,"is_wifi_connected":true,"last_updated":"2026-02-15T18:43:43.854Z"}
+        string url = "https://see.qwq.cam/api/status?t=" + DateTimeOffset.Now.ToUnixTimeSeconds();
+        try
+        {
+            JsonObject response = await HttpUtils.GetJsonObject(url);
+            string result = "";
+            if (response["power_save"]!.GetValue<bool>())
+            {
+                result += "!!! 省电模式已启用 数据更新可能有延迟!!! \n";
+            }
+
+            result += $"电量: {response["battery_level"]}% ({response["battery_type"]})";
+            if (response["is_charging"]!.GetValue<bool>())
+            {
+                result += $" (正在充电 功率: {response["power_wattage"]})";
+            }
+
+            result += "\n";
+            if (response["current_app_name"] != null)
+            {
+                result += $"当前应用: {response["current_app_name"]} ({response["current_app_pkg"]})\n";
+            }
+            else
+            {
+                result += "设备已熄屏\n";
+            }
+            result += $"WiFi: {(response["is_wifi_connected"]!.GetValue<bool>() ? "已连接" : "未连接")}\n";
+            result += $"最后更新时间: {response["last_updated"]!.GetValue<DateTime>().ToLocalTime()}";
+            await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+                .Forward(chain)
+                .Text(result).Build());
+        }
+        catch (Exception e)
+        {
+            await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
+                .Forward(chain)
+                .Text("请求失败: " + e.Message).Build());
+        }
+    }
 }
