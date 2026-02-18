@@ -292,7 +292,7 @@ public class YounkooCommand
             result += $"电量: {response["battery_level"]}% ({response["battery_type"]})";
             if (response["is_charging"]!.GetValue<bool>())
             {
-                result += $" (正在充电 功率: {response["power_wattage"]})";
+                result += $" (正在充电 功率: {response["power_wattage"]}W)";
             }
 
             result += "\n";
