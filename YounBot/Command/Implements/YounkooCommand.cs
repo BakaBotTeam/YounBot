@@ -283,7 +283,7 @@ public class YounkooCommand
         try
         {
             JsonObject response = await HttpUtils.GetJsonObject(url);
-            string result = "";
+            string result = "Phone:\n";
             if (response["power_save"]!.GetValue<bool>())
             {
                 result += "!!! 省电模式已启用 数据更新可能有延迟!!! \n";
@@ -306,6 +306,21 @@ public class YounkooCommand
             }
             result += $"WiFi: {(response["is_wifi_connected"]!.GetValue<bool>() ? "已连接" : "未连接")}\n";
             result += $"最后更新时间: {response["last_updated"]!.GetValue<DateTime>().ToLocalTime()}";
+            result += "\n\nPC:\n";
+            // 获取PC状态 https://see.qwq.cam/api/pc/status
+            // {"current_window_title":"Phone Status Monitor - Google Chrome","current_window_process":"google-chrome","last_active":"2026-02-18T14:37:39.962000+00:00","is_windows":false,"last_updated":"2026-02-18T14:37:40.781Z"}
+            JsonObject pcResponse = await HttpUtils.GetJsonObject("https://see.qwq.cam/api/pc/status?t=" + DateTimeOffset.Now.ToUnixTimeSeconds());
+            if (pcResponse["current_window_title"] != null)
+            {
+                result += $"当前窗口: {pcResponse["current_window_title"]} ({pcResponse["current_window_process"]})\n";
+            }
+            else
+            {
+                result += "PC已锁屏或无活动窗口\n";
+            }
+            result += $"当前操作系统: {(pcResponse["is_windows"]!.GetValue<bool>() ? "Windows" : "Linux")}\n";
+            result += $"最后活动时间: {pcResponse["last_active"]!.GetValue<DateTime>().ToLocalTime()}\n";
+            result += $"最后更新时间: {pcResponse["last_updated"]!.GetValue<DateTime>().ToLocalTime()}";
             await context.SendMessage(MessageBuilder.Group(chain.GroupUin!.Value)
                 .Forward(chain)
                 .Text(result).Build());
